@@ -1,4 +1,5 @@
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+/* Pretendard 는 app/layout.jsx 에서 preconnect + link 로 불러옵니다.
+   (@import 는 렌더링을 막아서 첫 화면이 늦게 뜹니다) */
 
 :root {
   --ink: #10201D;
