@@ -7,8 +7,8 @@
 const csp = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline'",
-  "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
-  "font-src 'self' https://cdn.jsdelivr.net",
+  "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
+  "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com",
   "img-src 'self' data:",
   "connect-src 'self'",
   "object-src 'none'",

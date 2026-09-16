@@ -19,14 +19,14 @@ export default async function OpengraphImage() {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          background: '#EEF1EF',
-          color: '#10201D',
+          background: '#F6F2E9',
+          color: '#211D16',
           padding: '72px 80px',
           fontFamily: 'Pretendard',
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: 28, color: '#5A6B66' }}>
+          <div style={{ fontSize: 28, color: '#43706A', fontWeight: 700 }}>
             사회복지 현장의 스마트워크 · AI 전환
           </div>
           <div
@@ -42,8 +42,17 @@ export default async function OpengraphImage() {
           >
             <span>오늘 쓸 도구를</span>
             <span>
-              <span style={{ color: '#C08A2E' }}>오늘</span>
-              {' '}만듭니다.
+              <span
+                style={{
+                  color: '#43706A',
+                  backgroundColor: '#F6E3CE',
+                  padding: '0 12px',
+                  borderRadius: 8,
+                }}
+              >
+                오늘
+              </span>
+              {' '}만듭니다.
             </span>
           </div>
         </div>
@@ -53,16 +62,16 @@ export default async function OpengraphImage() {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            borderTop: '3px solid #10201D',
+            borderTop: '3px solid #211D16',
             paddingTop: 28,
             fontSize: 30,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 14 }}>
             <span style={{ fontWeight: 700, letterSpacing: '0.06em' }}>CARPEDM</span>
-            <span style={{ fontSize: 24, color: '#5A6B66' }}>카르페디엠</span>
+            <span style={{ fontSize: 24, color: '#7E7666' }}>카르페디엠</span>
           </div>
-          <span style={{ color: '#C08A2E' }}>carpedm.kr</span>
+          <span style={{ color: '#E0995A', fontWeight: 700 }}>carpedm.kr</span>
         </div>
       </div>
     ),

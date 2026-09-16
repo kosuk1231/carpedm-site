@@ -108,23 +108,30 @@ export default function Home() {
       </nav>
 
       <header className="hero">
-        <p className="kicker">사회복지 현장의 스마트워크 · AI 전환</p>
-        <h1 className="lede">오늘 쓸 도구를<br /><em>오늘</em> 만듭니다.</h1>
-
-        <div className="wordmark">
+        <div>
+          <p className="kicker">사회복지 현장의 스마트워크 · AI 전환</p>
+          <h1 className="lede">오늘 쓸 도구를<br /><em>오늘</em> 만듭니다.</h1>
+          <p className="herosub">도구를 소개하는 강의가 아니라, 참여자가 자기 업무에 맞는 도구를 하나 들고 나가는 강의를 합니다.</p>
+        </div>
+        <aside className="heroside">
           <p>이 사이트의 모든 링크는 이렇게 나갑니다</p>
           <div className="line mono">carpedm.kr/<i>ax</i></div>
-        </div>
+          <div className="note">강의장에서 QR 대신 말로 불러 줄 수 있는 길이의 짧은 주소입니다.</div>
+        </aside>
       </header>
 
       <section className="sec">
         <h2 className="h2">강의와 컨설팅</h2>
-        {WORK.map((w) => (
-          <div className="workrow" key={w.en}>
-            <h3>{w.ko}<small>{w.en}</small></h3>
-            <p>{w.desc}</p>
-          </div>
-        ))}
+        <p style={{ margin: 0, fontSize: 15, color: 'var(--muted)' }}>네 가지 영역에서 현장과 함께합니다</p>
+        <div className="workgrid">
+          {WORK.map((w) => (
+            <div className="work" key={w.en}>
+              <small>{w.en}</small>
+              <h3>{w.ko}</h3>
+              <p>{w.desc}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
       <section className="sec">

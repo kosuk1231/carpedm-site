@@ -5,6 +5,8 @@ import './globals.css';
 const SITE = 'https://www.carpedm.kr';
 const PRETENDARD_CSS =
   'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css';
+const HAHMLET_CSS =
+  'https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;600;700&display=swap';
 
 export const metadata = {
   metadataBase: new URL(SITE),
@@ -56,7 +58,9 @@ export default function RootLayout({ children }) {
       <body>
         {/* React 19가 아래 link 태그들을 <head>로 끌어올립니다. */}
         <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="stylesheet" precedence="default" href={PRETENDARD_CSS} />
+        <link rel="stylesheet" precedence="default" href={HAHMLET_CSS} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
