@@ -537,27 +537,51 @@ export default function Home() {
       <nav className="nav">
         <Link href="/" className="brand">
           <b>CARPEDM</b>
-          <span>카르페디엠</span>
+          <span>FIELD-BUILT DIGITAL WORK</span>
         </Link>
-        <a className="navlink" href="mailto:hello@carpedm.kr">문의하기</a>
+        <div className="navmenu">
+          <a href="#portfolio">포트폴리오</a>
+          <a href="#lecture">강의·컨설팅</a>
+          <a href="#about">소개</a>
+        </div>
+        <a className="navlink" href="mailto:hello@carpedm.kr">
+          <span>문의하기</span><b aria-hidden="true">↗</b>
+        </a>
       </nav>
 
       <header className="hero">
-        <div>
-          <p className="kicker">사회복지 현장의 스마트워크 · AI 전환</p>
-          <h1 className="lede">오늘 쓸 도구를<br /><em>오늘</em> 만듭니다.</h1>
-          <p className="herosub">도구를 소개하는 강의가 아니라, 참여자가 자기 업무에 맞는 도구를 하나 들고 나가는 강의를 합니다.</p>
+        <div className="hero-main">
+          <p className="kicker"><span>FIELD-BUILT</span> 사회복지 현장의 스마트워크 · AI 전환</p>
+          <h1 className="lede">현장의 문제를<br /><em>작동하는 도구</em>로 바꿉니다.</h1>
+          <p className="herosub">행사 운영, 업무 자동화, AI, 협업, 홍보까지. 설명으로 끝내지 않고 실제 현장에 넣어 반복해서 쓸 수 있는 시스템을 직접 설계하고 만듭니다.</p>
+          <div className="hero-actions">
+            <a className="hero-primary" href="#portfolio">실제 만든 것 보기 <b aria-hidden="true">↓</b></a>
+            <a className="hero-secondary" href="mailto:hello@carpedm.kr">강의·컨설팅 문의</a>
+          </div>
         </div>
         <aside className="heroside">
-          <p>이 사이트의 모든 링크는 이렇게 나갑니다</p>
-          <div className="line mono">carpedm.kr/<i>ax</i></div>
-          <div className="note">강의장에서 QR 대신 말로 불러 줄 수 있는 길이의 짧은 주소입니다.</div>
+          <div className="hero-side-label">FIELD NOTES · 2026</div>
+          <div className="hero-side-grid">
+            <div><strong>500+</strong><span>전국 방문 기관</span></div>
+            <div><strong>63</strong><span>3년 동행 기관</span></div>
+            <div><strong>20+</strong><span>연간 강의·컨설팅</span></div>
+            <div><strong>1,500</strong><span>최대 행사 운영</span></div>
+          </div>
+          <div className="hero-short">
+            <span>강의장에서 바로 부르는 짧은 주소</span>
+            <b className="mono">carpedm.kr/ax</b>
+          </div>
         </aside>
       </header>
 
-      <section className="sec">
-        <h2 className="h2">강의와 컨설팅</h2>
-        <p style={{ margin: 0, fontSize: 15, color: 'var(--muted)' }}>네 가지 영역에서 현장과 함께합니다</p>
+      <section className="sec" id="lecture">
+        <div className="section-head">
+          <div>
+            <span className="section-kicker">WHAT I TEACH</span>
+            <h2 className="h2">강의와 컨설팅</h2>
+          </div>
+          <p>네 가지 영역에서 현장의 문제를 함께 풀고, 바로 쓸 수 있는 도구까지 만듭니다.</p>
+        </div>
         <div className="workgrid">
           {WORK.map((w) => (
             <div className="work" key={w.en}>
@@ -569,17 +593,21 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="sec">
-        <h2 className="h2">현장에서 돌아가고 있는 것들</h2>
-        <p style={{ margin: '0 0 8px', fontSize: 15, color: 'var(--muted)', maxWidth: '56ch' }}>
-          기획서로 끝난 것은 없습니다. 다섯 가지 영역에서 실제 행사와 업무에 투입된 도구들입니다.
-        </p>
+      <section className="sec" id="portfolio">
+        <div className="section-head portfolio-head">
+          <div>
+            <span className="section-kicker">SELECTED WORK</span>
+            <h2 className="h2">현장에서 돌아가고 있는 것들</h2>
+          </div>
+          <p>기획서로 끝난 것은 없습니다. 다섯 가지 영역에서 실제 행사와 업무에 투입된 도구와 운영 구조입니다.</p>
+        </div>
 
         <div className="cat-list">
           {CATEGORIES.map((c, i) => (
             <details className="cat" key={c.title} open={i === 0}>
               <summary className="cat-sum">
-                <div>
+                <div className="cat-index">0{i + 1}</div>
+                <div className="cat-summary-copy">
                   <h3 className="cat-title">{c.title}</h3>
                   <p className="cat-line">{c.line}</p>
                   <div className="cat-meta">
@@ -618,9 +646,11 @@ export default function Home() {
                           className="tool-link"
                           aria-label={`${t.name} 새 창에서 열기`}
                         >
-                          <span>도구 열기</span>
-                          <small>{t.urlLabel}</small>
-                          <b aria-hidden="true">↗</b>
+                          <span className="tool-link-copy">
+                            <small>LIVE TOOL</small>
+                            <strong>{t.urlLabel}</strong>
+                          </span>
+                          <span className="tool-link-action">바로 열기 <b aria-hidden="true">↗</b></span>
                         </a>
                       )}
                     </article>
@@ -640,11 +670,14 @@ export default function Home() {
         </p>
       </section>
 
-      <section className="sec">
-        <h2 className="h2">강의와 컨설팅, 지금까지</h2>
-        <p style={{ margin: '0 0 24px', fontSize: 15, color: 'var(--muted)', maxWidth: '56ch' }}>
-          도구를 소개하고 끝나는 방문은 없었습니다. 기관의 서식과 결재 흐름에 맞춰 붙이는 것까지가 방문이었습니다.
-        </p>
+      <section className="sec track-record">
+        <div className="section-head">
+          <div>
+            <span className="section-kicker">TRACK RECORD</span>
+            <h2 className="h2">강의와 컨설팅, 지금까지</h2>
+          </div>
+          <p>도구를 소개하고 끝나는 방문은 없었습니다. 기관의 서식과 결재 흐름에 맞춰 실제 업무에 붙이는 것까지가 방문이었습니다.</p>
+        </div>
 
         <dl className="stats" style={{ marginBottom: 40 }}>
           <div className="stat"><dt>강의·컨설팅</dt><dd>연 20회</dd></div>
@@ -653,6 +686,7 @@ export default function Home() {
         </dl>
 
         <h4 className="h3">사업 단위</h4>
+        <div className="table-shell">
         <table className="rtable">
           <thead>
             <tr><th>기간</th><th>사업</th><th>내용</th><th>규모</th></tr>
@@ -668,8 +702,10 @@ export default function Home() {
             ))}
           </tbody>
         </table>
+        </div>
 
         <h4 className="h3">강의</h4>
+        <div className="table-shell">
         <table className="rtable">
           <thead>
             <tr><th>연도</th><th>주최·대상</th><th>주제</th><th>횟수</th></tr>
@@ -685,6 +721,7 @@ export default function Home() {
             ))}
           </tbody>
         </table>
+        </div>
 
         <h4 className="h3">주요 강의 주제</h4>
         <ul className="tags">
@@ -695,8 +732,14 @@ export default function Home() {
         </p>
       </section>
 
-      <section className="sec">
-        <h2 className="h2">소개</h2>
+      <section className="sec" id="about">
+        <div className="section-head">
+          <div>
+            <span className="section-kicker">ABOUT</span>
+            <h2 className="h2">소개</h2>
+          </div>
+          <p>사회복지 현장을 이해하고, 디지털 도구를 직접 만드는 실무자입니다.</p>
+        </div>
         <div className="about">
           <div>
             <p>사회복지 현장에서 일하며, 현장에 필요한 도구를 직접 만들어 왔습니다. 강의는 도구를 소개하는 자리가 아니라 참여자가 자기 업무에 맞는 도구를 하나 들고 나가는 자리여야 한다고 생각합니다.</p>
@@ -715,9 +758,16 @@ export default function Home() {
       </section>
 
       <section className="cta">
-        <h2>강의나 컨설팅을 의뢰하시나요?</h2>
-        <p>기관 상황과 원하는 주제를 알려 주시면 맞는 구성을 제안해 드립니다.</p>
-        <a href="mailto:hello@carpedm.kr">hello@carpedm.kr</a>
+        <div>
+          <span className="cta-kicker">LET'S BUILD SOMETHING USEFUL</span>
+          <h2>현장에 필요한 도구를<br />함께 만들어볼까요?</h2>
+          <p>기관 상황과 반복되는 업무, 바꾸고 싶은 흐름을 알려 주시면 강의·컨설팅·시스템 구축 중 맞는 방식을 제안합니다.</p>
+        </div>
+        <a href="mailto:hello@carpedm.kr">
+          <span>문의 메일 보내기</span>
+          <strong>hello@carpedm.kr</strong>
+          <b aria-hidden="true">↗</b>
+        </a>
       </section>
 
       <footer className="foot">
