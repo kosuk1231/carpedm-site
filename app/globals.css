@@ -598,3 +598,121 @@ a { color: inherit; }
   .pv-metrics { grid-template-columns: 1fr 1fr; }
   .pv-chip-grid, .pv-tool-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+
+/* ---------- portfolio tool cards / buttons ---------- */
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 4px 0 20px;
+}
+.tool-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 168px;
+  background: #FFFEFB;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(60, 50, 30, .035);
+}
+.tool-card.has-link {
+  border-color: #C9D8D2;
+}
+.tool-card-copy {
+  padding: 17px 18px 14px;
+  flex: 1;
+}
+.tool-card h5 {
+  margin: 0 0 7px;
+  font-size: 14.5px;
+  line-height: 1.45;
+  font-weight: 750;
+  color: var(--ink);
+}
+.tool-card p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--body);
+}
+.tool-link {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 9px;
+  align-items: center;
+  text-decoration: none;
+  background: var(--teal);
+  color: var(--on-teal);
+  padding: 12px 14px;
+  transition: background .16s ease, transform .16s ease;
+}
+.tool-link:hover {
+  background: var(--teal-deep);
+}
+.tool-link span {
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.tool-link small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--on-teal-muted);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10.5px;
+}
+.tool-link b {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.footlink {
+  text-decoration: none;
+  color: var(--muted);
+}
+.footlink:hover { color: var(--teal); }
+
+/* richer automation visual */
+.pv-process-rich {
+  min-height: 112px;
+}
+.pv-process-rich small {
+  display: block;
+  margin-top: 7px;
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.pv-automation {
+  display: grid;
+  gap: 8px;
+}
+.pv-automation > div {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--canvas);
+}
+.pv-automation span {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .09em;
+  color: var(--teal);
+}
+.pv-automation b {
+  font-size: 11px;
+  color: var(--ink);
+}
+
+@media (max-width: 720px) {
+  .tool-grid { grid-template-columns: 1fr; }
+  .tool-card { min-height: 0; }
+}
