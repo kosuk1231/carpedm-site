@@ -41,18 +41,19 @@ const CATEGORIES = [
   },
   {
     title: '업무 효율화',
-    line: '설치 없는 PDF 도구, 시트 하나로 돌아가는 신청·집계 자동화, 행정문서 자동 생성. 반복 업무를 걷어냅니다.',
+    line: '설치 없는 PDF 도구부터 스프레드시트→DOCX·PDF 생성→이메일·알림톡 발송까지. 반복 업무를 한 흐름으로 자동화합니다.',
     meta: ['공개 도구 pdf.carpedm.kr', '앱스 스크립트 자동화 다수', '스마트워크 · AX'],
     problem: 'PDF 하나 합치려고 유료 프로그램을 깔거나 민감한 문서를 외부 사이트에 올립니다. 신청은 구글 폼, 집계는 엑셀, 알림은 문자. 세 군데를 오가며 복사합니다. 회의록·공문은 매번 서식을 열어 같은 자리에 같은 것을 채웁니다.',
-    solve: '파일이 서버로 가지 않는 브라우저 안 PDF 도구를 만들었습니다. 신청·집계·알림은 구글 시트 하나를 백엔드로 삼아 앱스 스크립트가 이어 줍니다. 기관 문서 규칙을 학습시킨 전용 AI 도구로 한글(HWPX) 문서를 규격대로 만듭니다.',
+    solve: '파일이 서버로 가지 않는 브라우저 안 PDF 도구를 만들었습니다. Google Apps Script는 스프레드시트의 데이터를 읽어 DOCX·PDF 문서를 자동 생성하고, 결과를 이메일이나 카카오 알림톡으로 발송합니다. 기관 문서 규칙을 학습시킨 전용 AI 도구는 HWPX 회의록·기안·결과보고서까지 규격대로 만듭니다.',
     tools: [
       { name: 'pdf.carpedm.kr', desc: '병합·분할·회전·텍스트 추출·압축·PDF→PPTX·PDF→JPG·페이지 편집·쪽번호. 업로드 없이 브라우저에서 처리', url: 'https://pdf.carpedm.kr', urlLabel: 'pdf.carpedm.kr' },
-      { name: '시트 기반 신청·집계 자동화', desc: '구글 앱스 스크립트 백엔드 + 정적 프론트. 기관 담당자가 시트에서 바로 관리할 수 있어 인수인계가 쉽습니다' },
+      { name: '시트 기반 신청·집계 자동화', desc: 'Google Apps Script 백엔드 + 정적 프론트. 기관 담당자가 스프레드시트에서 바로 관리할 수 있어 인수인계가 쉽습니다' },
+      { name: 'Google Apps Script 문서·발송 자동화', desc: '스프레드시트 데이터를 기준으로 DOCX·PDF를 자동 생성하고, 생성된 문서나 안내 내용을 이메일 또는 카카오 알림톡으로 자동 발송' },
       { name: '행정문서 자동 생성', desc: '협회 행정문서 규칙(날짜·항목기호·글꼴·"끝" 표시)을 학습시킨 AI 도구로 회의록·기안·결과보고서를 HWPX로 생성' },
       { name: '단축 URL', desc: 'carpedm.kr/ax 같은 짧은 주소. 강의장에서 QR 대신 말로 불러 줄 수 있는 길이' },
       { name: '비영리 라이선스 도입 지원', desc: 'Google Workspace·Microsoft 365·AI 라이선스 등 무료·할인 신청부터 정착까지. 예산 없이 시작하는 방법' },
     ],
-    stack: ['Vanilla JS', 'Google Apps Script', 'python-hwpx', 'Cloudflare Workers', 'Vercel'],
+    stack: ['Vanilla JS', 'Google Apps Script', 'Google Drive', 'Gmail', 'Solapi 알림톡', 'python-hwpx', 'Cloudflare Workers', 'Vercel'],
   },
   {
     title: 'OpenClaw AI 시스템',
@@ -130,8 +131,8 @@ const CASE_METRICS = {
   '업무 효율화': [
     { value: '0', label: 'PDF 서버 업로드' },
     { value: '9', label: '브라우저 PDF 기능' },
-    { value: '1 Sheet', label: '신청·집계 백엔드' },
-    { value: 'HWPX', label: '행정문서 자동 생성' },
+    { value: 'DOCX·PDF', label: '자동 문서 생성' },
+    { value: 'Email·알림톡', label: '자동 발송 채널' },
   ],
   '캠페인·홍보': [
     { value: '27건', label: '40주년 미디어 산출물' },
@@ -280,23 +281,28 @@ function EfficiencyVisual() {
       <div className="pv-case-head">
         <div>
           <span className="pv-eyebrow">CASE STUDY · WORK AUTOMATION</span>
-          <h4>복사·붙여넣기를<br />브라우저와 시트가 대신합니다.</h4>
-          <p>민감한 파일은 밖으로 보내지 않고, 신청·집계·알림은 한 시트에서 이어지게 하고, 반복 문서는 규칙대로 자동 생성합니다.</p>
+          <h4>한 번 입력한 데이터를<br />문서 생성과 발송까지 연결합니다.</h4>
+          <p>민감한 PDF는 브라우저 안에서 처리하고, 스프레드시트의 데이터는 Apps Script가 읽어 DOCX·PDF로 만들고 이메일·알림톡까지 자동으로 이어 줍니다.</p>
         </div>
         <CaseMetrics items={CASE_METRICS['업무 효율화']} />
       </div>
 
       <div className="pv-section">
-        <span className="pv-section-label">BEFORE → AFTER</span>
-        <div className="pv-before-after">
-          <div className="pv-lane">
-            <b>BEFORE</b>
-            <span>폼</span><i>→</i><span>엑셀</span><i>→</i><span>문자</span><i>→</i><span>수작업 문서</span>
-          </div>
-          <div className="pv-lane after">
-            <b>AFTER</b>
-            <span>입력</span><i>→</i><span>시트 백엔드</span><i>→</i><span>자동 알림</span><i>→</i><span>HWPX</span>
-          </div>
+        <span className="pv-section-label">AUTOMATION PIPELINE</span>
+        <div className="pv-process four">
+          {[
+            ['Spreadsheet', '신청·명단·운영 데이터'],
+            ['Apps Script', '조건 확인 · 데이터 가공'],
+            ['DOCX · PDF', '템플릿 기반 문서 생성'],
+            ['Email · 알림톡', '대상자별 자동 발송'],
+          ].map(([title, desc], i) => (
+            <div className="pv-process-step pv-process-rich" key={title}>
+              <b>{String(i + 1).padStart(2, '0')}</b>
+              <strong>{title}</strong>
+              <small>{desc}</small>
+              {i < 3 && <span aria-hidden="true">→</span>}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -307,25 +313,28 @@ function EfficiencyVisual() {
             <div className="pv-tool-grid">
               {['병합','분할','회전','추출','압축','PPTX','JPG','편집','쪽번호'].map((x) => <span key={x}>{x}</span>)}
             </div>
-            <p className="pv-caption">파일은 서버로 보내지 않고 브라우저 안에서 처리</p>
+            <p className="pv-caption">파일을 외부 서버에 올리지 않고 브라우저 안에서 처리합니다.</p>
           </div>
         </article>
 
         <article className="pv-proof">
-          <div className="pv-window-bar"><i /><i /><i /><span>Sheet Backend</span></div>
+          <div className="pv-window-bar"><i /><i /><i /><span>Apps Script Automation</span></div>
           <div className="pv-screen">
-            <div className="pv-pipeline"><span>신청</span><b>→</b><span>집계</span><b>→</b><span>알림</span></div>
-            <div className="pv-row"><span>운영자</span><b>Google Sheet</b></div>
-            <div className="pv-row"><span>자동화</span><b>Apps Script</b></div>
+            <div className="pv-automation">
+              <div><span>TRIGGER</span><b>폼 제출 · 행 선택 · 일정</b></div>
+              <div><span>CREATE</span><b>DOCX · PDF</b></div>
+              <div><span>SEND</span><b>Email · 카카오 알림톡</b></div>
+            </div>
+            <p className="pv-caption">스프레드시트 한 곳에서 생성·저장·발송 흐름을 관리합니다.</p>
           </div>
         </article>
 
         <article className="pv-proof">
           <div className="pv-window-bar"><i /><i /><i /><span>Document Rules</span></div>
           <div className="pv-screen">
-            <div className="pv-rule">날짜 형식 <b>✓</b></div>
-            <div className="pv-rule">항목 기호 <b>✓</b></div>
+            <div className="pv-rule">날짜·항목 기호 <b>✓</b></div>
             <div className="pv-rule">글꼴·정렬 <b>✓</b></div>
+            <div className="pv-rule">HWPX 행정문서 <b>✓</b></div>
             <div className="pv-rule">문서 끝 표시 <b>✓</b></div>
           </div>
         </article>
@@ -594,24 +603,29 @@ export default function Home() {
 
                 <PortfolioVisual title={c.title} />
 
-                <dl className="doclist">
+                <div className="tool-grid">
                   {c.tools.map((t) => (
-                    <div className="doclist-row" key={t.name} style={{ display: 'contents' }}>
-                      <dt>{t.name}</dt>
-                      <dd>
-                        {t.desc}
-                        {t.url && (
-                          <>
-                            {' — '}
-                            <a href={t.url} target="_blank" rel="noopener noreferrer" className="mono">
-                              {t.urlLabel}
-                            </a>
-                          </>
-                        )}
-                      </dd>
-                    </div>
+                    <article className={`tool-card${t.url ? ' has-link' : ''}`} key={t.name}>
+                      <div className="tool-card-copy">
+                        <h5>{t.name}</h5>
+                        <p>{t.desc}</p>
+                      </div>
+                      {t.url && (
+                        <a
+                          href={t.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="tool-link"
+                          aria-label={`${t.name} 새 창에서 열기`}
+                        >
+                          <span>도구 열기</span>
+                          <small>{t.urlLabel}</small>
+                          <b aria-hidden="true">↗</b>
+                        </a>
+                      )}
+                    </article>
                   ))}
-                </dl>
+                </div>
 
                 <div className="stack">
                   {c.stack.map((s) => <span className="tag" key={s}>{s}</span>)}
@@ -708,7 +722,7 @@ export default function Home() {
 
       <footer className="foot">
         <span>CARPEDM 카르페디엠</span>
-        <Link href="/admin" className="mono">carpedm.kr</Link>
+        <Link href="/admin" className="footlink mono">관리자</Link>
       </footer>
     </div>
   );
