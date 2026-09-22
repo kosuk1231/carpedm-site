@@ -113,6 +113,297 @@ const TOPICS = [
 ];
 
 
+
+const CASE_METRICS = {
+  '행사 운영': [
+    { value: '1,500명', label: '현장 운영 규모' },
+    { value: '1,470명', label: '사전접수' },
+    { value: '7', label: '코드로 여는 운영 화면' },
+    { value: '100~200명', label: '동시접속 대응' },
+  ],
+  '회의·소통 운영': [
+    { value: '2종', label: '공개 운영 앱' },
+    { value: '0', label: '참여자 로그인' },
+    { value: '17명', label: '워크숍 웹 운영' },
+    { value: '실시간', label: '의견·일정 집계' },
+  ],
+  '업무 효율화': [
+    { value: '0', label: 'PDF 서버 업로드' },
+    { value: '9', label: '브라우저 PDF 기능' },
+    { value: '1 Sheet', label: '신청·집계 백엔드' },
+    { value: 'HWPX', label: '행정문서 자동 생성' },
+  ],
+  '캠페인·홍보': [
+    { value: '27건', label: '40주년 미디어 산출물' },
+    { value: '158개소', label: '캠페인 참여 기관' },
+    { value: '1,152명', label: '캠페인 참여자' },
+    { value: '103장', label: '홍보 실습 강의자료' },
+  ],
+};
+
+function CaseMetrics({ items }) {
+  return (
+    <div className="pv-metrics">
+      {items.map((m) => (
+        <div className="pv-metric" key={m.label}>
+          <strong>{m.value}</strong>
+          <span>{m.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EventOpsVisual() {
+  return (
+    <section className="pv-case" aria-label="행사 운영 시각화">
+      <div className="pv-case-head">
+        <div>
+          <span className="pv-eyebrow">CASE STUDY · EVENT OPS</span>
+          <h4>1,500명 행사도<br />종이 없이 한 흐름으로 운영합니다.</h4>
+          <p>신청부터 알림, 현장 접수, 인증, 경품, 통계까지 끊어진 도구를 하나의 운영 흐름으로 묶었습니다.</p>
+        </div>
+        <CaseMetrics items={CASE_METRICS['행사 운영']} />
+      </div>
+
+      <div className="pv-section">
+        <span className="pv-section-label">OPERATION FLOW</span>
+        <div className="pv-process">
+          {['사전신청', '알림톡', '현장접수', '인증·추첨', '통계'].map((step, i) => (
+            <div className="pv-process-step" key={step}>
+              <b>{String(i + 1).padStart(2, '0')}</b>
+              <strong>{step}</strong>
+              {i < 4 && <span aria-hidden="true">→</span>}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="pv-proof-grid">
+        <article className="pv-proof">
+          <div className="pv-window-bar"><i /><i /><i /><span>Registration</span></div>
+          <div className="pv-screen">
+            <div className="pv-big">1,470 <small>/ 목표 1,200</small></div>
+            <div className="pv-progress"><span style={{ width: '100%' }} /></div>
+            <div className="pv-row"><span>현장 규모</span><b>1,500명</b></div>
+            <div className="pv-row"><span>접수 즉시</span><b>알림톡 발송</b></div>
+          </div>
+        </article>
+
+        <article className="pv-proof">
+          <div className="pv-window-bar"><i /><i /><i /><span>Event Code</span></div>
+          <div className="pv-screen">
+            <div className="pv-code">6자리 코드</div>
+            <div className="pv-chip-grid">
+              {['신청', '명단', '접수', '통계', '인증', '스태프', '관리'].map((x) => <span key={x}>{x}</span>)}
+            </div>
+            <p className="pv-caption">코드 하나로 필요한 화면을 반복 생성</p>
+          </div>
+        </article>
+
+        <article className="pv-proof">
+          <div className="pv-window-bar"><i /><i /><i /><span>Live Operation</span></div>
+          <div className="pv-screen">
+            <div className="pv-row"><span>동시접속</span><b>100~200명</b></div>
+            <div className="pv-row"><span>D-2</span><b>패킹</b></div>
+            <div className="pv-row"><span>D-1</span><b>확인</b></div>
+            <div className="pv-row"><span>당일</span><b>큐시트 · 비상연락</b></div>
+          </div>
+        </article>
+      </div>
+    </section>
+  );
+}
+
+function MeetingVisual() {
+  return (
+    <section className="pv-case" aria-label="회의 소통 운영 시각화">
+      <div className="pv-case-head">
+        <div>
+          <span className="pv-eyebrow">CASE STUDY · COLLABORATION</span>
+          <h4>단톡방에서 흩어지던 결정을<br />한 화면으로 모읍니다.</h4>
+          <p>로그인 없이 링크 하나로 참여하고, 일정과 의견이 들어오는 순간 겹치는 시간과 쟁점이 바로 보이도록 만들었습니다.</p>
+        </div>
+        <CaseMetrics items={CASE_METRICS['회의·소통 운영']} />
+      </div>
+
+      <div className="pv-section">
+        <span className="pv-section-label">DECISION FLOW</span>
+        <div className="pv-process four">
+          {['링크 공유', '일정·의견 입력', '실시간 집계', '결정·운영'].map((step, i) => (
+            <div className="pv-process-step" key={step}>
+              <b>{String(i + 1).padStart(2, '0')}</b>
+              <strong>{step}</strong>
+              {i < 3 && <span aria-hidden="true">→</span>}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="pv-proof-grid">
+        <article className="pv-proof">
+          <div className="pv-window-bar"><i /><i /><i /><span>우모가 · 일정 조율</span></div>
+          <div className="pv-screen">
+            <div className="pv-calendar">
+              {[0,1,2,3,4,5,6,7,8,9,10,11].map((n) => <i key={n} className={n === 2 || n === 5 || n === 6 || n === 9 ? 'on' : ''} />)}
+            </div>
+            <p className="pv-caption">여러 사람의 가능한 시간이 겹칠수록 진하게 표시</p>
+          </div>
+        </article>
+
+        <article className="pv-proof">
+          <div className="pv-window-bar"><i /><i /><i /><span>모담 · 의견 보드</span></div>
+          <div className="pv-screen pv-board">
+            <div><b>질문</b><span>현장에서 가장 불편한 업무는?</span></div>
+            <div><b>아이디어</b><span>접수와 명단을 한 화면으로</span></div>
+            <div><b>의견</b><span>로그인 없이 바로 참여</span></div>
+          </div>
+        </article>
+
+        <article className="pv-proof">
+          <div className="pv-window-bar"><i /><i /><i /><span>Workshop Guide</span></div>
+          <div className="pv-screen">
+            <div className="pv-row"><span>참여</span><b>17명</b></div>
+            <div className="pv-row"><span>한 페이지</span><b>일정 · 장소</b></div>
+            <div className="pv-row"><span>운영 정보</span><b>숙소 · 차량</b></div>
+            <div className="pv-row"><span>업데이트</span><b>즉시 반영</b></div>
+          </div>
+        </article>
+      </div>
+    </section>
+  );
+}
+
+function EfficiencyVisual() {
+  return (
+    <section className="pv-case" aria-label="업무 효율화 시각화">
+      <div className="pv-case-head">
+        <div>
+          <span className="pv-eyebrow">CASE STUDY · WORK AUTOMATION</span>
+          <h4>복사·붙여넣기를<br />브라우저와 시트가 대신합니다.</h4>
+          <p>민감한 파일은 밖으로 보내지 않고, 신청·집계·알림은 한 시트에서 이어지게 하고, 반복 문서는 규칙대로 자동 생성합니다.</p>
+        </div>
+        <CaseMetrics items={CASE_METRICS['업무 효율화']} />
+      </div>
+
+      <div className="pv-section">
+        <span className="pv-section-label">BEFORE → AFTER</span>
+        <div className="pv-before-after">
+          <div className="pv-lane">
+            <b>BEFORE</b>
+            <span>폼</span><i>→</i><span>엑셀</span><i>→</i><span>문자</span><i>→</i><span>수작업 문서</span>
+          </div>
+          <div className="pv-lane after">
+            <b>AFTER</b>
+            <span>입력</span><i>→</i><span>시트 백엔드</span><i>→</i><span>자동 알림</span><i>→</i><span>HWPX</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="pv-proof-grid">
+        <article className="pv-proof">
+          <div className="pv-window-bar"><i /><i /><i /><span>pdf.carpedm.kr</span></div>
+          <div className="pv-screen">
+            <div className="pv-tool-grid">
+              {['병합','분할','회전','추출','압축','PPTX','JPG','편집','쪽번호'].map((x) => <span key={x}>{x}</span>)}
+            </div>
+            <p className="pv-caption">파일은 서버로 보내지 않고 브라우저 안에서 처리</p>
+          </div>
+        </article>
+
+        <article className="pv-proof">
+          <div className="pv-window-bar"><i /><i /><i /><span>Sheet Backend</span></div>
+          <div className="pv-screen">
+            <div className="pv-pipeline"><span>신청</span><b>→</b><span>집계</span><b>→</b><span>알림</span></div>
+            <div className="pv-row"><span>운영자</span><b>Google Sheet</b></div>
+            <div className="pv-row"><span>자동화</span><b>Apps Script</b></div>
+          </div>
+        </article>
+
+        <article className="pv-proof">
+          <div className="pv-window-bar"><i /><i /><i /><span>Document Rules</span></div>
+          <div className="pv-screen">
+            <div className="pv-rule">날짜 형식 <b>✓</b></div>
+            <div className="pv-rule">항목 기호 <b>✓</b></div>
+            <div className="pv-rule">글꼴·정렬 <b>✓</b></div>
+            <div className="pv-rule">문서 끝 표시 <b>✓</b></div>
+          </div>
+        </article>
+      </div>
+    </section>
+  );
+}
+
+function CampaignVisual() {
+  return (
+    <section className="pv-case" aria-label="캠페인 홍보 시각화">
+      <div className="pv-case-head">
+        <div>
+          <span className="pv-eyebrow">CASE STUDY · CAMPAIGN & MEDIA</span>
+          <h4>참여를 모으고, 기록으로 남기고,<br />다시 콘텐츠로 연결합니다.</h4>
+          <p>QR 하나에서 사진 제출과 동의를 받고 데이터를 자동 분리합니다. 행사 기록은 영상·카드뉴스·웹 콘텐츠로 다시 활용합니다.</p>
+        </div>
+        <CaseMetrics items={CASE_METRICS['캠페인·홍보']} />
+      </div>
+
+      <div className="pv-section">
+        <span className="pv-section-label">CAMPAIGN FLOW</span>
+        <div className="pv-process">
+          {['QR 참여', '사진·동의', 'Drive·Sheet', '서명·캠페인', '콘텐츠'].map((step, i) => (
+            <div className="pv-process-step" key={step}>
+              <b>{String(i + 1).padStart(2, '0')}</b>
+              <strong>{step}</strong>
+              {i < 4 && <span aria-hidden="true">→</span>}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="pv-proof-grid">
+        <article className="pv-proof">
+          <div className="pv-window-bar"><i /><i /><i /><span>이슈온</span></div>
+          <div className="pv-screen">
+            <div className="pv-poster-stack">
+              <span>공정처우</span><span>처우개선</span><span>현장 목소리</span>
+            </div>
+            <div className="pv-row"><span>판넬 문구</span><b>9종</b></div>
+            <div className="pv-row"><span>참여 기관</span><b>158개소</b></div>
+          </div>
+        </article>
+
+        <article className="pv-proof">
+          <div className="pv-window-bar"><i /><i /><i /><span>40th Anniversary Media</span></div>
+          <div className="pv-screen">
+            <div className="pv-media-grid">
+              <span>VIDEO</span><span>SNS</span><span>PHOTO</span><span>WEB</span>
+            </div>
+            <div className="pv-big">27건 <small>미디어 산출물</small></div>
+          </div>
+        </article>
+
+        <article className="pv-proof">
+          <div className="pv-window-bar"><i /><i /><i /><span>Content Lab</span></div>
+          <div className="pv-screen">
+            <div className="pv-row"><span>북콘서트</span><b>웹 초대장 · 게임</b></div>
+            <div className="pv-row"><span>영상 제작</span><b>Canva · Vrew</b></div>
+            <div className="pv-row"><span>숏폼</span><b>CapCut · Suno</b></div>
+            <div className="pv-row"><span>강의자료</span><b>103장</b></div>
+          </div>
+        </article>
+      </div>
+    </section>
+  );
+}
+
+function PortfolioVisual({ title }) {
+  if (title === '행사 운영') return <EventOpsVisual />;
+  if (title === '회의·소통 운영') return <MeetingVisual />;
+  if (title === '업무 효율화') return <EfficiencyVisual />;
+  if (title === '캠페인·홍보') return <CampaignVisual />;
+  if (title === 'OpenClaw AI 시스템') return <OpenClawVisual />;
+  return null;
+}
+
 const OPENCLAW_METRICS = [
   { value: '4', label: '역할 기반 에이전트' },
   { value: '08:30', label: '평일 자동 브리핑' },
@@ -301,7 +592,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                {c.title === 'OpenClaw AI 시스템' && <OpenClawVisual />}
+                <PortfolioVisual title={c.title} />
 
                 <dl className="doclist">
                   {c.tools.map((t) => (
