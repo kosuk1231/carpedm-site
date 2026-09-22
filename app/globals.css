@@ -1438,3 +1438,17 @@ body {
 :focus-visible {
   outline-color: #D96F3C;
 }
+
+
+/* ---------- hero line control ---------- */
+.lede-line {
+  display: block;
+}
+.lede-line-strong {
+  white-space: nowrap;
+}
+@media (max-width: 760px) {
+  .lede-line-strong {
+    white-space: normal;
+  }
+}
