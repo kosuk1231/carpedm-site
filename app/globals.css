@@ -1252,3 +1252,189 @@ body {
   .facts { grid-template-columns: 1fr; }
   .tool-card.has-link .tool-card-copy { padding-right: 20px; padding-top: 46px; }
 }
+
+
+/* ---------- spring warm personal brand palette ---------- */
+:root {
+  --canvas: #FFF8EE;
+  --card: #FFFDF8;
+  --ink: #2B241E;
+  --body: #5E5348;
+  --muted: #8B7A69;
+  --teal: #5C7A45;
+  --teal-deep: #3F5932;
+  --teal-soft: #EEF3E8;
+  --apricot: #F29A62;
+  --apricot-soft: #FFE3CB;
+  --line: #EADCC9;
+  --error: #B84E3A;
+  --on-teal: #FFFDF8;
+  --on-teal-muted: #DDE7D6;
+}
+
+body {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(242,154,98,.13), transparent 26rem),
+    radial-gradient(circle at 88% 7%, rgba(92,122,69,.09), transparent 24rem),
+    linear-gradient(180deg, #FFFDF7 0%, var(--canvas) 36rem);
+}
+
+.nav {
+  background: rgba(255,253,247,.9);
+  border-bottom-color: rgba(234,220,201,.92);
+}
+
+.kicker span,
+.navlink,
+.hero-primary {
+  background: var(--teal-deep);
+}
+
+.navmenu a:hover {
+  background: var(--teal-soft);
+  color: var(--teal-deep);
+}
+
+.lede em,
+.section-kicker,
+.work small,
+.pair h5,
+.pv-eyebrow,
+.pv-section-label,
+.oc-eyebrow,
+.oc-section-label {
+  color: var(--teal-deep);
+}
+
+.heroside,
+.stat,
+.cta {
+  background: #33402C;
+}
+
+.hero-side-grid strong,
+.stat dd {
+  color: #FFC18D;
+}
+
+.hero-side-label,
+.cta-kicker {
+  color: #C8D7BE;
+}
+
+.hero-short span,
+.hero-side-grid span,
+.cta p {
+  color: #D8E1D2;
+}
+
+.hero-secondary {
+  background: #FFFDF8;
+  border-color: #E6D5BE;
+}
+
+.hero-secondary:hover {
+  border-color: #D6B58E;
+  background: #FFF6E9;
+}
+
+.work,
+.cat,
+.about,
+.table-shell,
+.tool-card {
+  background: #FFFDF8;
+}
+
+.cat[open],
+.tool-card:hover,
+.work:hover {
+  border-color: #D8BE9F;
+}
+
+.cat-index {
+  color: #E47F49;
+}
+
+.cat-meta span,
+.tag {
+  background: #FFF9F1;
+  border-color: #EADCC9;
+}
+
+.pv-case,
+.oc-case {
+  background: linear-gradient(135deg, #F3F6EB 0%, #FFFDF7 54%, #FFF0E1 100%);
+  border-color: #DDD8C3;
+}
+
+.pv-metric,
+.oc-metric,
+.pv-process-step,
+.oc-node,
+.oc-agent,
+.pv-proof,
+.oc-proof {
+  background: rgba(255,253,248,.94);
+  border-color: #E4D8C7;
+}
+
+.pv-metric strong,
+.oc-metric strong,
+.pv-big,
+.oc-brief-time {
+  color: #4E6C3C;
+}
+
+.pv-core,
+.oc-core {
+  border-color: var(--apricot);
+  background: rgba(255,227,203,.65);
+}
+
+.tool-card.has-link {
+  border: 2px solid #F0AE7E;
+  box-shadow: 0 10px 28px rgba(186,111,62,.08);
+}
+
+.tool-card.has-link::before {
+  background: #FFE3CB;
+  color: #A9582E;
+}
+
+.tool-link {
+  background: #F29A62;
+  color: #2B241E;
+  border-top-color: rgba(95,59,35,.09);
+}
+
+.tool-link:hover {
+  background: #F5AD79;
+}
+
+.tool-link-copy small {
+  color: #7B472A;
+}
+
+.tool-link-action {
+  background: #3F5932;
+  color: #FFFDF8;
+}
+
+.common-note {
+  background: #FFF2DE;
+  border-color: #F3C28E;
+}
+
+.cta a {
+  background: #FFC18D;
+  color: #2B241E;
+}
+
+.cta a:hover {
+  background: #FFD0A8;
+}
+
+:focus-visible {
+  outline-color: #D96F3C;
+}
