@@ -552,7 +552,7 @@ export default function Home() {
       <header className="hero">
         <div className="hero-main">
           <p className="kicker"><span>FIELD-BUILT</span> 사회복지 현장의 스마트워크 · AI 전환</p>
-          <h1 className="lede">현장의 문제를<br /><em>작동하는 도구</em>로 바꿉니다.</h1>
+          <h1 className="lede"><span className="lede-line">현장의 문제를</span><span className="lede-line lede-line-strong"><em>작동하는 도구</em>로 바꿉니다.</span></h1>
           <p className="herosub">행사 운영, 업무 자동화, AI, 협업, 홍보까지. 설명으로 끝내지 않고 실제 현장에 넣어 반복해서 쓸 수 있는 시스템을 직접 설계하고 만듭니다.</p>
           <div className="hero-actions">
             <a className="hero-primary" href="#portfolio">실제 만든 것 보기 <b aria-hidden="true">↓</b></a>
