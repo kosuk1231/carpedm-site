@@ -112,6 +112,125 @@ const TOPICS = [
   'AI 도구 활용을 넘어 도구 생성 — 앱스 스크립트·바이브코딩',
 ];
 
+
+const OPENCLAW_METRICS = [
+  { value: '4', label: '역할 기반 에이전트' },
+  { value: '08:30', label: '평일 자동 브리핑' },
+  { value: '1 Vault', label: '공통 지식베이스' },
+  { value: 'Read-only', label: '기본 권한 원칙' },
+];
+
+function OpenClawVisual() {
+  return (
+    <section className="oc-case" aria-label="OpenClaw AI 시스템 시각화">
+      <div className="oc-case-head">
+        <div>
+          <span className="oc-eyebrow">CASE STUDY · PERSONAL AI OPS</span>
+          <h4>AI를 하나 더 쓰는 게 아니라,<br />AI가 일하는 구조를 만들었습니다.</h4>
+          <p>
+            요청은 한 곳으로 받고, 역할에 따라 모델을 나누고, 같은 Obsidian 지식베이스를 읽게 합니다.
+            반복 업무는 로컬 모델과 자동화로 넘기고 원본은 읽기 전용을 기본값으로 둡니다.
+          </p>
+        </div>
+        <div className="oc-metrics">
+          {OPENCLAW_METRICS.map((m) => (
+            <div className="oc-metric" key={m.label}>
+              <strong>{m.value}</strong>
+              <span>{m.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="oc-architecture">
+        <div className="oc-section-label">SYSTEM ARCHITECTURE</div>
+        <div className="oc-flow">
+          <div className="oc-node oc-entry">
+            <span>REMOTE</span>
+            <strong>Telegram</strong>
+            <small>외부에서 요청</small>
+          </div>
+          <div className="oc-arrow" aria-hidden="true">→</div>
+          <div className="oc-node oc-core">
+            <span>ORCHESTRATOR</span>
+            <strong>OpenClaw · main</strong>
+            <small>요청 분류 · 작업 조율</small>
+          </div>
+          <div className="oc-arrow" aria-hidden="true">→</div>
+          <div className="oc-agents">
+            <div className="oc-agent">
+              <span>BUILD</span>
+              <strong>developer</strong>
+              <small>GPT-5.6 Sol</small>
+            </div>
+            <div className="oc-agent">
+              <span>REVIEW</span>
+              <strong>critic</strong>
+              <small>Claude Opus 5</small>
+            </div>
+            <div className="oc-agent">
+              <span>LOCAL</span>
+              <strong>local</strong>
+              <small>Ollama · gemma4-agent</small>
+            </div>
+          </div>
+        </div>
+        <div className="oc-knowledge">
+          <div>
+            <span>KNOWLEDGE BASE</span>
+            <strong>Obsidian Vault</strong>
+          </div>
+          <p>daily · projects · meetings · inbox</p>
+          <b>iCloud sync</b>
+        </div>
+      </div>
+
+      <div className="oc-proof-title">
+        <div>
+          <span className="oc-section-label">HOW IT RUNS</span>
+          <h5>운영 구성을 화면처럼 보여주기</h5>
+        </div>
+        <p>실제 설정을 이해하기 쉽게 단순화한 시각화입니다.</p>
+      </div>
+
+      <div className="oc-proof-grid">
+        <article className="oc-proof">
+          <div className="oc-window-bar"><i /><i /><i /><span>Morning Briefing</span></div>
+          <div className="oc-brief">
+            <div className="oc-brief-time">08:30 <small>MON–FRI</small></div>
+            <div className="oc-check">✓ 오늘의 Daily Note 확인</div>
+            <div className="oc-check">✓ 진행 프로젝트 우선순위</div>
+            <div className="oc-check">✓ 최근 회의의 다음 행동</div>
+            <div className="oc-check muted">○ 필요 시 inbox 확인</div>
+          </div>
+        </article>
+
+        <article className="oc-proof">
+          <div className="oc-window-bar"><i /><i /><i /><span>Obsidian / CarpeDM</span></div>
+          <div className="oc-vault">
+            <div><b>▾</b> CarpeDM</div>
+            <div className="depth">📁 daily</div>
+            <div className="depth">📁 projects</div>
+            <div className="depth">📁 meetings</div>
+            <div className="depth">📁 inbox</div>
+            <div className="depth dim">📁 _templates</div>
+          </div>
+        </article>
+
+        <article className="oc-proof">
+          <div className="oc-window-bar"><i /><i /><i /><span>Sandbox Policy</span></div>
+          <div className="oc-policy">
+            <div><span>Vault</span><b>read-only</b></div>
+            <div><span>Sandbox</span><b>Docker</b></div>
+            <div><span>Local tools</span><b>read · ls · view</b></div>
+            <div><span>원본 수정</span><b className="deny">기본 차단</b></div>
+          </div>
+        </article>
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   return (
     <div className="wrap">
@@ -153,7 +272,7 @@ export default function Home() {
       <section className="sec">
         <h2 className="h2">현장에서 돌아가고 있는 것들</h2>
         <p style={{ margin: '0 0 8px', fontSize: 15, color: 'var(--muted)', maxWidth: '56ch' }}>
-          기획서로 끝난 것은 없습니다. 네 가지 영역에서 실제 행사와 업무에 투입된 도구들입니다.
+          기획서로 끝난 것은 없습니다. 다섯 가지 영역에서 실제 행사와 업무에 투입된 도구들입니다.
         </p>
 
         <div className="cat-list">
@@ -181,6 +300,8 @@ export default function Home() {
                     <p>{c.solve}</p>
                   </div>
                 </div>
+
+                {c.title === 'OpenClaw AI 시스템' && <OpenClawVisual />}
 
                 <dl className="doclist">
                   {c.tools.map((t) => (
@@ -210,7 +331,7 @@ export default function Home() {
         </div>
 
         <p className="common-note">
-          위 도구들은 대부분 구글 시트 하나와 무료 호스팅으로 돌아갑니다. 기관에 그대로 옮겨 붙일 수 있는 이유입니다.
+          현장용 웹 도구들은 대부분 구글 시트와 무료·저비용 호스팅으로 돌아갑니다. 기관에 그대로 옮겨 붙일 수 있는 이유입니다.
         </p>
       </section>
 
