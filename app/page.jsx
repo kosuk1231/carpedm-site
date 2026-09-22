@@ -36,7 +36,8 @@ const QUICK_CATEGORIES = [
   { index: '02', title: '바로 써보기', en: 'TOOLS', desc: '지금 바로 열어볼 수 있는 공개 도구', href: '#tools' },
   { index: '03', title: '의뢰 가능한 프로그램', en: 'PROGRAMS', desc: '강의 · 워크숍 · 컨설팅 · 구축', href: '#programs' },
   { index: '04', title: '현장 기록', en: 'FIELD LOG', desc: '최근 강의와 프로젝트 활동', href: '#fieldlog' },
-  { index: '05', title: '소개', en: 'ABOUT', desc: '현장을 알고 직접 만드는 사람', href: '#about' },
+  { index: '05', title: '실무 노트', en: 'FIELD NOTES', desc: '다시 찾아보는 AI·자동화·현장 운영 기록', href: '#notes' },
+  { index: '06', title: '소개', en: 'ABOUT', desc: '현장을 알고 직접 만드는 사람', href: '#about' },
 ];
 
 const CATEGORIES = [
@@ -197,6 +198,65 @@ const FIELD_LOG = [
   { type: 'LECTURE', year: '2026', place: '4·16재단', title: '스마트워크 · 생성형 AI 활용', detail: '현장 실무 중심 교육' },
   { type: 'LECTURE', year: '2026', place: '한국타이어나눔재단 후원 지역아동센터', title: '스마트워크 · 생성형 AI 활용', detail: '3회 교육' },
   { type: 'PROJECT', year: '2026', place: '서울특별시사회복지사협회 40주년', title: '기념행사 미디어·디지털 운영', detail: '기념 영상 · SNS 인증 · 포토 이벤트 등 27건' },
+];
+
+
+const FIELD_NOTES = [
+  {
+    no: '01',
+    category: 'AI',
+    title: '사회복지기관에서 AI를 도입할 때 먼저 정할 것',
+    desc: '모델을 고르기 전에 어떤 업무를 맡기고, 어떤 자료까지 읽게 할지 역할과 권한부터 정리합니다.',
+    tags: ['AI 운영', '권한 설계', '현장 적용'],
+  },
+  {
+    no: '02',
+    category: 'AUTOMATION',
+    title: '한 번 입력한 데이터를 문서와 발송까지 연결하기',
+    desc: 'Spreadsheet를 기준으로 Apps Script가 DOCX·PDF를 만들고 이메일·알림톡까지 보내는 자동화 흐름을 정리합니다.',
+    tags: ['Apps Script', 'DOCX·PDF', '알림톡'],
+  },
+  {
+    no: '03',
+    category: 'FIELD OPS',
+    title: '1,500명 행사를 종이 없이 운영할 때 필요한 것',
+    desc: '사전접수, 현장 체크인, 인증, 스태프 화면, 통계를 하나의 흐름으로 묶을 때 놓치기 쉬운 지점을 기록합니다.',
+    tags: ['행사 운영', '접수', '현장 시스템'],
+  },
+  {
+    no: '04',
+    category: 'SMART WORK',
+    title: '좋은 자동화보다 인수인계가 쉬운 자동화',
+    desc: '담당자가 바뀌어도 유지되는 구조를 만들기 위해 시트, 권한, 문서 규칙, 운영 화면을 어떻게 단순화하는지 다룹니다.',
+    tags: ['스마트워크', '인수인계', '업무 설계'],
+  },
+];
+
+const FAQS = [
+  {
+    q: '강의와 컨설팅·구축은 어떻게 다른가요?',
+    a: '강의는 개념과 사례를 이해하고 실습하는 데 초점을 둡니다. 컨설팅은 기관의 실제 업무 흐름을 함께 진단하고 적용안을 설계하며, 구축은 필요한 웹도구·자동화·운영 화면을 실제로 만들어 적용하는 단계까지 포함합니다.',
+  },
+  {
+    q: '비개발자도 AI·Apps Script 실습에 참여할 수 있나요?',
+    a: '가능합니다. 코드를 외우는 방식보다 반복 업무를 작은 단계로 나누고 AI와 함께 만드는 방식으로 진행합니다. 참여자의 숙련도에 따라 예제와 실습 범위를 조정합니다.',
+  },
+  {
+    q: '기관에서 쓰는 실제 서식이나 업무를 가지고 실습할 수 있나요?',
+    a: '가능하지만 개인정보나 민감정보는 제거한 예시 자료를 권장합니다. 실제 적용이 필요한 경우 권한과 데이터 범위를 먼저 확인한 뒤 별도 컨설팅·구축 단계에서 다룹니다.',
+  },
+  {
+    q: '온라인 교육이나 원격 컨설팅도 가능한가요?',
+    a: '가능합니다. 다만 계정 설정, 현장 운영, 여러 사람이 동시에 사용하는 도구 구축처럼 환경 확인이 중요한 경우에는 오프라인 또는 혼합 방식이 더 적합할 수 있습니다.',
+  },
+  {
+    q: '교육 후에도 만든 도구를 계속 사용할 수 있나요?',
+    a: '가능한 한 담당자가 직접 관리할 수 있는 구조를 우선합니다. Google Sheets, Apps Script, 브라우저 기반 도구처럼 기관이 이해하고 인수인계하기 쉬운 방식을 선호합니다.',
+  },
+  {
+    q: '비용은 어떻게 정해지나요?',
+    a: '강의 시간, 참여 인원, 준비가 필요한 실습 수준, 컨설팅 범위, 실제 구축 여부에 따라 달라집니다. 문의 내용을 확인한 뒤 필요한 범위만 제안하는 방식으로 진행합니다.',
+  },
 ];
 
 const BIZ = [
@@ -656,6 +716,7 @@ export default function Home() {
           <a href="#tools">바로 써보기</a>
           <a href="#programs">의뢰 가능한 프로그램</a>
           <a href="#fieldlog">현장 기록</a>
+          <a href="#notes">실무 노트</a>
           <a href="#about">소개</a>
         </div>
         <a className="navlink" href="mailto:hello@carpedm.kr">
@@ -898,6 +959,71 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="sec notes-section" id="notes">
+        <div className="section-head">
+          <div>
+            <span className="section-kicker">FIELD NOTES</span>
+            <h2 className="h2">다시 찾아보는 실무 노트</h2>
+          </div>
+          <p>강의에서 지나간 내용과 실제 구축 과정에서 배운 것을 AI·자동화·스마트워크·현장 운영 주제로 짧게 축적합니다.</p>
+        </div>
+
+        <div className="notes-intro">
+          <div>
+            <span>ARCHIVE PRINCIPLE</span>
+            <h3>도구 이름보다<br />다시 쓸 수 있는 방법을 남깁니다.</h3>
+          </div>
+          <ul>
+            <li><b>현장에서 시작</b><span>실제 반복 업무와 운영 문제에서 출발합니다.</span></li>
+            <li><b>작게 검증</b><span>바로 써보고 수정할 수 있는 크기로 만듭니다.</span></li>
+            <li><b>연결해 축적</b><span>개인의 요령을 조직이 다시 쓰는 구조로 남깁니다.</span></li>
+          </ul>
+        </div>
+
+        <div className="notes-grid">
+          {FIELD_NOTES.map((note) => (
+            <article className="note-card" key={note.no}>
+              <div className="note-card-meta">
+                <span>{note.no}</span>
+                <small>{note.category}</small>
+              </div>
+              <h3>{note.title}</h3>
+              <p>{note.desc}</p>
+              <div className="note-tags">
+                {note.tags.map((tag) => <span key={tag}>{tag}</span>)}
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <p className="notes-roadmap">
+          <b>다음 단계</b>
+          노트가 쌓이면 주제·자료·영상·도구를 한 번에 찾을 수 있는 검색형 아카이브로 확장합니다.
+        </p>
+      </section>
+
+      <section className="sec faq-section" id="faq">
+        <div className="section-head">
+          <div>
+            <span className="section-kicker">FAQ</span>
+            <h2 className="h2">의뢰 전에 자주 묻는 것</h2>
+          </div>
+          <p>문의폼을 만들기 전, 강의·컨설팅·구축 방식에서 자주 생기는 질문부터 정리했습니다.</p>
+        </div>
+        <div className="faq-list">
+          {FAQS.map((item, i) => (
+            <details className="faq-item" key={item.q}>
+              <summary>
+                <span className="faq-no">{String(i + 1).padStart(2, '0')}</span>
+                <strong>{item.q}</strong>
+                <b aria-hidden="true">+</b>
+              </summary>
+              <p>{item.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
       <section className="sec track-record" id="record">
         <div className="section-head">
           <div>
@@ -999,7 +1125,7 @@ export default function Home() {
 
       <footer className="foot">
         <span>CARPEDM 카르페디엠</span>
-        <span className="foot-map">만든 것 · 바로 써보기 · 의뢰 가능한 프로그램 · 현장 기록 · 소개</span>
+        <span className="foot-map">만든 것 · 바로 써보기 · 의뢰 가능한 프로그램 · 현장 기록 · 실무 노트 · 소개</span>
         <Link href="/admin" className="footlink mono">관리자</Link>
       </footer>
     </div>
