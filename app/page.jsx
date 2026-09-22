@@ -1,10 +1,42 @@
 import Link from 'next/link';
 
 const WORK = [
-  { ko: '스마트워크', en: 'SMART WORK', desc: '구글 워크스페이스와 자동화로 반복 업무를 걷어냅니다. 도구 소개에서 끝나지 않고 기관의 실제 서식과 결재 흐름에 맞춰 붙입니다.' },
-  { ko: '인공지능 활용', en: 'AX', desc: '생성형 AI를 업무에 앉히는 방법. 프롬프트 요령을 넘어 기관 문서 규칙을 학습시킨 전용 도구를 함께 만듭니다.' },
-  { ko: '디지털 전환', en: 'DX', desc: '종이와 엑셀에 흩어진 업무를 하나의 시스템으로 옮깁니다. 신청·집계·통계까지 이어지는 구조를 설계하고 구축합니다.' },
-  { ko: '영상과 홍보', en: 'MEDIA', desc: '촬영 장비 없이 만드는 기관 홍보 영상, 카드뉴스, 행사 기록. 담당자가 혼자서도 이어갈 수 있는 수준으로 남깁니다.' },
+  {
+    index: '01',
+    ko: '스마트워크',
+    en: 'SMART WORK',
+    desc: '반복되는 업무와 협업 흐름을 정리하고, 기관이 실제로 계속 사용할 수 있는 업무환경을 만듭니다.',
+    points: ['Google Workspace · Microsoft 365', '문서·회의·신청 흐름 개선', '기관 맞춤 업무환경 설계'],
+  },
+  {
+    index: '02',
+    ko: 'AI 활용',
+    en: 'AI · VIBE CODING',
+    desc: 'ChatGPT·Claude를 업무에 적용하고, 필요한 경우 AI로 작은 업무도구까지 직접 만드는 방법을 함께 다룹니다.',
+    points: ['생성형 AI 실무 적용', '업무용 프롬프트·전용 도구', '바이브코딩 · 프로토타입'],
+  },
+  {
+    index: '03',
+    ko: '업무 자동화',
+    en: 'AUTOMATION',
+    desc: '한 번 입력한 데이터를 신청·집계에서 문서 생성과 발송까지 연결해 복사·붙여넣기 업무를 줄입니다.',
+    points: ['Spreadsheet · Apps Script', 'DOCX · PDF 자동 생성', 'Email · 카카오 알림톡 발송'],
+  },
+  {
+    index: '04',
+    ko: '홍보·행사 운영',
+    en: 'MEDIA · EVENT OPS',
+    desc: '콘텐츠 제작부터 대규모 행사 신청·접수·인증·통계까지 현장에서 바로 돌아가는 방식으로 설계합니다.',
+    points: ['영상 · 숏폼 · 카드뉴스', '신청 · 현장접수 · 인증', '행사 운영 시스템 구축'],
+  },
+];
+
+const QUICK_CATEGORIES = [
+  { index: '01', title: '만든 것', en: 'WORK', desc: '실제 현장에 투입한 시스템과 운영 사례', href: '#portfolio' },
+  { index: '02', title: '바로 써보기', en: 'TOOLS', desc: '지금 바로 열어볼 수 있는 공개 도구', href: '#tools' },
+  { index: '03', title: '의뢰 가능한 프로그램', en: 'PROGRAMS', desc: '강의 · 워크숍 · 컨설팅 · 구축', href: '#programs' },
+  { index: '04', title: '현장 기록', en: 'FIELD LOG', desc: '최근 강의와 프로젝트 활동', href: '#fieldlog' },
+  { index: '05', title: '소개', en: 'ABOUT', desc: '현장을 알고 직접 만드는 사람', href: '#about' },
 ];
 
 const CATEGORIES = [
@@ -620,11 +652,11 @@ export default function Home() {
           <span>FIELD-BUILT DIGITAL WORK</span>
         </Link>
         <div className="navmenu">
-          <a href="#portfolio">WORK</a>
-          <a href="#tools">TOOLS</a>
-          <a href="#programs">PROGRAMS</a>
-          <a href="#fieldlog">FIELD LOG</a>
-          <a href="#about">ABOUT</a>
+          <a href="#portfolio">만든 것</a>
+          <a href="#tools">바로 써보기</a>
+          <a href="#programs">의뢰 가능한 프로그램</a>
+          <a href="#fieldlog">현장 기록</a>
+          <a href="#about">소개</a>
         </div>
         <a className="navlink" href="mailto:hello@carpedm.kr">
           <span>문의하기</span><b aria-hidden="true">↗</b>
@@ -656,14 +688,53 @@ export default function Home() {
         </aside>
       </header>
 
-      <section className="capability-strip" aria-label="주요 역량">
-        {WORK.map((w) => (
-          <article key={w.en}>
-            <small>{w.en}</small>
-            <strong>{w.ko}</strong>
-            <p>{w.desc}</p>
-          </article>
-        ))}
+      <section className="sec service-overview" id="services">
+        <div className="section-head service-head">
+          <div>
+            <span className="section-kicker">WHAT I CAN HELP WITH</span>
+            <h2 className="h2">어떤 도움을 받을 수 있나요?</h2>
+          </div>
+          <p>강의로 끝낼 수도 있고, 실습 워크숍·컨설팅·시스템 구축까지 이어갈 수도 있습니다. 필요한 깊이에 맞춰 구성합니다.</p>
+        </div>
+        <div className="service-grid">
+          {WORK.map((w) => (
+            <article className="service-card" key={w.index}>
+              <div className="service-card-top">
+                <span className="service-index">{w.index}</span>
+                <small>{w.en}</small>
+              </div>
+              <h3>{w.ko}</h3>
+              <p>{w.desc}</p>
+              <ul>
+                {w.points.map((point) => <li key={point}>{point}</li>)}
+              </ul>
+              <a href="#programs"><span>관련 프로그램 보기</span><b aria-hidden="true">↘</b></a>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="sec category-section" aria-label="페이지 카테고리">
+        <div className="section-head compact-head">
+          <div>
+            <span className="section-kicker">EXPLORE CARPEDM</span>
+            <h2 className="h2">원하는 내용을 바로 찾아보세요.</h2>
+          </div>
+          <p>처음 방문해도 무엇을 볼 수 있는지 한눈에 알 수 있도록 주요 내용을 카드로 정리했습니다.</p>
+        </div>
+        <div className="category-card-grid">
+          {QUICK_CATEGORIES.map((item) => (
+            <a className="category-card" href={item.href} key={item.index}>
+              <div className="category-card-meta">
+                <span>{item.index}</span>
+                <small>{item.en}</small>
+              </div>
+              <h3>{item.title}</h3>
+              <p>{item.desc}</p>
+              <b aria-hidden="true">↘</b>
+            </a>
+          ))}
+        </div>
       </section>
 
       <section className="sec" id="portfolio">
@@ -928,7 +999,7 @@ export default function Home() {
 
       <footer className="foot">
         <span>CARPEDM 카르페디엠</span>
-        <span className="foot-map">WORK · TOOLS · PROGRAMS · FIELD LOG · ABOUT</span>
+        <span className="foot-map">만든 것 · 바로 써보기 · 의뢰 가능한 프로그램 · 현장 기록 · 소개</span>
         <Link href="/admin" className="footlink mono">관리자</Link>
       </footer>
     </div>
