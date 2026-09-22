@@ -1452,3 +1452,37 @@ body {
     white-space: normal;
   }
 }
+
+
+/* ---------- hero overflow hotfix ---------- */
+.hero {
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 32px;
+}
+.hero-main {
+  max-width: none;
+  min-width: 0;
+}
+.lede {
+  font-size: clamp(46px, 5.2vw, 68px);
+  line-height: 1.1;
+}
+.lede-line-strong {
+  white-space: nowrap;
+}
+@media (max-width: 1080px) {
+  .hero {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    gap: 34px;
+    padding-top: 66px;
+  }
+  .heroside {
+    max-width: 620px;
+  }
+}
+@media (max-width: 760px) {
+  .lede-line-strong {
+    white-space: normal;
+  }
+}
