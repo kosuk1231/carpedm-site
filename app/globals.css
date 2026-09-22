@@ -2408,3 +2408,203 @@ body {
 :focus-visible {
   outline-color: #C96D3B;
 }
+
+
+/* ---------- spring warm olive + apricot balance ---------- */
+:root {
+  --canvas: #FBF6EC;
+  --card: #FFFDF8;
+  --ink: #2D291F;
+  --body: #5E584B;
+  --muted: #8B806E;
+  --teal: #7C8558;
+  --teal-deep: #5E6842;
+  --teal-soft: #EEF1E6;
+  --apricot: #E89A61;
+  --apricot-soft: #FBE4D0;
+  --line: #E7DAC6;
+  --on-teal: #FFFDF8;
+  --on-teal-muted: #E3E8D9;
+}
+
+body {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(232,154,97,.13), transparent 26rem),
+    radial-gradient(circle at 88% 7%, rgba(124,133,88,.11), transparent 24rem),
+    linear-gradient(180deg, #FFFDF9 0%, var(--canvas) 36rem);
+}
+
+.nav {
+  background: rgba(255,253,249,.92);
+  border-bottom-color: rgba(231,218,198,.95);
+}
+.navmenu a:hover {
+  background: #EEF1E6;
+  color: #59623E;
+}
+.navlink,
+.hero-primary,
+.kicker span {
+  background: #5E6842;
+  color: #FFFDF8;
+}
+.navlink:hover,
+.hero-primary:hover {
+  background: #4D5636;
+}
+
+.lede em,
+.section-kicker,
+.work small,
+.pair h5,
+.pv-eyebrow,
+.pv-section-label,
+.oc-eyebrow,
+.oc-section-label {
+  color: #667048;
+}
+
+.heroside,
+.stat,
+.cta {
+  background: #4D563A;
+}
+.hero-side-grid strong,
+.stat dd {
+  color: #FFC08B;
+}
+.hero-side-label,
+.cta-kicker {
+  color: #DDE3D1;
+}
+.hero-short span,
+.hero-side-grid span,
+.cta p {
+  color: #E1E5D8;
+}
+
+.hero-secondary {
+  background: #FFFDF8;
+  border-color: #E6D6BF;
+}
+.hero-secondary:hover {
+  border-color: #C9C7A4;
+  background: #FAFAF2;
+}
+
+/* Case studies: warm ivory base with subtle olive and apricot cues */
+.pv-case,
+.oc-case {
+  background: linear-gradient(135deg, #F4F5EC 0%, #FFFDF9 54%, #FFF0E2 100%);
+  border-color: #E2DBC8;
+}
+.pv-metric,
+.oc-metric,
+.pv-process-step,
+.oc-node,
+.oc-agent,
+.pv-proof,
+.oc-proof {
+  background: rgba(255,253,249,.95);
+  border-color: #E4DDCB;
+}
+.pv-metric strong,
+.oc-metric strong,
+.pv-big,
+.oc-brief-time,
+.program-result span,
+.note-card-meta > small {
+  color: #667048;
+}
+.oc-core,
+.pv-core {
+  border-color: #E89A61;
+  background: rgba(251,228,208,.68);
+}
+
+/* Portfolio live-tool cards: apricot surface + warm olive action */
+.tool-card.has-link {
+  border-color: #EAA272;
+  box-shadow: 0 10px 28px rgba(151,96,52,.08);
+}
+.tool-card.has-link::before {
+  background: #FCE7D5;
+  color: #A45D34;
+}
+.tool-link {
+  background: #ECA069;
+  color: #2D291F;
+  border-top-color: rgba(109,76,44,.10);
+}
+.tool-link:hover {
+  background: #E49158;
+}
+.tool-link-copy small {
+  color: #825033;
+}
+.tool-link-action {
+  background: #5E6842;
+  color: #FFFDF8;
+}
+.tool-link-action:hover {
+  background: #4D5636;
+}
+
+/* Dedicated LIVE TOOLS section */
+.live-tool-status {
+  background: #EEF1E6;
+  color: #5E6842;
+}
+.live-tool-card > a {
+  background: #5E6842;
+  color: #FFFDF8;
+}
+.live-tool-card > a small {
+  color: #E0E5D6;
+}
+.live-tool-card > a:hover {
+  background: #4D5636;
+}
+
+/* Service and navigation cards */
+.service-card:nth-child(2),
+.service-card:nth-child(4) {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(124,133,88,.12), transparent 13rem),
+    linear-gradient(180deg, #FFFDF9 0%, #F5F6ED 100%);
+}
+.service-card:nth-child(even) li::before {
+  background: #7C8558;
+}
+.service-card > a b {
+  background: #5E6842;
+  color: #FFFDF8;
+}
+.category-card > b,
+.footlink:hover {
+  color: #667048;
+}
+
+.tag,
+.cat-meta span {
+  background: #FFF9F1;
+  border-color: #E7DAC6;
+}
+.common-note,
+.notes-roadmap,
+.topic-bank {
+  background: #FFF3E4;
+  border-color: #EDC49B;
+}
+
+.cta a {
+  background: #FFC08B;
+  color: #2D291F;
+}
+.cta a:hover {
+  background: #FFD0A8;
+}
+
+:focus-visible {
+  outline-color: #7C8558;
+}
