@@ -1,10 +1,42 @@
 import Link from 'next/link';
 
 const WORK = [
-  { ko: '스마트워크', en: 'SMART WORK', desc: '구글 워크스페이스와 자동화로 반복 업무를 걷어냅니다. 도구 소개에서 끝나지 않고 기관의 실제 서식과 결재 흐름에 맞춰 붙입니다.' },
-  { ko: '인공지능 활용', en: 'AX', desc: '생성형 AI를 업무에 앉히는 방법. 프롬프트 요령을 넘어 기관 문서 규칙을 학습시킨 전용 도구를 함께 만듭니다.' },
-  { ko: '디지털 전환', en: 'DX', desc: '종이와 엑셀에 흩어진 업무를 하나의 시스템으로 옮깁니다. 신청·집계·통계까지 이어지는 구조를 설계하고 구축합니다.' },
-  { ko: '영상과 홍보', en: 'MEDIA', desc: '촬영 장비 없이 만드는 기관 홍보 영상, 카드뉴스, 행사 기록. 담당자가 혼자서도 이어갈 수 있는 수준으로 남깁니다.' },
+  {
+    index: '01',
+    ko: '스마트워크',
+    en: 'SMART WORK',
+    desc: '반복되는 업무와 협업 흐름을 정리하고, 기관이 실제로 계속 사용할 수 있는 업무환경을 만듭니다.',
+    points: ['Google Workspace · Microsoft 365', '문서·회의·신청 흐름 개선', '기관 맞춤 업무환경 설계'],
+  },
+  {
+    index: '02',
+    ko: 'AI 활용',
+    en: 'AI · VIBE CODING',
+    desc: 'ChatGPT·Claude를 업무에 적용하고, 필요한 경우 AI로 작은 업무도구까지 직접 만드는 방법을 함께 다룹니다.',
+    points: ['생성형 AI 실무 적용', '업무용 프롬프트·전용 도구', '바이브코딩 · 프로토타입'],
+  },
+  {
+    index: '03',
+    ko: '업무 자동화',
+    en: 'AUTOMATION',
+    desc: '한 번 입력한 데이터를 신청·집계에서 문서 생성과 발송까지 연결해 복사·붙여넣기 업무를 줄입니다.',
+    points: ['Spreadsheet · Apps Script', 'DOCX · PDF 자동 생성', 'Email · 카카오 알림톡 발송'],
+  },
+  {
+    index: '04',
+    ko: '홍보·행사 운영',
+    en: 'MEDIA · EVENT OPS',
+    desc: '콘텐츠 제작부터 대규모 행사 신청·접수·인증·통계까지 현장에서 바로 돌아가는 방식으로 설계합니다.',
+    points: ['영상 · 숏폼 · 카드뉴스', '신청 · 현장접수 · 인증', '행사 운영 시스템 구축'],
+  },
+];
+
+const QUICK_CATEGORIES = [
+  { index: '01', title: '만든 것', en: 'WORK', desc: '실제 현장에 투입한 시스템과 운영 사례', href: '#portfolio' },
+  { index: '02', title: '바로 써보기', en: 'TOOLS', desc: '지금 바로 열어볼 수 있는 공개 도구', href: '#tools' },
+  { index: '03', title: '의뢰 가능한 프로그램', en: 'PROGRAMS', desc: '강의 · 워크숍 · 컨설팅 · 구축', href: '#programs' },
+  { index: '04', title: '현장 기록', en: 'FIELD LOG', desc: '최근 강의와 프로젝트 활동', href: '#fieldlog' },
+  { index: '05', title: '소개', en: 'ABOUT', desc: '현장을 알고 직접 만드는 사람', href: '#about' },
 ];
 
 const CATEGORIES = [
@@ -85,6 +117,86 @@ const CATEGORIES = [
     ],
     stack: ['Next.js', 'Supabase', 'Google Drive API', 'Canva', 'Vrew', 'CapCut', 'Vercel'],
   },
+];
+
+
+const PROGRAMS = [
+  {
+    index: '01',
+    type: '강의 · 실습 워크숍',
+    title: '생성형 AI 실무 · 바이브코딩',
+    desc: 'ChatGPT·Claude를 업무에 적용하는 데서 끝나지 않고, 반복 업무를 해결하는 작은 도구를 직접 만드는 흐름까지 다룹니다.',
+    result: 'AI 활용 구조 · 업무용 도구 프로토타입',
+    tags: ['ChatGPT', 'Claude', '바이브코딩'],
+  },
+  {
+    index: '02',
+    type: '실습 워크숍 · 구축',
+    title: 'Google Apps Script 업무 자동화',
+    desc: '스프레드시트 데이터를 기준으로 신청·집계부터 DOCX·PDF 생성, 이메일·카카오 알림톡 발송까지 한 흐름으로 연결합니다.',
+    result: 'Spreadsheet → 문서 → 발송 자동화',
+    tags: ['Apps Script', 'DOCX·PDF', 'Email·알림톡'],
+  },
+  {
+    index: '03',
+    type: '교육 · 컨설팅',
+    title: '스마트워크 · 디지털 전환',
+    desc: 'Google Workspace·Microsoft 365와 협업 도구를 기관의 실제 서식, 결재, 인수인계 흐름에 맞춰 적용합니다.',
+    result: '업무진단 · 적용안 · 정착 구조',
+    tags: ['Google Workspace', 'Microsoft 365', 'DX'],
+  },
+  {
+    index: '04',
+    type: '강의 · 콘텐츠 실습',
+    title: '기관 홍보 콘텐츠 · 숏폼',
+    desc: 'Canva·Vrew·CapCut·Suno 등 접근 가능한 도구를 조합해 담당자가 혼자서도 이어갈 수 있는 제작 방식을 익힙니다.',
+    result: '영상·숏폼 제작 워크플로',
+    tags: ['Canva', 'Vrew', 'CapCut'],
+  },
+  {
+    index: '05',
+    type: '컨설팅 · 시스템 구축',
+    title: '행사 디지털 운영',
+    desc: '사전신청, 알림, 현장 접수, 인증, 스태프 운영, 추첨, 통계를 하나의 행사 운영 시스템으로 설계합니다.',
+    result: '행사별 운영 흐름 · 현장 도구',
+    tags: ['접수', '알림톡', '현장 운영'],
+  },
+];
+
+const LIVE_TOOLS = [
+  {
+    name: '우모가',
+    en: 'SCHEDULE',
+    url: 'https://schedule.carpedm.kr',
+    host: 'schedule.carpedm.kr',
+    desc: '여러 사람의 가능한 시간을 한 화면에서 겹쳐 보는 일정 조율 도구. 로그인 없이 링크 하나로 참여합니다.',
+    action: '일정 조율 시작하기',
+  },
+  {
+    name: '모담',
+    en: 'BOARD',
+    url: 'https://board.carpedm.kr',
+    host: 'board.carpedm.kr',
+    desc: '의견·질문을 카드로 모으는 참여 보드. 강의장 질문 수집과 회의 의견 정리에 바로 사용할 수 있습니다.',
+    action: '보드 열기',
+  },
+  {
+    name: 'PDF Tools',
+    en: 'PDF',
+    url: 'https://pdf.carpedm.kr',
+    host: 'pdf.carpedm.kr',
+    desc: '병합·분할·회전·압축·PPTX/JPG 변환 등을 브라우저 안에서 처리합니다. 파일을 별도 서버에 올리지 않습니다.',
+    action: 'PDF 도구 사용하기',
+  },
+];
+
+const FIELD_LOG = [
+  { type: 'PROJECT', year: '2026', place: '2026 서울사회복지사 등반대회', title: '1,500명 행사 운영 시스템', detail: '사전접수 1,470명 · 현장 접수 · 인증 · 스태프 운영' },
+  { type: 'LECTURE', year: '2026', place: '강원도사회복지사협회 보수교육', title: 'AI 도구 활용을 넘어 도구 생성', detail: 'Google Apps Script 업무 자동화' },
+  { type: 'LECTURE', year: '2026', place: '고양시덕양행신 대학생 봉사단', title: 'AI로 만드는 기관 홍보 영상·숏폼', detail: '실습형 콘텐츠 제작 교육' },
+  { type: 'LECTURE', year: '2026', place: '4·16재단', title: '스마트워크 · 생성형 AI 활용', detail: '현장 실무 중심 교육' },
+  { type: 'LECTURE', year: '2026', place: '한국타이어나눔재단 후원 지역아동센터', title: '스마트워크 · 생성형 AI 활용', detail: '3회 교육' },
+  { type: 'PROJECT', year: '2026', place: '서울특별시사회복지사협회 40주년', title: '기념행사 미디어·디지털 운영', detail: '기념 영상 · SNS 인증 · 포토 이벤트 등 27건' },
 ];
 
 const BIZ = [
@@ -540,8 +652,10 @@ export default function Home() {
           <span>FIELD-BUILT DIGITAL WORK</span>
         </Link>
         <div className="navmenu">
-          <a href="#portfolio">포트폴리오</a>
-          <a href="#lecture">강의·컨설팅</a>
+          <a href="#portfolio">만든 것</a>
+          <a href="#tools">바로 써보기</a>
+          <a href="#programs">의뢰 가능한 프로그램</a>
+          <a href="#fieldlog">현장 기록</a>
           <a href="#about">소개</a>
         </div>
         <a className="navlink" href="mailto:hello@carpedm.kr">
@@ -555,12 +669,12 @@ export default function Home() {
           <h1 className="lede"><span className="lede-line">현장의 문제를</span><span className="lede-line lede-line-strong"><em>작동하는 도구</em>로 바꿉니다.</span></h1>
           <p className="herosub">행사 운영, 업무 자동화, AI, 협업, 홍보까지. 설명으로 끝내지 않고 실제 현장에 넣어 반복해서 쓸 수 있는 시스템을 직접 설계하고 만듭니다.</p>
           <div className="hero-actions">
-            <a className="hero-primary" href="#portfolio">실제 만든 것 보기 <b aria-hidden="true">↓</b></a>
-            <a className="hero-secondary" href="mailto:hello@carpedm.kr">강의·컨설팅 문의</a>
+            <a className="hero-primary" href="#portfolio">대표 작업 보기 <b aria-hidden="true">↓</b></a>
+            <a className="hero-secondary" href="#programs">강의·컨설팅 보기</a>
           </div>
         </div>
         <aside className="heroside">
-          <div className="hero-side-label">FIELD NOTES · 2026</div>
+          <div className="hero-side-label">PROOF POINTS · 2026</div>
           <div className="hero-side-grid">
             <div><strong>500+</strong><span>전국 방문 기관</span></div>
             <div><strong>63</strong><span>3년 동행 기관</span></div>
@@ -574,21 +688,51 @@ export default function Home() {
         </aside>
       </header>
 
-      <section className="sec" id="lecture">
-        <div className="section-head">
+      <section className="sec service-overview" id="services">
+        <div className="section-head service-head">
           <div>
-            <span className="section-kicker">WHAT I TEACH</span>
-            <h2 className="h2">강의와 컨설팅</h2>
+            <span className="section-kicker">WHAT I CAN HELP WITH</span>
+            <h2 className="h2">어떤 도움을 받을 수 있나요?</h2>
           </div>
-          <p>네 가지 영역에서 현장의 문제를 함께 풀고, 바로 쓸 수 있는 도구까지 만듭니다.</p>
+          <p>강의로 끝낼 수도 있고, 실습 워크숍·컨설팅·시스템 구축까지 이어갈 수도 있습니다. 필요한 깊이에 맞춰 구성합니다.</p>
         </div>
-        <div className="workgrid">
+        <div className="service-grid">
           {WORK.map((w) => (
-            <div className="work" key={w.en}>
-              <small>{w.en}</small>
+            <article className="service-card" key={w.index}>
+              <div className="service-card-top">
+                <span className="service-index">{w.index}</span>
+                <small>{w.en}</small>
+              </div>
               <h3>{w.ko}</h3>
               <p>{w.desc}</p>
-            </div>
+              <ul>
+                {w.points.map((point) => <li key={point}>{point}</li>)}
+              </ul>
+              <a href="#programs"><span>관련 프로그램 보기</span><b aria-hidden="true">↘</b></a>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="sec category-section" aria-label="페이지 카테고리">
+        <div className="section-head compact-head">
+          <div>
+            <span className="section-kicker">EXPLORE CARPEDM</span>
+            <h2 className="h2">원하는 내용을 바로 찾아보세요.</h2>
+          </div>
+          <p>처음 방문해도 무엇을 볼 수 있는지 한눈에 알 수 있도록 주요 내용을 카드로 정리했습니다.</p>
+        </div>
+        <div className="category-card-grid">
+          {QUICK_CATEGORIES.map((item) => (
+            <a className="category-card" href={item.href} key={item.index}>
+              <div className="category-card-meta">
+                <span>{item.index}</span>
+                <small>{item.en}</small>
+              </div>
+              <h3>{item.title}</h3>
+              <p>{item.desc}</p>
+              <b aria-hidden="true">↘</b>
+            </a>
           ))}
         </div>
       </section>
@@ -597,9 +741,9 @@ export default function Home() {
         <div className="section-head portfolio-head">
           <div>
             <span className="section-kicker">SELECTED WORK</span>
-            <h2 className="h2">현장에서 돌아가고 있는 것들</h2>
+            <h2 className="h2">실제로 만든 것부터 보여드립니다.</h2>
           </div>
-          <p>기획서로 끝난 것은 없습니다. 다섯 가지 영역에서 실제 행사와 업무에 투입된 도구와 운영 구조입니다.</p>
+          <p>기획안이 아니라 현장에 투입된 시스템과 도구입니다. 문제, 해결 방식, 운영 구조, 기술 스택까지 함께 보여드립니다.</p>
         </div>
 
         <div className="cat-list">
@@ -658,87 +802,170 @@ export default function Home() {
                 </div>
 
                 <div className="stack">
-                  {c.stack.map((s) => <span className="tag" key={s}>{s}</span>)}
+                  {c.stack.map((tech) => <span className="tag" key={tech}>{tech}</span>)}
                 </div>
               </div>
             </details>
           ))}
         </div>
-
-        <p className="common-note">
-          현장용 웹 도구들은 대부분 구글 시트와 무료·저비용 호스팅으로 돌아갑니다. 기관에 그대로 옮겨 붙일 수 있는 이유입니다.
-        </p>
       </section>
 
-      <section className="sec track-record">
+      <section className="sec tools-section" id="tools">
+        <div className="section-head">
+          <div>
+            <span className="section-kicker">LIVE TOOLS</span>
+            <h2 className="h2">설명보다, 직접 써보세요.</h2>
+          </div>
+          <p>강의와 현장에서 필요해서 만든 도구 중 공개 가능한 것들을 바로 사용할 수 있습니다.</p>
+        </div>
+        <div className="live-tools-grid">
+          {LIVE_TOOLS.map((tool, i) => (
+            <article className="live-tool-card" key={tool.name}>
+              <div className="live-tool-top">
+                <span className="live-tool-index">0{i + 1}</span>
+                <span className="live-tool-status">LIVE</span>
+              </div>
+              <small>{tool.en}</small>
+              <h3>{tool.name}</h3>
+              <p>{tool.desc}</p>
+              <a href={tool.url} target="_blank" rel="noopener noreferrer">
+                <span><b>{tool.action}</b><small className="mono">{tool.host}</small></span>
+                <i aria-hidden="true">↗</i>
+              </a>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="sec programs-section" id="programs">
+        <div className="section-head">
+          <div>
+            <span className="section-kicker">PROGRAMS</span>
+            <h2 className="h2">무엇을 의뢰할 수 있나요?</h2>
+          </div>
+          <p>단순한 도구 소개보다 실제 업무를 바꾸는 데 초점을 둡니다. 강의, 실습 워크숍, 컨설팅, 구축 형태로 조정할 수 있습니다.</p>
+        </div>
+
+        <div className="program-grid">
+          {PROGRAMS.map((program) => (
+            <article className="program-card" key={program.index}>
+              <div className="program-card-head">
+                <span>{program.index}</span>
+                <small>{program.type}</small>
+              </div>
+              <h3>{program.title}</h3>
+              <p>{program.desc}</p>
+              <div className="program-result">
+                <span>RESULT</span>
+                <b>{program.result}</b>
+              </div>
+              <div className="program-tags">
+                {program.tags.map((tag) => <span key={tag}>{tag}</span>)}
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div className="topic-bank">
+          <span className="topic-bank-label">자주 다루는 주제</span>
+          <div>
+            {TOPICS.map((topic) => <span key={topic}>{topic}</span>)}
+          </div>
+        </div>
+      </section>
+
+      <section className="sec fieldlog-section" id="fieldlog">
+        <div className="section-head">
+          <div>
+            <span className="section-kicker">FIELD LOG</span>
+            <h2 className="h2">최근 현장에서 한 일</h2>
+          </div>
+          <p>강의 횟수만 나열하지 않고, 어디에서 어떤 문제를 다뤘는지 최근 활동 중심으로 보여드립니다.</p>
+        </div>
+        <div className="fieldlog-grid">
+          {FIELD_LOG.map((item, i) => (
+            <article className="fieldlog-card" key={`${item.place}-${item.title}`}>
+              <div className="fieldlog-meta">
+                <span>{item.type}</span>
+                <b>{item.year}</b>
+              </div>
+              <div className="fieldlog-no">{String(i + 1).padStart(2, '0')}</div>
+              <p className="fieldlog-place">{item.place}</p>
+              <h3>{item.title}</h3>
+              <p className="fieldlog-detail">{item.detail}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="sec track-record" id="record">
         <div className="section-head">
           <div>
             <span className="section-kicker">TRACK RECORD</span>
-            <h2 className="h2">강의와 컨설팅, 지금까지</h2>
+            <h2 className="h2">숫자와 전체 이력</h2>
           </div>
-          <p>도구를 소개하고 끝나는 방문은 없었습니다. 기관의 서식과 결재 흐름에 맞춰 실제 업무에 붙이는 것까지가 방문이었습니다.</p>
+          <p>최근 활동은 위에서 보여드리고, 전체 사업과 강의 이력은 필요할 때 펼쳐볼 수 있도록 정리했습니다.</p>
         </div>
 
-        <dl className="stats" style={{ marginBottom: 40 }}>
+        <dl className="stats">
           <div className="stat"><dt>강의·컨설팅</dt><dd>연 20회</dd></div>
           <div className="stat"><dt>열매똑똑 동행 기관</dt><dd>63개소</dd></div>
           <div className="stat"><dt>누적 방문 기관</dt><dd>500여 곳</dd></div>
         </dl>
 
-        <h4 className="h3">사업 단위</h4>
-        <div className="table-shell">
-        <table className="rtable">
-          <thead>
-            <tr><th>기간</th><th>사업</th><th>내용</th><th>규모</th></tr>
-          </thead>
-          <tbody>
-            {BIZ.map((b) => (
-              <tr key={b.name}>
-                <td>{b.period}</td>
-                <td><b>{b.name}</b></td>
-                <td>{b.desc}</td>
-                <td>{b.scale}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        </div>
+        <details className="history-details">
+          <summary>
+            <span>
+              <small>ARCHIVE</small>
+              <strong>전체 사업·강의 이력 보기</strong>
+            </span>
+            <b aria-hidden="true">+</b>
+          </summary>
+          <div className="history-body">
+            <h4 className="h3">사업 단위</h4>
+            <div className="table-shell">
+              <table className="rtable">
+                <thead><tr><th>기간</th><th>사업</th><th>내용</th><th>규모</th></tr></thead>
+                <tbody>
+                  {BIZ.map((b) => (
+                    <tr key={b.name}>
+                      <td>{b.period}</td>
+                      <td><b>{b.name}</b></td>
+                      <td>{b.desc}</td>
+                      <td>{b.scale}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-        <h4 className="h3">강의</h4>
-        <div className="table-shell">
-        <table className="rtable">
-          <thead>
-            <tr><th>연도</th><th>주최·대상</th><th>주제</th><th>횟수</th></tr>
-          </thead>
-          <tbody>
-            {LECTURES.map((l, i) => (
-              <tr key={i}>
-                <td>{l.year}</td>
-                <td>{l.host}</td>
-                <td>{l.topic}</td>
-                <td>{l.count}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        </div>
-
-        <h4 className="h3">주요 강의 주제</h4>
-        <ul className="tags">
-          {TOPICS.map((t) => <li className="tag" key={t}>{t}</li>)}
-        </ul>
-        <p style={{ margin: '20px 0 0', fontSize: 14.5, color: 'var(--muted)', maxWidth: '58ch' }}>
-          강의장에서 바로 만들어 보는 실습형으로 진행합니다. 생성형 AI 실습, 숏폼·기관 홍보 영상 제작, 문서·기록 자동화까지 — 참여자가 자기 업무용 도구 하나를 들고 나갑니다.
-        </p>
+            <h4 className="h3">강의</h4>
+            <div className="table-shell">
+              <table className="rtable">
+                <thead><tr><th>연도</th><th>주최·대상</th><th>주제</th><th>횟수</th></tr></thead>
+                <tbody>
+                  {LECTURES.map((l, i) => (
+                    <tr key={i}>
+                      <td>{l.year}</td>
+                      <td>{l.host}</td>
+                      <td>{l.topic}</td>
+                      <td>{l.count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
       </section>
 
       <section className="sec" id="about">
         <div className="section-head">
           <div>
             <span className="section-kicker">ABOUT</span>
-            <h2 className="h2">소개</h2>
+            <h2 className="h2">현장을 알고, 직접 만듭니다.</h2>
           </div>
-          <p>사회복지 현장을 이해하고, 디지털 도구를 직접 만드는 실무자입니다.</p>
+          <p>사회복지 현장을 이해하고, 그 안에서 실제로 사용할 디지털 도구와 운영 구조를 만드는 실무자입니다.</p>
         </div>
         <div className="about">
           <div>
@@ -757,14 +984,14 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="cta">
+      <section className="cta" id="contact">
         <div>
-          <span className="cta-kicker">LET'S BUILD SOMETHING USEFUL</span>
-          <h2>현장에 필요한 도구를<br />함께 만들어볼까요?</h2>
-          <p>기관 상황과 반복되는 업무, 바꾸고 싶은 흐름을 알려 주시면 강의·컨설팅·시스템 구축 중 맞는 방식을 제안합니다.</p>
+          <span className="cta-kicker">CONTACT</span>
+          <h2>문의 폼은 다음 단계에서<br />필요한 항목에 맞춰 설계합니다.</h2>
+          <p>지금은 이메일로 연락할 수 있도록 두고, 말씀해주실 항목을 기준으로 강의·컨설팅·구축 문의 흐름을 별도로 만들겠습니다.</p>
         </div>
         <a href="mailto:hello@carpedm.kr">
-          <span>문의 메일 보내기</span>
+          <span>현재 문의 방법</span>
           <strong>hello@carpedm.kr</strong>
           <b aria-hidden="true">↗</b>
         </a>
@@ -772,6 +999,7 @@ export default function Home() {
 
       <footer className="foot">
         <span>CARPEDM 카르페디엠</span>
+        <span className="foot-map">만든 것 · 바로 써보기 · 의뢰 가능한 프로그램 · 현장 기록 · 소개</span>
         <Link href="/admin" className="footlink mono">관리자</Link>
       </footer>
     </div>
