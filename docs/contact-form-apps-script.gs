@@ -173,7 +173,7 @@ function autoReply_(b, id) {
     '급한 일정이면 이 메일에 바로 회신해 주세요.',
     '',
     '고석우 · 서울특별시사회복지사협회 과장 · 열매똑똑 스마트워크 사업 담당',
-    'https://www.carpedm.kr',
+    'kosuk1231@carpedm.kr · https://www.carpedm.kr',
   ].join('\n');
   MailApp.sendEmail({
     to: b.email,
