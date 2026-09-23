@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 const WORK = [
   {
@@ -762,9 +763,15 @@ export default function Home() {
         <div className="speaker-grid">
           <article className="speaker-card speaker-card-main">
             <div className="speaker-id">
-              <div className="speaker-monogram" aria-hidden="true">
-                <span>KS</span>
-                <small>KO SUKWOO</small>
+              <div className="speaker-photo">
+                <Image
+                  src="/profile/kosukwoo.jpg"
+                  alt="고석우 강사 프로필 사진"
+                  width={440}
+                  height={685}
+                  sizes="(max-width: 680px) 84px, 112px"
+                  priority
+                />
               </div>
               <div>
                 <span className="speaker-label">SOCIAL WORKER · DIGITAL PRACTITIONER</span>
@@ -784,7 +791,16 @@ export default function Home() {
 
             <div className="speaker-links">
               <a href="#programs">의뢰 가능한 프로그램 보기 <b aria-hidden="true">↘</b></a>
-              <a href="#about">상세 경력 보기 <b aria-hidden="true">↓</b></a>
+              <a href="#record">전체 강의·사업 이력 <b aria-hidden="true">↓</b></a>
+            </div>
+
+            <div className="speaker-materials">
+              <div>
+                <span>FOR ORGANIZERS</span>
+                <strong>기관 담당자가 바로 활용할 수 있는 강사 자료를 준비하고 있습니다.</strong>
+                <p>1페이지 강사 프로필 · 공문용 소개문 · 프로그램별 강의계획서 순으로 연결합니다.</p>
+              </div>
+              <span className="speaker-materials-status">PROFILE v5.1 READY</span>
             </div>
           </article>
 
