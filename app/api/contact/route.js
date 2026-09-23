@@ -9,7 +9,7 @@ import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
-const TYPES = ['강의', '실습 워크숍', '컨설팅·진단', '시스템 구축', '기타'];
+const TYPES = ['강의', '실습 워크숍', '컨설팅·진단', '시스템 구축', '행사 운영·온라인 중계', '기타'];
 const METHODS = ['오프라인', '온라인', '미정'];
 
 function clean(v, max) {
@@ -22,6 +22,41 @@ function makeId() {
   const ymd = kst.toISOString().slice(2, 10).replace(/-/g, '');
   const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
   return `CD-${ymd}-${rand}`;
+}
+
+async function notifyAgent(payload) {
+  const url = process.env.CONTACT_AGENT_WEBHOOK;
+  const secret = process.env.CONTACT_AGENT_SECRET;
+  if (!url || !secret) return;
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 3500);
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CARPEDM-Secret': secret,
+      },
+      body: JSON.stringify({
+        event: 'contact.received',
+        mode: 'draft_only',
+        requestedActions: [
+          'summarize_inquiry',
+          'draft_reply',
+          'notify_owner',
+          'suggest_next_steps',
+        ],
+        ...payload,
+      }),
+      cache: 'no-store',
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+  } catch (err) {
+    // 에이전트 연결 실패가 문의 접수 자체를 실패시키면 안 됩니다.
+    console.warn('contact: agent webhook failed', err);
+  }
 }
 
 export async function POST(req) {
@@ -94,7 +129,15 @@ export async function POST(req) {
       console.error('contact: GAS error', res.status, text.slice(0, 300));
       return NextResponse.json({ ok: false, error: '접수 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 502 });
     }
-    return NextResponse.json({ ok: true, id: out.id || id });
+
+    const finalId = out.id || id;
+    await notifyAgent({
+      id: finalId,
+      receivedAt: payload.receivedAt,
+      inquiry: data,
+    });
+
+    return NextResponse.json({ ok: true, id: finalId });
   } catch (err) {
     console.error('contact: fetch failed', err);
     return NextResponse.json({ ok: false, error: '접수 서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 502 });
