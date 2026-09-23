@@ -2820,7 +2820,11 @@ body {
   aspect-ratio: 4 / 5;
   border-radius: 18px;
   overflow: hidden;
-  background: #F3F4EC;
+  background-color: #F3F4EC;
+  background-image: url('/profile/kosukwoo.jpg');
+  background-size: cover;
+  background-position: center 20%;
+  background-repeat: no-repeat;
   border: 1px solid rgba(96,120,69,.18);
 }
 .speaker-photo img {
