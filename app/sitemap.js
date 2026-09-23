@@ -1,4 +1,5 @@
 import { PROGRAMS } from './data/programs';
+import { NOTES } from './data/notes';
 
 const SITE = 'https://www.carpedm.kr';
 
@@ -12,6 +13,12 @@ export default function sitemap() {
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.8,
+    })),
+    ...NOTES.map((n) => ({
+      url: `${SITE}/notes/${n.slug}`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.7,
     })),
   ];
 }
