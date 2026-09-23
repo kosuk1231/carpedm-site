@@ -54,15 +54,6 @@ const SPECTRUM = [
   }
 ];
 
-const QUICK_CATEGORIES = [
-  { index: '01', title: '만든 것', en: 'WORK', desc: '실제 현장에 투입한 시스템과 운영 사례', href: '#portfolio' },
-  { index: '02', title: '바로 써보기', en: 'TOOLS', desc: '지금 바로 열어볼 수 있는 공개 도구', href: '#tools' },
-  { index: '03', title: '의뢰 가능한 프로그램', en: 'PROGRAMS', desc: '강의 · 워크숍 · 컨설팅 · 구축', href: '#programs' },
-  { index: '04', title: '현장 기록', en: 'FIELD LOG', desc: '최근 강의와 프로젝트 활동', href: '#fieldlog' },
-  { index: '05', title: '실무 노트', en: 'FIELD NOTES', desc: '다시 찾아보는 AI·자동화·현장 운영 기록', href: '#notes' },
-  { index: '06', title: '강사 소개', en: 'SPEAKER', desc: '프로필 · 최근 강의 · 현장 경험', href: '#speaker' },
-];
-
 const CATEGORIES = [
   {
     title: '행사 운영',
@@ -239,7 +230,7 @@ const LECTURES = [
   { year: '2026', host: '한국타이어나눔재단 후원 지역아동센터', topic: '스마트워크 · 생성형 AI 활용', count: '3회' },
   { year: '2015 ~ 2017', host: '서울시 사회복지기관', topic: '디지털 리터러시', count: '다수' },
   { year: '2014 ~ 2015', host: 'Microsoft 주최 NGO-Cloud Day', topic: '세션 강의', count: '5회' },
-  { year: '2015 ~ 현재', host: '사회복지관 · 지역아동센터 · 시설 실무자 및 중간관리자', topic: '스마트워크 · 생성형 AI 활용', count: '연 20회 내외' },
+  { year: '2015 ~ 현재', host: '사회복지관 · 지역아동센터 · 시설 실무자 및 중간관리자', topic: '스마트워크 · 생성형 AI 활용', count: '연 20회+' },
 ];
 
 const TOPICS = [
@@ -740,14 +731,6 @@ export default function Home() {
             </div>
 
             <p className="speaker-intro">2010년 사회복지 현장에서 일을 시작해, 2014년부터 서울특별시사회복지사협회에서 근무하고 있습니다. 기관의 스마트워크·디지털 전환·생성형 AI 활용을 지원하면서 실제 업무에 필요한 웹도구와 자동화를 직접 만들고 운영해 왔습니다.</p>
-
-            <div className="speaker-proof-grid">
-              <div><strong>17년차</strong><span>사회복지 현장 경력</span></div>
-              <div><strong>500+</strong><span>방문·컨설팅 기관</span></div>
-              <div><strong>20회+</strong><span>연간 강의·컨설팅</span></div>
-              <div><strong>63개소</strong><span>열매똑똑 3년 동행</span></div>
-            </div>
-
             <div className="speaker-links">
               <a href="#programs">의뢰 가능한 프로그램 보기 <b aria-hidden="true">↘</b></a>
               <a href="#record">전체 강의·사업 이력 <b aria-hidden="true">↓</b></a>
@@ -821,29 +804,6 @@ export default function Home() {
             <p>한 기관과 <b>입문 강의 → 심화 워크숍 → 시스템 구축</b>으로 3년을 이어간 경험이 있습니다(63개소). 강의 뒤에 기관 안에서 실제로 돌아가는 것이 남는 방식입니다.</p>
           </div>
           <Link href="/contact">어디서 시작할지 상담하기 <b aria-hidden="true">→</b></Link>
-        </div>
-      </section>
-
-      <section className="sec category-section" aria-label="페이지 카테고리">
-        <div className="section-head compact-head">
-          <div>
-            <span className="section-kicker">EXPLORE CARPEDM</span>
-            <h2 className="h2">원하는 내용을 바로 찾아보세요.</h2>
-          </div>
-          <p>처음 방문해도 무엇을 볼 수 있는지 한눈에 알 수 있도록 주요 내용을 카드로 정리했습니다.</p>
-        </div>
-        <div className="category-card-grid">
-          {QUICK_CATEGORIES.map((item) => (
-            <a className="category-card" href={item.href} key={item.index}>
-              <div className="category-card-meta">
-                <span>{item.index}</span>
-                <small>{item.en}</small>
-              </div>
-              <h3>{item.title}</h3>
-              <p>{item.desc}</p>
-              <b aria-hidden="true">↘</b>
-            </a>
-          ))}
         </div>
       </section>
 
@@ -1094,21 +1054,15 @@ export default function Home() {
         <div className="section-head">
           <div>
             <span className="section-kicker">TRACK RECORD</span>
-            <h2 className="h2">숫자와 전체 이력</h2>
+            <h2 className="h2">전체 사업·강의 이력</h2>
           </div>
           <div className="spectrum-intro">
-            <p>최근 활동은 위에서 보여드리고, 전체 사업과 강의 이력은 필요할 때 펼쳐볼 수 있도록 정리했습니다.</p>
+            <p>최근 활동은 위에서 보여드리고, 전체 사업과 강의 이력은 필요할 때 펼쳐볼 수 있도록 정리했습니다. 핵심 수치는 상단에서 한 번만 보여드립니다.</p>
             <figure className="kraft-visual">
               <img src="/illust/kraft-04.webp" alt="과장·부장이 먼저 움직이면 — 리더십과 조직 변화" loading="lazy" />
             </figure>
           </div>
         </div>
-
-        <dl className="stats">
-          <div className="stat"><dt>강의·컨설팅</dt><dd>연 20회+</dd></div>
-          <div className="stat"><dt>열매똑똑 동행 기관</dt><dd>63개소</dd></div>
-          <div className="stat"><dt>누적 방문 기관</dt><dd>500+ 기관</dd></div>
-        </dl>
 
         <details className="history-details">
           <summary>
