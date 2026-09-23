@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import CopyButton from './CopyButton';
+import ProfilePdfButton from './ProfilePdfButton';
 import { PROFILE_PDF, SPEAKER_KIT } from '../data/speaker-kit';
 
 function countChars(text) {
@@ -17,14 +18,12 @@ export default function SpeakerKit() {
           <strong>기관 담당자용 강사 자료</strong>
           <p>내부 결재·공문·강의계획서에 바로 쓰실 수 있도록 1페이지 프로필과 소개문을 준비했습니다.</p>
         </div>
-        <a className="speaker-kit-download" href={PROFILE_PDF.href} download={PROFILE_PDF.filename}>
-          <span>
-            <small>PROFILE PDF · {PROFILE_PDF.version} · {PROFILE_PDF.updated}</small>
-            <strong>강사 프로필 PDF 다운로드</strong>
-            <em>{PROFILE_PDF.size}</em>
-          </span>
-          <b aria-hidden="true">↓</b>
-        </a>
+        <ProfilePdfButton
+          filename={PROFILE_PDF.filename}
+          version={PROFILE_PDF.version}
+          updated={PROFILE_PDF.updated}
+          size={PROFILE_PDF.size}
+        />
       </div>
 
       <div className="speaker-kit-list">
