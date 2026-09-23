@@ -38,7 +38,7 @@ const jsonLd = {
   '@type': 'ProfessionalService',
   name: 'CARPEDM 카르페디엠',
   url: SITE,
-  email: 'hello@carpedm.kr',
+  email: 'kosuk1231@carpedm.kr',
   description:
     '사회복지 현장의 스마트워크 · AI 전환 강의와 컨설팅. 행사 운영, 회의·소통, 업무 효율화, 캠페인·홍보 도구 구축.',
   areaServed: '대한민국',
