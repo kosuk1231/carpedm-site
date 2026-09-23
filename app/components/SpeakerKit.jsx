@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import CopyButton from './CopyButton';
 import { PROFILE_PDF, SPEAKER_KIT } from '../data/speaker-kit';
 
@@ -52,7 +53,7 @@ export default function SpeakerKit() {
       </div>
 
       <p className="speaker-kit-note">
-        사진 사용, 강의계획서, 견적이 필요하시면 <a href="#contact">문의</a>에 남겨 주세요. 프로그램별 계획서는 각 <a href="#programs">프로그램 상세</a>에서 확인할 수 있습니다.
+        사진 사용, 강의계획서, 견적이 필요하시면 <Link href="/contact">문의</Link>에 남겨 주세요. 프로그램별 계획서는 각 <a href="#programs">프로그램 상세</a>에서 확인할 수 있습니다.
       </p>
     </div>
   );

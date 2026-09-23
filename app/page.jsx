@@ -1,38 +1,58 @@
 import Link from 'next/link';
 import { PROGRAMS } from './data/programs';
 import SpeakerKit from './components/SpeakerKit';
-import ContactForm from './components/ContactForm';
 
 const PROFILE_PHOTO_DATA = 'data:image/jpeg;base64,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';
-const WORK = [
+
+
+// 스펙트럼 매트릭스: 4영역 × 3단계. 빈 칸 없이 실제 사례로만 채웁니다.
+const SPECTRUM_LEVELS = ['입문', '실무 심화', '구축·운영'];
+const SPECTRUM = [
   {
-    index: '01',
-    ko: '스마트워크',
+    domain: '홍보 · 영상',
+    en: 'MEDIA',
+    cells: [
+      { title: '숏폼·카드뉴스 첫 제작', detail: '스마트폰 촬영 + Canva·Vrew·CapCut. 장비 없이 30초 영상 1개 완성' },
+      { title: '기관 홍보 콘텐츠 워크플로', detail: '사업 소개 영상, 행사 스케치, AI 음악·나레이션. 담당자 혼자 이어가는 월간 제작 루틴' },
+      { title: '캠페인·참여 플랫폼 구축', detail: 'QR 사진 제출·개인정보 동의·서명 수집을 한 페이지로. 결과는 시트·드라이브에 자동 정리' },
+    ],
+  },
+  {
+    domain: '스마트워크',
     en: 'SMART WORK',
-    desc: '반복되는 업무와 협업 흐름을 정리하고, 기관이 실제로 계속 사용할 수 있는 업무환경을 만듭니다.',
-    points: ['Google Workspace · Microsoft 365', '문서·회의·신청 흐름 개선', '기관 맞춤 업무환경 설계'],
+    cells: [
+      { title: 'Google Workspace · Microsoft 365 교육', detail: '비영리 라이선스 신청부터 드라이브·문서·캘린더·Teams 기본 활용까지. 두 플랫폼 모두 가능' },
+      { title: '기관 업무환경 진단·컨설팅', detail: '문서·회의·결재·인수인계 흐름 진단 → 우선순위 적용안 → 정착 점검' },
+      { title: '업무 시스템 구축', detail: '탄력근무·휴가 신청, 일정 조율, 의견 수집 보드 등 기관 전용 웹 도구 제작·운영' },
+    ],
   },
   {
-    index: '02',
-    ko: 'AI 활용',
-    en: 'AI · VIBE CODING',
-    desc: 'ChatGPT·Claude를 업무에 적용하고, 필요한 경우 AI로 작은 업무도구까지 직접 만드는 방법을 함께 다룹니다.',
-    points: ['생성형 AI 실무 적용', '업무용 프롬프트·전용 도구', '바이브코딩 · 프로토타입'],
-  },
-  {
-    index: '03',
-    ko: '업무 자동화',
+    domain: '업무 자동화',
     en: 'AUTOMATION',
-    desc: '한 번 입력한 데이터를 신청·집계에서 문서 생성과 발송까지 연결해 복사·붙여넣기 업무를 줄입니다.',
-    points: ['Spreadsheet · Apps Script', 'DOCX · PDF 자동 생성', 'Email · 카카오 알림톡 발송'],
+    cells: [
+      { title: '폼 → 시트 → 자동 알림', detail: '신청 즉시 접수 확인 메일, 담당자 알림. 코드 없이 시작하는 첫 자동화' },
+      { title: '문서 생성·발송 자동화', detail: 'Apps Script로 시트 데이터 → DOCX·PDF·HWPX 생성 → 이메일·카카오 알림톡 발송' },
+      { title: '행사 운영 시스템 구축', detail: '사전신청·알림·현장 접수·인증·추첨·통계를 한 흐름으로. 1,000명 이상 규모 대응' },
+    ],
   },
   {
-    index: '04',
-    ko: '홍보·행사 운영',
-    en: 'MEDIA · EVENT OPS',
-    desc: '콘텐츠 제작부터 대규모 행사 신청·접수·인증·통계까지 현장에서 바로 돌아가는 방식으로 설계합니다.',
-    points: ['영상 · 숏폼 · 카드뉴스', '신청 · 현장접수 · 인증', '행사 운영 시스템 구축'],
+    domain: '생성형 AI',
+    en: 'AI',
+    cells: [
+      { title: '실무자 AI 활용법', detail: 'ChatGPT·Claude 업무 적용, 기록·문서 작성 프롬프트, 개인정보 다루는 원칙' },
+      { title: '바이브코딩 · 업무 도구 제작', detail: 'AI와 함께 계산기·신청 페이지·체크리스트 같은 작은 도구를 직접 만들어 배포' },
+      { title: 'AI 운영 체계 설계', detail: '역할별 에이전트, 기관 지식베이스 연결, 자동 브리핑. 읽기 전용 권한 원칙으로 안전하게' },
+    ],
   },
+  {
+    domain: '온라인 중계',
+    en: 'LIVE',
+    cells: [
+      { title: '유튜브 라이브 첫 송출', detail: '채널 설정·스트림 키·지연·저작권 음악. 카메라 1대와 노트북으로 시작하는 법' },
+      { title: '다중 화면 중계 운영', detail: 'OBS로 카메라·발표 자료·자막 전환, 발표자 오디오 분리. 세미나·토론회 규모' },
+      { title: '하이브리드 행사 통합 중계', detail: '4시간 이상 장시간 행사를 현장·온라인 동시 운영. 챕터 붙은 아카이브까지 인수인계' },
+    ],
+  }
 ];
 
 const QUICK_CATEGORIES = [
@@ -47,6 +67,8 @@ const QUICK_CATEGORIES = [
 const CATEGORIES = [
   {
     title: '행사 운영',
+    image: '/illust/kraft-09.webp',
+    imageAlt: '출석 서명부에서 시트로 — 현장 접수 데이터가 바로 정리되는 흐름',
     line: '사전접수부터 현장 접수, 인증 이벤트, 스태프 운영, 경품 추첨까지. 행사 하나를 종이 없이 돌립니다.',
     meta: ['최대 1,500명 규모', '반복 사용 시스템 1종', 'DX · 스마트워크'],
     problem: '행사마다 구글 폼을 새로 만들고, 명단을 엑셀로 내려받아 현장에서 종이로 체크합니다. 접수 확인 문자는 수백 통을 손으로 보내고, 인증 이벤트는 종이에 받아 경품 지급이 밀립니다. 스태프 30명이 각자 다른 큐시트를 들고 있습니다.',
@@ -59,11 +81,14 @@ const CATEGORIES = [
       { name: '맞춤 신청 페이지', desc: '구글 폼이 못 하는 것들 — 5분 단위 시간 선점, 정원 도달 시 자동 마감, 회비 납부 등 자격 항목. 프로필 촬영 예약, 공동체 상영 GV(92석), 친선전 등' },
       { name: '경품 추첨기 · 수령 확인 앱', desc: '107명 참가 성과공유회에서 종이 뽑기와 서명지를 대체' },
       { name: '기념행사 통합 운영', desc: '사전등록·스태프 앱·포토 이벤트·SNS 인증까지 외주 없이. 협회 40주년 기념행사' },
+      { name: '유튜브 라이브 중계', desc: '협회 채널 라이브 전 건 직접 운영. 4시간 30분 성과공유회·해커톤을 다중 화면으로 끊김 없이 중계, 챕터 아카이브까지', url: 'https://www.youtube.com/live/QN7K1fK5erQ', urlLabel: 'youtube.com/live' },
     ],
-    stack: ['Next.js', 'Supabase', 'Google Sheets API', 'Google Apps Script', 'Solapi 알림톡', 'Vercel'],
+    stack: ['Next.js', 'Supabase', 'Google Sheets API', 'Google Apps Script', 'Solapi 알림톡', 'Vercel', 'OBS · YouTube Live'],
   },
   {
     title: '회의·소통 운영',
+    image: '/illust/kraft-10.webp',
+    imageAlt: '파일을 풀어주다 — 첨부 대신 링크로 공유',
     line: '날짜 조율, 의견 수집, 위원회 운영. 단톡방에서 흩어지는 것들을 한 화면으로 모읍니다.',
     meta: ['공개 앱 2종', '위원회 상시 운영', '스마트워크 · AX'],
     problem: '회의 날짜 하나 잡으려고 단톡방에 "가능한 날 알려주세요"가 오가고 결국 아무도 정리하지 않습니다. 의견을 모으려면 유료 툴을 쓰거나 포스트잇을 붙이는데, 유료 툴은 기관 결재가 안 나옵니다. 위원회 활동 계획은 설문으로 받고 엑셀로 다시 정리합니다.',
@@ -78,6 +103,8 @@ const CATEGORIES = [
   },
   {
     title: '업무 효율화',
+    image: '/illust/kraft-08.webp',
+    imageAlt: '방식을 바꾼다 — 내 PC 탈출, 클라우드 협업',
     line: '설치 없는 PDF 도구부터 스프레드시트→DOCX·PDF 생성→이메일·알림톡 발송까지. 반복 업무를 한 흐름으로 자동화합니다.',
     meta: ['공개 도구 pdf.carpedm.kr', '앱스 스크립트 자동화 다수', '스마트워크 · AX'],
     problem: 'PDF 하나 합치려고 유료 프로그램을 깔거나 민감한 문서를 외부 사이트에 올립니다. 신청은 구글 폼, 집계는 엑셀, 알림은 문자. 세 군데를 오가며 복사합니다. 회의록·공문은 매번 서식을 열어 같은 자리에 같은 것을 채웁니다.',
@@ -94,6 +121,8 @@ const CATEGORIES = [
   },
   {
     title: 'OpenClaw AI 시스템',
+    image: '/illust/kraft-12.webp',
+    imageAlt: '약속을 정한다 — 디지털 매너와 사용 규칙',
     line: 'Mac mini를 상시 AI 허브로 만들고, 역할이 다른 AI 에이전트와 Obsidian 지식베이스를 하나의 업무 시스템으로 연결했습니다.',
     meta: ['4-Agent AI 운영체계', '평일 08:30 자동 브리핑', '로컬 AI · 멀티에이전트'],
     problem: 'ChatGPT·Claude·로컬 AI를 각각 사용하면 같은 맥락을 반복해서 설명해야 하고, 결과도 여러 서비스와 파일에 흩어집니다. 매일 쌓이는 회의·프로젝트·메모를 AI가 활용하려면 개인정보와 원본 파일을 무분별하게 수정하지 않으면서 지속적으로 읽을 수 있는 구조도 필요했습니다.',
@@ -110,6 +139,8 @@ const CATEGORIES = [
   },
   {
     title: '캠페인·홍보',
+    image: '/illust/kraft-11.webp',
+    imageAlt: '사진 수집과 대량 배포 자동화',
     line: '현장 인증 사진 수집, 서명운동, 기념 영상, 웹 초대장. 촬영 장비 없이 담당자 혼자 이어갈 수 있는 홍보.',
     meta: ['40주년 미디어 산출물 27건', '캠페인 대상 158개소 1,152명', '미디어 · DX'],
     problem: '캠페인 참여 사진을 카톡과 메일로 받으면 정리에 이틀이 걸리고 개인정보 동의를 받을 방법이 없습니다. 행사 영상은 외주를 주면 예산이 없고, 안 주면 아무것도 남지 않습니다.',
@@ -161,6 +192,7 @@ const FIELD_LOG = [
   { type: 'LECTURE', year: '2026', place: '4·16재단', title: '스마트워크 · 생성형 AI 활용', detail: '현장 실무 중심 교육' },
   { type: 'LECTURE', year: '2026', place: '한국타이어나눔재단 후원 지역아동센터', title: '스마트워크 · 생성형 AI 활용', detail: '3회 교육' },
   { type: 'PROJECT', year: '2026', place: '서울특별시사회복지사협회 40주년', title: '기념행사 미디어·디지털 운영', detail: '기념 영상 · SNS 인증 · 포토 이벤트 등 27건' },
+  { type: 'LIVE', year: '2026', place: '열매똑똑 Smart Work 성과공유회 · 해커톤', title: '4시간 30분 하이브리드 유튜브 라이브 중계', detail: '현장 + 온라인 동시 운영 · 챕터 타임라인 아카이브' },
 ];
 
 
@@ -247,6 +279,7 @@ const TOPICS = [
   '예산 없이 시작하는 비영리 라이선스 활용',
   '기관 업무환경 진단과 디지털 전환 컨설팅',
   'AI 도구 활용을 넘어 도구 생성 — 앱스 스크립트·바이브코딩',
+  '기관이 직접 하는 유튜브 라이브 중계 (실습)',
 ];
 
 
@@ -683,16 +716,16 @@ export default function Home() {
           <a href="#notes">실무 노트</a>
           <a href="#speaker">강사 소개</a>
         </div>
-        <a className="navlink" href="#contact">
+        <Link className="navlink" href="/contact">
           <span>문의하기</span><b aria-hidden="true">↗</b>
-        </a>
+        </Link>
       </nav>
 
       <header className="hero">
         <div className="hero-main">
           <p className="kicker"><span>FIELD-BUILT</span> 사회복지 현장의 스마트워크 · AI 전환</p>
           <h1 className="lede"><span className="lede-line">현장의 문제를</span><span className="lede-line lede-line-strong"><em>작동하는 도구</em>로 바꿉니다.</span></h1>
-          <p className="herosub">행사 운영, 업무 자동화, AI, 협업, 홍보까지. 설명으로 끝내지 않고 실제 현장에 넣어 반복해서 쓸 수 있는 시스템을 직접 설계하고 만듭니다.</p>
+          <p className="herosub">입문 교육부터 시스템 구축까지, 홍보·영상·온라인 중계·스마트워크·업무 자동화·AI를 <b>한 사람이 이어서</b> 맡습니다. 설명으로 끝내지 않고 현장에 넣어 반복해서 쓰는 도구를 직접 만듭니다.</p>
           <div className="hero-actions">
             <a className="hero-primary" href="#portfolio">대표 작업 보기 <b aria-hidden="true">↓</b></a>
             <a className="hero-secondary" href="#programs">강의·컨설팅 보기</a>
@@ -724,7 +757,10 @@ export default function Home() {
 
         <div className="speaker-grid">
           <article className="speaker-card speaker-card-main">
-            <div className="speaker-id">
+            <div className="speaker-id has-photo">
+              <div className="speaker-photo">
+                <img src="/profile/kosukwoo-portrait.webp" alt="고석우 강사 프로필 사진" width="448" height="560" loading="lazy" />
+              </div>
               <div>
                 <span className="speaker-label">SOCIAL WORKER · DIGITAL PRACTITIONER</span>
                 <h3>고석우</h3>
@@ -770,29 +806,50 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="sec service-overview" id="services">
+      <section className="sec spectrum-section" id="services">
         <div className="section-head service-head">
           <div>
-            <span className="section-kicker">WHAT I CAN HELP WITH</span>
-            <h2 className="h2">어떤 도움을 받을 수 있나요?</h2>
+            <span className="section-kicker">RANGE · 입문에서 구축까지</span>
+            <h2 className="h2">어느 단계에서 시작해도<br />다음 단계로 이어집니다.</h2>
           </div>
-          <p>강의로 끝낼 수도 있고, 실습 워크숍·컨설팅·시스템 구축까지 이어갈 수도 있습니다. 필요한 깊이에 맞춰 구성합니다.</p>
+          <div className="spectrum-intro">
+            <p>신입 직원 입문 교육과 관리자 컨설팅, 시스템 구축을 같은 사람이 맡습니다. 15칸 모두 현장에서 실제로 해 본 것들입니다 — 우리 기관이 지금 어느 칸에 있는지 찍어 보세요.</p>
+            <figure className="kraft-visual">
+              <img src="/illust/kraft-03.webp" alt="디지털 3단계 — 기반형, 운영형, 확장형" loading="lazy" />
+            </figure>
+          </div>
         </div>
-        <div className="service-grid">
-          {WORK.map((w) => (
-            <article className="service-card" key={w.index}>
-              <div className="service-card-top">
-                <span className="service-index">{w.index}</span>
-                <small>{w.en}</small>
+
+        <div className="spectrum">
+          <div className="spectrum-levels" aria-hidden="true">
+            <span />
+            {SPECTRUM_LEVELS.map((l, i) => (
+              <span key={l}><b>{String(i + 1).padStart(2, '0')}</b>{l}</span>
+            ))}
+          </div>
+          {SPECTRUM.map((col) => (
+            <div className="spectrum-col" key={col.domain}>
+              <div className="spectrum-head">
+                <small>{col.en}</small>
+                <h3>{col.domain}</h3>
               </div>
-              <h3>{w.ko}</h3>
-              <p>{w.desc}</p>
-              <ul>
-                {w.points.map((point) => <li key={point}>{point}</li>)}
-              </ul>
-              <a href="#programs"><span>관련 프로그램 보기</span><b aria-hidden="true">↘</b></a>
-            </article>
+              {col.cells.map((cell, i) => (
+                <div className={`spectrum-cell level-${i + 1}`} key={cell.title}>
+                  <span className="spectrum-level">{SPECTRUM_LEVELS[i]}</span>
+                  <strong>{cell.title}</strong>
+                  <p>{cell.detail}</p>
+                </div>
+              ))}
+            </div>
           ))}
+        </div>
+
+        <div className="spectrum-foot">
+          <div>
+            <span>CONTINUITY</span>
+            <p>한 기관과 <b>입문 강의 → 심화 워크숍 → 시스템 구축</b>으로 3년을 이어간 경험이 있습니다(63개소). 강의 뒤에 기관 안에서 실제로 돌아가는 것이 남는 방식입니다.</p>
+          </div>
+          <Link href="/contact">어디서 시작할지 상담하기 <b aria-hidden="true">→</b></Link>
         </div>
       </section>
 
@@ -854,6 +911,12 @@ export default function Home() {
                     <p>{c.solve}</p>
                   </div>
                 </div>
+
+                {c.image ? (
+                  <figure className="kraft-visual cat-visual">
+                    <img src={c.image} alt={c.imageAlt} loading="lazy" />
+                  </figure>
+                ) : null}
 
                 <PortfolioVisual title={c.title} />
 
@@ -930,7 +993,10 @@ export default function Home() {
 
         <div className="program-grid">
           {PROGRAMS.map((program) => (
-            <Link href={`/programs/${program.slug}`} className="program-card" key={program.slug}>
+            <Link href={`/programs/${program.slug}`} className="program-card has-image" key={program.slug}>
+              {program.image ? (
+                <div className="program-card-visual"><img src={program.image} alt="" loading="lazy" /></div>
+              ) : null}
               <div className="program-card-head">
                 <span>{program.index}</span>
                 <small>{program.type}</small>
@@ -987,7 +1053,12 @@ export default function Home() {
             <span className="section-kicker">FIELD NOTES</span>
             <h2 className="h2">다시 찾아보는 실무 노트</h2>
           </div>
-          <p>강의에서 지나간 내용과 실제 구축 과정에서 배운 것을 AI·자동화·스마트워크·현장 운영 주제로 짧게 축적합니다.</p>
+          <div className="spectrum-intro">
+            <p>강의에서 지나간 내용과 실제 구축 과정에서 배운 것을 AI·자동화·스마트워크·현장 운영 주제로 짧게 축적합니다.</p>
+            <figure className="kraft-visual">
+              <img src="/illust/kraft-05.webp" alt="반복을 없애다 — 자동화" loading="lazy" />
+            </figure>
+          </div>
         </div>
 
         <div className="notes-intro">
@@ -1052,7 +1123,12 @@ export default function Home() {
             <span className="section-kicker">TRACK RECORD</span>
             <h2 className="h2">숫자와 전체 이력</h2>
           </div>
-          <p>최근 활동은 위에서 보여드리고, 전체 사업과 강의 이력은 필요할 때 펼쳐볼 수 있도록 정리했습니다.</p>
+          <div className="spectrum-intro">
+            <p>최근 활동은 위에서 보여드리고, 전체 사업과 강의 이력은 필요할 때 펼쳐볼 수 있도록 정리했습니다.</p>
+            <figure className="kraft-visual">
+              <img src="/illust/kraft-04.webp" alt="과장·부장이 먼저 움직이면 — 리더십과 조직 변화" loading="lazy" />
+            </figure>
+          </div>
         </div>
 
         <dl className="stats">
@@ -1132,38 +1208,17 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="sec contact-section" id="contact">
-        <div className="section-head">
-          <div>
-            <span className="section-kicker">CONTACT</span>
-            <h2 className="h2">강의·컨설팅·구축 문의</h2>
-          </div>
-          <p>일정과 대상, 기대하는 변화만 적어 주셔도 됩니다. 접수되면 확인 메일이 바로 가고, 내용을 보고 영업일 기준 2일 안에 회신드립니다.</p>
+      <section className="cta cta-link" id="contact">
+        <div>
+          <span className="cta-kicker">CONTACT</span>
+          <h2>강의·컨설팅·구축,<br />일정과 인원만 알려 주세요.</h2>
+          <p>문의폼에 남기시면 접수 확인 메일이 바로 가고, 영업일 기준 2일 안에 맞는 구성으로 회신드립니다. 결재용 강사 프로필 PDF는 <a href="#speaker-kit">강사 소개</a>에서 바로 받을 수 있습니다.</p>
         </div>
-        <div className="contact-grid">
-          <aside className="contact-side">
-            <div className="contact-side-block">
-              <span>HOW IT WORKS</span>
-              <ol>
-                <li><b>문의 접수</b><small>폼 제출 즉시 접수 확인 메일</small></li>
-                <li><b>내용 확인·회신</b><small>영업일 2일 내 구성·일정 제안</small></li>
-                <li><b>강의계획서·견적</b><small>내부 결재용 자료 전달</small></li>
-                <li><b>확정·진행</b><small>사전 준비 안내 → 진행 → 결과 공유</small></li>
-              </ol>
-            </div>
-            <div className="contact-side-block">
-              <span>FOR APPROVAL</span>
-              <p>결재용 자료가 먼저 필요하면 <a href="#speaker-kit">강사 프로필 PDF·공문용 소개문</a>을 바로 내려받으세요.</p>
-            </div>
-            <div className="contact-side-block contact-side-mail">
-              <span>EMAIL</span>
-              <a href="mailto:hello@carpedm.kr" className="mono">hello@carpedm.kr</a>
-            </div>
-          </aside>
-          <div className="contact-form-shell">
-            <ContactForm programs={PROGRAMS.map((p) => ({ slug: p.slug, index: p.index, title: p.title }))} />
-          </div>
-        </div>
+        <Link href="/contact">
+          <span>문의폼으로 이동</span>
+          <strong>강의·컨설팅 문의하기</strong>
+          <b aria-hidden="true">→</b>
+        </Link>
       </section>
 
       <footer className="foot">

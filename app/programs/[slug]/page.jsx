@@ -36,7 +36,7 @@ function contactHref(program) {
       : program.type.includes('워크숍')
         ? '실습 워크숍'
         : '강의';
-  return `/?program=${program.slug}&type=${encodeURIComponent(type)}#contact`;
+  return `/contact?program=${program.slug}&type=${encodeURIComponent(type)}`;
 }
 
 export default async function ProgramPage({ params }) {
@@ -74,6 +74,12 @@ export default async function ProgramPage({ params }) {
             <div className="pd-tags">
               {program.tags.map((t) => <span key={t}>{t}</span>)}
             </div>
+            {program.image ? (
+              <figure className="pd-hero-visual">
+                <img src={program.image} alt={program.imageAlt || ''} loading="eager" />
+                <figcaption>《샌드위치 사회복지사 생존기술》 강의 자료에서</figcaption>
+              </figure>
+            ) : null}
           </div>
           <aside className="pd-side">
             <span className="pd-side-label">AT A GLANCE</span>
@@ -145,6 +151,37 @@ export default async function ProgramPage({ params }) {
           </ul>
         </div>
       </section>
+
+      {d.videos ? (
+        <section className="pd-sec">
+          <div className="pd-sec-head">
+            <span className="section-kicker">{program.slug === 'live-streaming' ? 'ON AIR' : 'WORKS'}</span>
+            <h2 className="h2">{program.slug === 'live-streaming' ? '실제 중계 영상' : '직접 만든 영상'}</h2>
+            <p>{d.videosIntro} 재생하면 유튜브에서 불러옵니다.</p>
+          </div>
+          <div className="pd-videos">
+            {d.videos.map((v) => (
+              <figure className={`pd-video${v.kind === 'short' ? ' is-short' : ''}`} key={v.id}>
+                <div className="pd-video-frame">
+                  <iframe
+                    src={`https://www.youtube-nocookie.com/embed/${v.id}`}
+                    title={v.title}
+                    loading="lazy"
+                    allow="accelerometer; encrypted-media; picture-in-picture; web-share"
+                    allowFullScreen
+                    referrerPolicy="strict-origin-when-cross-origin"
+                  />
+                </div>
+                <figcaption>
+                  <strong>{v.title}</strong>
+                  <span>{v.note}</span>
+                  <a href={v.kind === 'short' ? `https://www.youtube.com/shorts/${v.id}` : `https://www.youtube.com/watch?v=${v.id}`} target="_blank" rel="noopener noreferrer">유튜브에서 보기 ↗</a>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="pd-sec pd-two">
         <div>
