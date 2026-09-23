@@ -771,6 +771,7 @@ export default function Home() {
                   height={685}
                   sizes="(max-width: 680px) 84px, 112px"
                   priority
+                  unoptimized
                 />
               </div>
               <div>
