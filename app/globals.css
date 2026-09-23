@@ -2634,10 +2634,7 @@ body {
     linear-gradient(180deg, #FFFDF8 0%, #FAF7EE 100%);
 }
 .speaker-id {
-  display: grid;
-  grid-template-columns: 112px 1fr;
-  gap: 22px;
-  align-items: center;
+  display: block;
 }
 .speaker-monogram {
   width: 112px;
@@ -2799,12 +2796,6 @@ body {
   }
 }
 @media (max-width: 680px) {
-  .speaker-id {
-    grid-template-columns: 84px 1fr;
-  }
-  .speaker-monogram {
-    width: 84px;
-  }
   .speaker-id h3 {
     font-size: 28px;
   }
@@ -2873,9 +2864,6 @@ body {
 }
 
 @media (max-width: 680px) {
-  .speaker-photo {
-    width: 84px;
-  }
   .speaker-materials {
     align-items: flex-start;
     flex-direction: column;
