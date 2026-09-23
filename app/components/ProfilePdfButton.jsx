@@ -46,17 +46,27 @@ function drawWrapped(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
   return y + limited.length * lineHeight;
 }
 
-function drawBulletList(ctx, items, x, y, maxWidth, lineHeight) {
+function drawBulletList(
+  ctx,
+  items,
+  x,
+  y,
+  maxWidth,
+  lineHeight,
+  textColor = '#332D26',
+  bulletColor = '#607845',
+  itemGap = 10
+) {
   let cy = y;
   for (const item of items) {
-    ctx.fillStyle = '#607845';
+    ctx.fillStyle = bulletColor;
     ctx.beginPath();
     ctx.arc(x + 5, cy - 6, 4, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#332D26';
+    ctx.fillStyle = textColor;
     const lines = wrapLines(ctx, item, maxWidth - 24);
     lines.forEach((line, i) => ctx.fillText(line, x + 22, cy + i * lineHeight));
-    cy += lines.length * lineHeight + 10;
+    cy += lines.length * lineHeight + itemGap;
   }
   return cy;
 }
@@ -141,7 +151,7 @@ async function generateProfilePdf(filename) {
   ctx.fillRect(0, 0, W, H);
 
   // Header
-  roundedRect(ctx, 70, 68, 1100, 360, 36, card, line);
+  roundedRect(ctx, 70, 68, 1100, 420, 36, card, line);
   roundedRect(ctx, 92, 92, 250, 310, 28, '#EEF3E7', '#D7E0CC');
   const portrait = await loadImage('/profile/kosukwoo-site-clean.jpg');
   const ratio = Math.max(230 / portrait.width, 290 / portrait.height);
@@ -177,43 +187,41 @@ async function generateProfilePdf(filename) {
   ctx.fillText('kosuk1231@carpedm.kr  ·  www.carpedm.kr', 380, 326);
 
   const pills = [
-    ['17년차 사회복지사', 190],
-    ['500+ 기관 방문·컨설팅', 235],
-    ['연 20회+ 강의·컨설팅', 235],
-    ['최대 1,500명 행사 운영', 235],
+    { label: '17년차 사회복지사', x: 380, y: 350, fill: '#FAEFE4', color: apricot },
+    { label: '500+ 기관 방문·컨설팅', x: 724, y: 350, fill: '#EEF3E7', color: olive },
+    { label: '연 20회+ 강의·컨설팅', x: 380, y: 404, fill: '#FAEFE4', color: apricot },
+    { label: '최대 1,500명 행사 운영', x: 724, y: 404, fill: '#EEF3E7', color: olive },
   ];
-  let px = 380;
   ctx.font = '700 18px system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
-  pills.forEach(([label, pw], i) => {
-    roundedRect(ctx, px, 354, pw, 46, 23, i % 2 === 0 ? '#FAEFE4' : '#EEF3E7');
-    ctx.fillStyle = i % 2 === 0 ? apricot : olive;
-    ctx.fillText(label, px + 18, 384);
-    px += pw + 12;
+  pills.forEach(({ label, x, y, fill, color }) => {
+    roundedRect(ctx, x, y, 326, 44, 22, fill);
+    ctx.fillStyle = color;
+    ctx.fillText(label, x + 18, y + 29);
   });
 
   // Intro
   ctx.fillStyle = olive;
   ctx.font = '800 29px system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
-  ctx.fillText('소개', 80, 492);
+  ctx.fillText('소개', 80, 548);
   ctx.strokeStyle = line;
-  ctx.beginPath(); ctx.moveTo(80, 510); ctx.lineTo(325, 510); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(80, 566); ctx.lineTo(325, 566); ctx.stroke();
 
   ctx.fillStyle = body;
-  ctx.font = '500 22px system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
+  ctx.font = '500 20px system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
   drawWrapped(
     ctx,
     '2010년 사회복지 현장에서 일을 시작해 2014년부터 서울특별시사회복지사협회에서 근무하고 있습니다. 기관의 스마트워크·디지털 전환·생성형 AI 활용을 지원하면서 실제 업무에 필요한 웹도구와 자동화를 직접 만들고 운영해 왔습니다. 강의에서는 개념 설명에 그치지 않고 현장에서 바로 적용할 수 있는 도구와 방법을 실습 중심으로 다룹니다.',
-    80, 552, 1080, 38, 5
+    80, 606, 1080, 34, 4
   );
 
   // Two-column cards
-  roundedRect(ctx, 70, 720, 530, 430, 28, card, line);
-  roundedRect(ctx, 620, 720, 550, 430, 28, card, line);
+  roundedRect(ctx, 70, 760, 530, 380, 28, card, line);
+  roundedRect(ctx, 620, 760, 550, 380, 28, card, line);
 
   ctx.fillStyle = olive;
   ctx.font = '800 28px system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
-  ctx.fillText('주요 경력 · 사업', 96, 770);
-  ctx.fillText('최근 강의 · 활동 (2026)', 646, 770);
+  ctx.fillText('주요 경력 · 사업', 96, 810);
+  ctx.fillText('최근 강의 · 활동 (2026)', 646, 810);
 
   ctx.font = '500 19px system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
   ctx.fillStyle = ink;
@@ -224,7 +232,7 @@ async function generateProfilePdf(filename) {
     'Google Workspace·Microsoft 365·AI 라이선스 도입 지원',
     '행사 운영·등록·의견수렴·문서 자동화 등 웹 기반 업무 시스템 구축',
     '공저 《샌드위치 사회복지사 생존기술》(2026) 디지털·스마트워크 파트 집필',
-  ], 96, 820, 470, 29);
+  ], 96, 854, 470, 27, ink, olive, 8);
 
   drawBulletList(ctx, [
     '휴먼임팩트 협동조합 - 실시간 온라인 AI 강의 (7월·11월, 2회)',
@@ -233,30 +241,29 @@ async function generateProfilePdf(filename) {
     '한국타이어나눔재단 후원 지역아동센터 - 스마트워크·생성형 AI 활용 (3회)',
     '고양시덕양행신 대학생 봉사단 - AI로 만드는 기관 홍보 영상·숏폼',
     '2026 서울사회복지사 등반대회 - 1,500명 디지털 운영 시스템',
-  ], 646, 820, 490, 29);
+  ], 646, 854, 490, 27, ink, olive, 8);
 
   // Bottom: formats + topics
-  roundedRect(ctx, 70, 1180, 1100, 420, 28, '#33402C');
+  roundedRect(ctx, 70, 1170, 1100, 430, 28, '#33402C');
   ctx.fillStyle = '#F2B181';
   ctx.font = '800 20px ui-monospace, SFMono-Regular, Menlo, monospace';
-  ctx.fillText('PROGRAM & DELIVERY', 96, 1228);
+  ctx.fillText('PROGRAM & DELIVERY', 96, 1224);
   ctx.fillStyle = '#FFFDF8';
   ctx.font = '800 31px system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
-  ctx.fillText('강의부터 컨설팅·구축, 행사 운영까지 현장에 맞춰 연결합니다.', 96, 1280);
+  ctx.fillText('강의부터 컨설팅·구축, 행사 운영까지 현장에 맞춰 연결합니다.', 96, 1278);
 
-  ctx.font = '500 20px system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
-  ctx.fillStyle = '#F4EFE6';
+  ctx.font = '600 19px system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
   drawBulletList(ctx, [
-    '강의 2~3시간 / 실습 워크숍 3~6시간 / 온·오프라인 및 온오프믹스 가능',
-    '실습형 진행 권장 인원 30명 내외, 기관 맞춤형 커리큘럼·컨설팅 연계 가능',
-    '주요 주제: 스마트워크, 생성형 AI, Apps Script 자동화, 디지털 전환, 홍보 콘텐츠',
-    '행사 디지털 운영: 사전신청·알림·현장 접수·인증·통계',
-    '온라인 중계: 사전 협의·리허설·현장 송출·아카이브 정리',
-  ], 96, 1330, 1005, 32);
+    '강의 2~3시간 · 실습 3~6시간 · 온·오프라인·온오프믹스',
+    '실습 권장 30명 내외 · 기관 맞춤형 구성·컨설팅 연계',
+    '스마트워크 · 생성형 AI · Apps Script · 디지털 전환 · 홍보',
+    '행사 운영: 신청 · 알림 · 현장 접수 · 인증 · 통계',
+    '온라인 중계: 사전 협의 · 리허설 · 현장 송출 · 아카이브',
+  ], 96, 1330, 1005, 31, '#F4EFE6', '#F2B181', 13);
 
   ctx.fillStyle = '#F2B181';
   ctx.font = '800 22px system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
-  ctx.fillText('CARPEDM · 현장의 문제를 작동하는 도구로 바꿉니다.', 96, 1560);
+  ctx.fillText('CARPEDM · 현장의 문제를 작동하는 도구로 바꿉니다.', 96, 1566);
 
   ctx.fillStyle = muted;
   ctx.font = '500 18px system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
