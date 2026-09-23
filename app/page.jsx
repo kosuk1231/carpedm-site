@@ -780,7 +780,6 @@ export default function Home() {
             </div>
 
             <div className="speaker-links">
-              <a href="/profile/kosukwoo-profile-v5-1.pdf" download>강사 프로필 PDF <b aria-hidden="true">↓</b></a>
               <a href="#programs">의뢰 가능한 프로그램 보기 <b aria-hidden="true">↘</b></a>
               <a href="#record">전체 강의·사업 이력 <b aria-hidden="true">↓</b></a>
             </div>
@@ -791,7 +790,7 @@ export default function Home() {
                 <strong>기관 담당자가 바로 활용할 수 있는 강사 자료를 준비하고 있습니다.</strong>
                 <p>1페이지 강사 프로필 · 공문용 소개문 · 프로그램별 강의계획서 순으로 연결합니다.</p>
               </div>
-              <a className="speaker-materials-status" href="/profile/kosukwoo-profile-v5-1.pdf" download>PROFILE v5.1 DOWNLOAD</a>
+              <span className="speaker-materials-status">PROFILE v5.1 READY</span>
             </div>
           </article>
 
