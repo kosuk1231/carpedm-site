@@ -2608,3 +2608,207 @@ body {
 :focus-visible {
   outline-color: #7C8558;
 }
+
+
+/* ---------- instructor credibility ---------- */
+.speaker-section {
+  padding-top: 84px;
+}
+.speaker-section-head {
+  margin-bottom: 22px;
+}
+.speaker-grid {
+  display: grid;
+  grid-template-columns: 1.18fr .82fr;
+  gap: 14px;
+}
+.speaker-card {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--card);
+}
+.speaker-card-main {
+  padding: 28px;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(232,154,97,.12), transparent 15rem),
+    linear-gradient(180deg, #FFFDF8 0%, #FAF7EE 100%);
+}
+.speaker-id {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: 22px;
+  align-items: center;
+}
+.speaker-monogram {
+  width: 112px;
+  aspect-ratio: 4 / 5;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #5E6842;
+  color: #FFFDF8;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.1);
+}
+.speaker-monogram span {
+  font-family: var(--serif);
+  font-size: 34px;
+  line-height: 1;
+}
+.speaker-monogram small {
+  margin-top: 10px;
+  font: 800 8px/1.2 ui-monospace, "SF Mono", Menlo, monospace;
+  letter-spacing: .11em;
+  color: #E0E5D6;
+}
+.speaker-label {
+  display: block;
+  font: 800 9px/1.2 ui-monospace, "SF Mono", Menlo, monospace;
+  letter-spacing: .12em;
+  color: var(--apricot);
+}
+.speaker-id h3 {
+  margin: 7px 0 4px;
+  font-family: var(--serif);
+  font-size: 34px;
+  line-height: 1.1;
+}
+.speaker-id p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.speaker-intro {
+  margin: 24px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid rgba(103,86,61,.12);
+  color: var(--body);
+  font-size: 13.5px;
+  line-height: 1.8;
+}
+.speaker-proof-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 22px;
+}
+.speaker-proof-grid div {
+  padding: 14px 12px;
+  border: 1px solid rgba(103,86,61,.11);
+  border-radius: 12px;
+  background: rgba(255,255,255,.66);
+}
+.speaker-proof-grid strong {
+  display: block;
+  font-family: var(--serif);
+  font-size: 19px;
+  color: #5E6842;
+}
+.speaker-proof-grid span {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 9.5px;
+}
+.speaker-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+.speaker-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 800;
+  border: 1px solid #D8C7AE;
+  background: #FFFDF8;
+}
+.speaker-links a:first-child {
+  border-color: #5E6842;
+  background: #5E6842;
+  color: #FFFDF8;
+}
+.speaker-recent {
+  padding: 24px;
+}
+.speaker-recent-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.speaker-recent-head span {
+  font: 800 9px/1.2 ui-monospace, "SF Mono", Menlo, monospace;
+  letter-spacing: .12em;
+  color: #667048;
+}
+.speaker-recent-head small {
+  color: var(--muted);
+  font-size: 10px;
+}
+.speaker-lecture-list {
+  display: grid;
+}
+.speaker-lecture {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--line);
+}
+.speaker-lecture strong {
+  font-size: 12px;
+}
+.speaker-lecture p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.55;
+}
+.speaker-lecture > span {
+  align-self: start;
+  padding: 5px 7px;
+  border-radius: 999px;
+  background: #FFF1E2;
+  color: #9A5A34;
+  font-size: 9px;
+  white-space: nowrap;
+}
+.speaker-note {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 10.5px;
+}
+.speaker-note a {
+  color: #5E6842;
+  font-weight: 800;
+}
+
+@media (max-width: 900px) {
+  .speaker-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 680px) {
+  .speaker-id {
+    grid-template-columns: 84px 1fr;
+  }
+  .speaker-monogram {
+    width: 84px;
+  }
+  .speaker-id h3 {
+    font-size: 28px;
+  }
+  .speaker-proof-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
