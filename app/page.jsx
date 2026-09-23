@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { PROGRAMS } from './data/programs';
 import SpeakerKit from './components/SpeakerKit';
+import { NOTES } from './data/notes';
 
 
 // 스펙트럼 매트릭스: 4영역 × 3단계. 빈 칸 없이 실제 사례로만 채웁니다.
@@ -195,32 +196,7 @@ const FIELD_LOG = [
 ];
 
 
-const FIELD_NOTES = [
-  {
-    no: '01',
-    category: 'AI',
-    title: '사회복지기관에서 AI에 넣어도 되는 자료와 안 되는 자료',
-    desc: '개인정보·민감정보·기관 내부자료를 구분하고, AI를 쓸 때 최소한으로 지켜야 할 입력 원칙을 정리했습니다.',
-    tags: ['AI 운영', '개인정보', '현장 적용'],
-    href: '/notes/ai-data-boundaries',
-  },
-  {
-    no: '02',
-    category: 'AUTOMATION',
-    title: 'Google Form → Sheet → PDF → 알림톡 자동화 구조',
-    desc: '한 번 입력한 데이터를 시트에서 문서 생성과 이메일·알림톡 발송까지 이어 붙이는 기본 구조를 설명합니다.',
-    tags: ['Apps Script', 'PDF', '알림톡'],
-    href: '/notes/form-sheet-pdf-alimtalk',
-  },
-  {
-    no: '03',
-    category: 'FIELD OPS',
-    title: '1,500명 행사를 종이 명단 없이 운영한 방법',
-    desc: '사전접수, 현장 체크인, 인증, 스태프 화면, 통계를 하나의 흐름으로 묶을 때 실제로 필요했던 화면과 원칙을 기록합니다.',
-    tags: ['행사 운영', '접수', '현장 시스템'],
-    href: '/notes/1500-paperless-event',
-  },
-];
+const FIELD_NOTES = NOTES.map((note) => ({ ...note, href: `/notes/${note.slug}` }));
 
 const FAQS = [
   {
