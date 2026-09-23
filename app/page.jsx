@@ -37,7 +37,7 @@ const QUICK_CATEGORIES = [
   { index: '03', title: '의뢰 가능한 프로그램', en: 'PROGRAMS', desc: '강의 · 워크숍 · 컨설팅 · 구축', href: '#programs' },
   { index: '04', title: '현장 기록', en: 'FIELD LOG', desc: '최근 강의와 프로젝트 활동', href: '#fieldlog' },
   { index: '05', title: '실무 노트', en: 'FIELD NOTES', desc: '다시 찾아보는 AI·자동화·현장 운영 기록', href: '#notes' },
-  { index: '06', title: '소개', en: 'ABOUT', desc: '현장을 알고 직접 만드는 사람', href: '#about' },
+  { index: '06', title: '강사 소개', en: 'SPEAKER', desc: '프로필 · 최근 강의 · 현장 경험', href: '#speaker' },
 ];
 
 const CATEGORIES = [
@@ -718,7 +718,7 @@ export default function Home() {
           <a href="#programs">의뢰 가능한 프로그램</a>
           <a href="#fieldlog">현장 기록</a>
           <a href="#notes">실무 노트</a>
-          <a href="#about">소개</a>
+          <a href="#speaker">강사 소개</a>
         </div>
         <a className="navlink" href="mailto:hello@carpedm.kr">
           <span>문의하기</span><b aria-hidden="true">↗</b>
@@ -749,6 +749,65 @@ export default function Home() {
           </div>
         </aside>
       </header>
+
+      <section className="sec speaker-section" id="speaker">
+        <div className="section-head speaker-section-head">
+          <div>
+            <span className="section-kicker">SPEAKER PROFILE</span>
+            <h2 className="h2">현장을 알고, 직접 만들어 본 사람이 강의합니다.</h2>
+          </div>
+          <p>도구 기능을 나열하기보다 사회복지 현장에서 실제로 부딪힌 문제와 직접 만든 해결 방식을 중심으로 설명하고 실습합니다.</p>
+        </div>
+
+        <div className="speaker-grid">
+          <article className="speaker-card speaker-card-main">
+            <div className="speaker-id">
+              <div className="speaker-monogram" aria-hidden="true">
+                <span>KS</span>
+                <small>KO SUKWOO</small>
+              </div>
+              <div>
+                <span className="speaker-label">SOCIAL WORKER · DIGITAL PRACTITIONER</span>
+                <h3>고석우</h3>
+                <p>서울특별시사회복지사협회 과장 · 열매똑똑 스마트워크 사업 담당</p>
+              </div>
+            </div>
+
+            <p className="speaker-intro">2010년 사회복지 현장에서 일을 시작해, 2014년부터 서울특별시사회복지사협회에서 근무하고 있습니다. 기관의 스마트워크·디지털 전환·생성형 AI 활용을 지원하면서 실제 업무에 필요한 웹도구와 자동화를 직접 만들고 운영해 왔습니다.</p>
+
+            <div className="speaker-proof-grid">
+              <div><strong>17년차</strong><span>사회복지 현장 경력</span></div>
+              <div><strong>500+</strong><span>방문·컨설팅 기관</span></div>
+              <div><strong>20회+</strong><span>연간 강의·컨설팅</span></div>
+              <div><strong>63개소</strong><span>열매똑똑 3년 동행</span></div>
+            </div>
+
+            <div className="speaker-links">
+              <a href="#programs">의뢰 가능한 프로그램 보기 <b aria-hidden="true">↘</b></a>
+              <a href="#about">상세 경력 보기 <b aria-hidden="true">↓</b></a>
+            </div>
+          </article>
+
+          <aside className="speaker-card speaker-recent">
+            <div className="speaker-recent-head">
+              <span>RECENT LECTURES · 2026</span>
+              <small>최근 강의 일부</small>
+            </div>
+            <div className="speaker-lecture-list">
+              {LECTURES.slice(0, 5).map((lecture) => (
+                <div className="speaker-lecture" key={`${lecture.host}-${lecture.topic}`}>
+                  <div>
+                    <strong>{lecture.host}</strong>
+                    <p>{lecture.topic}</p>
+                  </div>
+                  <span>{lecture.count}</span>
+                </div>
+              ))}
+            </div>
+            <p className="speaker-note">강의 이력 전체는 아래의 <a href="#record">전체 이력</a>에서 확인할 수 있습니다.</p>
+          </aside>
+        </div>
+      </section>
 
       <section className="sec service-overview" id="services">
         <div className="section-head service-head">
@@ -1126,7 +1185,7 @@ export default function Home() {
 
       <footer className="foot">
         <span>CARPEDM 카르페디엠</span>
-        <span className="foot-map">만든 것 · 바로 써보기 · 의뢰 가능한 프로그램 · 현장 기록 · 실무 노트 · 소개</span>
+        <span className="foot-map">만든 것 · 바로 써보기 · 의뢰 가능한 프로그램 · 현장 기록 · 실무 노트 · 강사 소개</span>
         <Link href="/admin" className="footlink mono">관리자</Link>
       </footer>
     </div>
