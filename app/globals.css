@@ -89,7 +89,7 @@ a { color: inherit; }
 .cta { margin-top: 84px; background: var(--teal); color: var(--on-teal); padding: 48px 44px; border-radius: 18px; }
 .cta h2 { font-family: var(--serif); margin: 0 0 10px; font-size: clamp(23px, 3.2vw, 30px); font-weight: 600; letter-spacing: -0.01em; }
 .cta p { margin: 0 0 24px; color: var(--on-teal-muted); font-size: 15px; max-width: 46ch; }
-.cta a { display: inline-block; background: var(--apricot); color: var(--ink); text-decoration: none; font-weight: 700; padding: 14px 28px; border-radius: 10px; }
+.cta > a { display: inline-block; background: var(--apricot); color: var(--ink); text-decoration: none; font-weight: 800; padding: 14px 28px; border-radius: 10px; }
 
 .foot { padding: 34px 0 48px; font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .foot a { text-decoration: none; }
@@ -3362,7 +3362,7 @@ a.program-card:hover .program-more b { transform: translateX(3px); }
 }
 
 /* ---------- homepage contact CTA → /contact ---------- */
-.cta.cta-link p a { color: #F3E4CF; font-weight: 700; }
+.cta.cta-link p a { display: inline; background: transparent; color: #FFD4B1; padding: 0; border-radius: 0; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
 
 /* ---------- /contact page ---------- */
 .contact-hero { padding: 44px 0 28px; max-width: 64ch; }
@@ -3537,3 +3537,173 @@ a.program-card:hover .program-card-visual img { transform: scale(1.03); }
 .cat-visual { margin: 18px 0 0; }
 .cat-visual img { aspect-ratio: 16 / 6; object-position: center 45%; }
 .track-record .section-head { align-items: start; }
+
+
+/* ---------- 2026-09 portfolio refinement ---------- */
+.note-card {
+  text-decoration: none;
+  color: inherit;
+}
+.note-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(96, 120, 69, .34);
+}
+.note-read {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--teal);
+}
+.fieldlog-meta em {
+  font-style: normal;
+  font-size: 9px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: var(--apricot-soft);
+  color: #9a5a34;
+}
+.principles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.principles-grid article {
+  min-height: 220px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--card);
+}
+.principles-grid span {
+  display: block;
+  color: var(--apricot);
+  font: 800 8px/1.2 ui-monospace, "SF Mono", Menlo, monospace;
+  letter-spacing: .12em;
+}
+.principles-grid h3 {
+  margin: 38px 0 10px;
+  font-family: var(--serif);
+  font-size: 23px;
+  line-height: 1.2;
+}
+.principles-grid p {
+  margin: 0;
+  color: var(--body);
+  font-size: 12px;
+  line-height: 1.75;
+}
+.note-page {
+  min-height: 100vh;
+}
+.note-hero {
+  max-width: 920px;
+  padding: 74px 0 36px;
+}
+.note-hero h1 {
+  margin: 16px 0 18px;
+  max-width: 860px;
+  font-family: var(--serif);
+  font-size: clamp(38px, 5.2vw, 64px);
+  line-height: 1.14;
+  letter-spacing: -.04em;
+}
+.note-page-tags {
+  margin-top: 22px;
+}
+.note-body {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 36px 0 84px;
+}
+.note-intro {
+  margin: 0 0 54px;
+  padding: 24px 26px;
+  border-left: 4px solid var(--teal);
+  background: var(--teal-soft);
+  font-size: 15px;
+  line-height: 1.9;
+}
+.note-body section {
+  margin-top: 48px;
+}
+.note-body section h2 {
+  margin: 0 0 16px;
+  font-family: var(--serif);
+  font-size: 27px;
+}
+.note-body section p {
+  margin: 0 0 14px;
+  color: var(--body);
+  font-size: 14px;
+  line-height: 1.95;
+}
+.note-takeaway {
+  margin-top: 54px;
+  padding: 26px;
+  border-radius: 18px;
+  background: #33402C;
+  color: #FFFDF8;
+}
+.note-takeaway span {
+  display: block;
+  font: 800 8px/1 ui-monospace, "SF Mono", Menlo, monospace;
+  letter-spacing: .12em;
+  color: #F2B181;
+}
+.note-takeaway strong {
+  display: block;
+  margin-top: 10px;
+  font-family: var(--serif);
+  font-size: 22px;
+  line-height: 1.5;
+}
+.note-cta {
+  margin-top: 0;
+}
+@media (max-width: 760px) {
+  .principles-grid {
+    grid-template-columns: 1fr;
+  }
+  .principles-grid article {
+    min-height: 0;
+  }
+  .principles-grid h3 {
+    margin-top: 24px;
+  }
+  .note-body {
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+}
+
+
+/* ---------- header full-bleed + portrait alpha repair ---------- */
+.nav {
+  isolation: isolate;
+  background: transparent !important;
+  border-bottom: 0 !important;
+}
+.nav::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  background: rgba(255, 253, 249, .96);
+  border-bottom: 1px solid rgba(231, 218, 198, .95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  pointer-events: none;
+}
+.speaker-photo {
+  background: #FFFFFF !important;
+}
+.speaker-photo img {
+  background: #FFFFFF;
+}

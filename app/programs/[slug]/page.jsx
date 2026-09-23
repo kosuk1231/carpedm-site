@@ -28,14 +28,8 @@ export async function generateMetadata({ params }) {
 }
 
 function contactHref(program) {
-  // 문의폼이 문의 유형·프로그램을 미리 선택할 수 있게 쿼리로 넘깁니다.
-  const type = program.type.includes('구축')
-    ? '시스템 구축'
-    : program.type.includes('컨설팅')
-      ? '컨설팅·진단'
-      : program.type.includes('워크숍')
-        ? '실습 워크숍'
-        : '강의';
+  // 프로그램별 기본 문의 유형을 데이터에서 명시해 잘못된 자동 추론을 피합니다.
+  const type = program.contactType || '강의';
   return `/contact?program=${program.slug}&type=${encodeURIComponent(type)}`;
 }
 
@@ -113,7 +107,7 @@ export default async function ProgramPage({ params }) {
         <div className="pd-sec-head">
           <span className="section-kicker">CURRICULUM</span>
           <h2 className="h2">시간에 따라 이렇게 구성합니다</h2>
-          <p>기관 사정에 맞춰 2시간·3시간·6시간 중에서 고르거나 조합할 수 있습니다. 실습 비중이 커질수록 참여자가 직접 만들어 가져가는 것이 늘어납니다.</p>
+          <p>{d.curriculumIntro || '기관 사정에 맞춰 2시간·3시간·6시간 중에서 고르거나 조합할 수 있습니다. 실습 비중이 커질수록 참여자가 직접 만들어 가져가는 것이 늘어납니다.'}</p>
         </div>
         <div className="pd-curriculum">
           {d.curriculum.map((c, i) => (
@@ -121,7 +115,7 @@ export default async function ProgramPage({ params }) {
               <div className="pd-course-head">
                 <strong>{c.hours}</strong>
                 <span>{c.label}</span>
-                {i === 1 ? <em>가장 많이 선택</em> : null}
+                {i === 1 ? <em>권장 구성</em> : null}
               </div>
               <ol>
                 {c.items.map((it) => <li key={it}>{it}</li>)}

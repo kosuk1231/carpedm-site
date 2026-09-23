@@ -55,3 +55,21 @@
 - 상태가 `확정`으로 바뀌면 강의계획서(DOCX) 자동 생성 → 문의자 메일 발송
 - 알림톡(Solapi) 연결로 담당자 즉시 알림
 - 월별 문의 통계 대시보드 (시트 피벗 또는 별도 화면)
+
+
+## 7. 선택: OpenClaw/에이전트 연동
+
+문의 저장과 접수 확인 메일이 정상 동작한 뒤 에이전트를 붙입니다.
+
+Vercel 환경 변수:
+
+```
+CONTACT_AGENT_WEBHOOK=https://<agent-or-relay-endpoint>
+CONTACT_AGENT_SECRET=<long-random-secret>
+```
+
+두 값이 없으면 문의폼은 기존 GAS 흐름만 사용합니다. 값을 설정하면 스프레드시트 저장 성공 후 에이전트 웹훅으로 동일한 문의가 전달됩니다.
+
+권장 흐름은 **접수 확인은 자동**, **구체적 회신은 에이전트가 초안을 만들고 사람이 승인**하는 방식입니다. 견적·일정 확정·구축 범위는 사람 확인 없이 자동 발송하지 않습니다.
+
+상세 payload와 OpenClaw 역할 분담은 `docs/contact-agent-integration.md`를 참고합니다.

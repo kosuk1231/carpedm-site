@@ -23,7 +23,7 @@ const STEPS = [
 
 const GOOD_TO_KNOW = [
   ['대상', '직급·직무·인원. 실습형은 30명 내외를 권장합니다.'],
-  ['시간', '2시간·3시간·6시간 중 고르거나 조합할 수 있습니다.'],
+  ['시간', '강의·실습은 2~6시간, 행사 운영은 일정과 범위에 맞춰 별도 구성합니다.'],
   ['장소·장비', '오프라인·온라인 모두 가능. 실습 시 1인 1노트북과 Wi-Fi.'],
   ['예산', '범위를 알려 주시면 그 안에서 가능한 구성을 먼저 제안합니다.'],
 ];
@@ -43,7 +43,7 @@ export default function ContactPage() {
           <Link href="/#portfolio">만든 것</Link>
           <Link href="/#speaker">강사 소개</Link>
         </div>
-        <a className="navlink" href="mailto:hello@carpedm.kr">
+        <a className="navlink" href="mailto:kosuk1231@carpedm.kr">
           <span>이메일로 문의</span><b aria-hidden="true">↗</b>
         </a>
       </nav>
@@ -91,7 +91,7 @@ export default function ContactPage() {
 
           <div className="contact-side-block contact-side-mail">
             <span>EMAIL</span>
-            <a href="mailto:hello@carpedm.kr" className="mono">hello@carpedm.kr</a>
+            <a href="mailto:kosuk1231@carpedm.kr" className="mono">kosuk1231@carpedm.kr</a>
             <p>폼이 불편하시면 이메일로 보내 주세요. 같은 방식으로 회신드립니다.</p>
           </div>
         </aside>

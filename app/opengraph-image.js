@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 
-export const alt = 'CARPEDM 카르페디엠 — 오늘 쓸 도구를 오늘 만듭니다';
+export const alt = 'CARPEDM 카르페디엠 — 현장의 문제를 작동하는 도구로 바꿉니다';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -57,7 +57,7 @@ export default async function OpengraphImage() {
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: 28, color: '#43706A', fontWeight: 700 }}>
+          <div style={{ fontSize: 28, color: '#607845', fontWeight: 700 }}>
             사회복지 현장의 스마트워크 · AI 전환
           </div>
           <div
@@ -71,19 +71,19 @@ export default async function OpengraphImage() {
               letterSpacing: '-0.03em',
             }}
           >
-            <span>오늘 쓸 도구를</span>
+            <span>현장의 문제를</span>
             <span>
               <span
                 style={{
-                  color: '#43706A',
-                  backgroundColor: '#F6E3CE',
+                  color: '#607845',
+                  backgroundColor: '#FAEFE4',
                   padding: '0 12px',
                   borderRadius: 8,
                 }}
               >
-                오늘
+                작동하는 도구
               </span>
-              {' '}만듭니다.
+              {' '}로 바꿉니다.
             </span>
           </div>
         </div>
@@ -102,7 +102,7 @@ export default async function OpengraphImage() {
             <span style={{ fontWeight: 700, letterSpacing: '0.06em' }}>CARPEDM</span>
             <span style={{ fontSize: 24, color: '#7E7666' }}>카르페디엠</span>
           </div>
-          <span style={{ color: '#E0995A', fontWeight: 700 }}>carpedm.kr</span>
+          <span style={{ color: '#D98B4F', fontWeight: 700 }}>carpedm.kr</span>
         </div>
       </div>
     ),

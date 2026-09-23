@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-export const INQUIRY_TYPES = ['강의', '실습 워크숍', '컨설팅·진단', '시스템 구축', '기타'];
-export const METHODS = ['오프라인', '온라인', '미정'];
+export const INQUIRY_TYPES = ['강의', '실습 워크숍', '컨설팅·진단', '시스템 구축', '행사 운영·온라인 중계', '기타'];
+export const METHODS = ['오프라인', '온라인', '온오프믹스', '미정'];
 export const HEADCOUNTS = ['~20명', '21~50명', '51~100명', '100명 이상', '미정'];
 
-const CONTACT_EMAIL = 'hello@carpedm.kr';
+const CONTACT_EMAIL = 'kosuk1231@carpedm.kr';
 
 const EMPTY = {
   type: '강의',
