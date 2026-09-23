@@ -721,7 +721,7 @@ export default function Home() {
           <article className="speaker-card speaker-card-main">
             <div className="speaker-id has-photo">
               <div className="speaker-photo">
-                <img src="/profile/kosukwoo-portrait.webp" alt="고석우 강사 프로필 사진" width="448" height="560" loading="lazy" />
+                <img src="/profile/kosukwoo-site-clean.jpg" alt="고석우 강사 프로필 사진" width="360" height="496" loading="lazy" />
               </div>
               <div>
                 <span className="speaker-label">SOCIAL WORKER · DIGITAL PRACTITIONER</span>
