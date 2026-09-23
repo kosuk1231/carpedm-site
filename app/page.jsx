@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import profilePhoto from '../public/profile/kosukwoo.jpg';
 
 const WORK = [
   {
@@ -766,12 +765,13 @@ export default function Home() {
             <div className="speaker-id">
               <div className="speaker-photo">
                 <Image
-                  src={profilePhoto}
+                  src="/profile/kosukwoo.jpg"
                   alt="고석우 강사 프로필 사진"
                   width={440}
                   height={685}
                   sizes="(max-width: 680px) 84px, 112px"
                   priority
+                  unoptimized
                 />
               </div>
               <div>
