@@ -10,7 +10,7 @@ import { NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 
 const TYPES = ['강의', '실습 워크숍', '컨설팅·진단', '시스템 구축', '행사 운영·온라인 중계', '기타'];
-const METHODS = ['오프라인', '온라인', '미정'];
+const METHODS = ['오프라인', '온라인', '온오프믹스', '미정'];
 
 function clean(v, max) {
   return String(v ?? '').replace(/\r\n/g, '\n').trim().slice(0, max);
