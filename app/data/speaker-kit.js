@@ -1,12 +1,12 @@
 // 기관 담당자가 공문·안내문에 바로 붙여 쓰는 강사 자료.
-// 표현 기준은 인수인계서 5장(이름·소속·수치·최근 강의)과 프로필 PDF v5.1을 따릅니다.
+// 표현 기준은 인수인계서 5장(이름·소속·수치·최근 강의)과 프로필 PDF v6을 따릅니다.
 
 export const PROFILE_PDF = {
-  href: '/profile/kosukwoo-profile-v5-1.pdf',
-  filename: 'kosukwoo-profile-v5-1.pdf',
-  version: 'v5.1',
+  href: null,
+  filename: 'kosukwoo-profile-v6-a4-portrait.pdf',
+  version: 'v6',
   updated: '2026.09',
-  size: '150KB · A4 가로 1장',
+  size: 'A4 세로 1장 · 브라우저에서 생성',
 };
 
 export const INTRO_100 =
