@@ -167,11 +167,11 @@ export default async function ProgramPage({ params }) {
           <div className="live-summary">
             <div><strong>{LIVE_STREAM_SUMMARY.totalCount}건</strong><span>전체 라이브 운영</span></div>
             <div><strong>{LIVE_STREAM_SUMMARY.featuredCount}건</strong><span>조회수 500+ 공개 목록</span></div>
-            <div><strong>{LIVE_STREAM_SUMMARY.totalViews.toLocaleString('ko-KR')}회</strong><span>업로드 엑셀 기준 누적 조회</span></div>
             <div><strong>2019—2026</strong><span>자체 운영 경험 누적</span></div>
+            <div><strong>국회 등</strong><span>외부 간담회 중계 경험</span></div>
           </div>
 
-          <p className="live-note">조회수 500회 미만 {LIVE_STREAM_SUMMARY.under500Count}건은 개별 목록에 표시하지 않고 전체 {LIVE_STREAM_SUMMARY.totalCount}건 집계에만 포함했습니다.</p>
+          <p className="live-note">아래 목록은 조회수 500회 이상 영상만 정리했습니다. 그 외 영상은 개별 표기하지 않고 전체 {LIVE_STREAM_SUMMARY.totalCount}건 운영 건수에만 포함했습니다.</p>
 
           <div className="live-year-list">
             {Object.entries(LIVE_STREAMS_BY_YEAR)
