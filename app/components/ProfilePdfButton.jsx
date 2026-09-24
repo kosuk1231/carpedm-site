@@ -276,37 +276,70 @@ async function generateProfilePdf(filename) {
   const jpegBytes = base64ToBytes(dataUrl.split(',')[1]);
   const pdfBytes = makePdfFromJpeg(jpegBytes, W, H);
   const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return { blob, url: URL.createObjectURL(blob) };
 }
 
-export default function ProfilePdfButton({ filename, version, updated, size }) {
+export default function ProfilePdfButton({
+  filename,
+  version,
+  updated,
+  size,
+  mode = 'download',
+  className = 'speaker-kit-download',
+  showMeta = true,
+}) {
   const [busy, setBusy] = useState(false);
 
-  async function handleDownload() {
+  async function handlePdf() {
     if (busy) return;
+
+    // iOS Safari는 비동기 작업이 끝난 뒤 window.open을 호출하면 팝업으로 막을 수 있습니다.
+    // 클릭 순간 빈 탭을 먼저 만들고 PDF 생성 후 해당 탭에 blob URL을 연결합니다.
+    const previewWindow = mode === 'preview' ? window.open('', '_blank') : null;
+    if (previewWindow) {
+      previewWindow.document.title = '강사 프로필 PDF 준비 중';
+      previewWindow.document.body.innerHTML = '<p style="font-family:system-ui;padding:24px">강사 프로필 PDF를 준비하고 있습니다…</p>';
+    }
+
     setBusy(true);
     try {
-      await generateProfilePdf(filename);
+      const { url } = await generateProfilePdf(filename);
+
+      if (mode === 'preview') {
+        if (previewWindow) {
+          previewWindow.location.replace(url);
+        } else {
+          window.location.href = url;
+        }
+        setTimeout(() => URL.revokeObjectURL(url), 120000);
+        return;
+      }
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    } catch (err) {
+      if (previewWindow) previewWindow.close();
+      console.error('profile pdf generation failed', err);
     } finally {
       setBusy(false);
     }
   }
 
+  const preview = mode === 'preview';
+
   return (
-    <button className="speaker-kit-download" type="button" onClick={handleDownload} disabled={busy}>
+    <button className={className} type="button" onClick={handlePdf} disabled={busy}>
       <span>
-        <small>PROFILE PDF · {version} · {updated}</small>
-        <strong>{busy ? 'A4 세로 PDF 만드는 중…' : '강사 프로필 PDF 다운로드'}</strong>
-        <em>{size}</em>
+        {showMeta ? <small>PROFILE PDF · {version}{updated ? ` · ${updated}` : ''}</small> : null}
+        <strong>{busy ? 'A4 세로 PDF 만드는 중…' : preview ? '강사 프로필 PDF 열기' : '강사 프로필 PDF 다운로드'}</strong>
+        {showMeta && size ? <em>{size}</em> : null}
       </span>
-      <b aria-hidden="true">↓</b>
+      <b aria-hidden="true">{preview ? '↗' : '↓'}</b>
     </button>
   );
 }

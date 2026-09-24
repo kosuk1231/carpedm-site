@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import ContactForm from '../components/ContactForm';
+import ProfilePdfButton from '../components/ProfilePdfButton';
 import { PROGRAMS } from '../data/programs';
 import { PROFILE_PDF } from '../data/speaker-kit';
 
@@ -81,11 +82,16 @@ export default function ContactPage() {
 
           <div className="contact-side-block">
             <span>FOR APPROVAL</span>
-            <p>결재용 자료가 먼저 필요하면 바로 내려받으세요.</p>
-            <a className="contact-side-download" href={PROFILE_PDF.href} download={PROFILE_PDF.filename}>
-              <span><small>PROFILE PDF · {PROFILE_PDF.version}</small><strong>강사 프로필 PDF</strong></span>
-              <b aria-hidden="true">↓</b>
-            </a>
+            <p>결재용 자료가 먼저 필요하면 모바일에서도 바로 열어 확인할 수 있습니다.</p>
+            <ProfilePdfButton
+              filename={PROFILE_PDF.filename}
+              version={PROFILE_PDF.version}
+              updated={PROFILE_PDF.updated}
+              size={PROFILE_PDF.size}
+              mode="preview"
+              className="contact-side-download"
+              showMeta={false}
+            />
             <p><Link href="/#speaker-kit">공문용 100자·300자 소개문</Link>도 복사해 쓰실 수 있습니다.</p>
           </div>
 

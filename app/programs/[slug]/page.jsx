@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PROGRAMS, getProgram } from '../../data/programs';
 import { PROFILE_PDF } from '../../data/speaker-kit';
+import ProfilePdfButton from '../../components/ProfilePdfButton';
+import { LIVE_STREAM_SUMMARY, LIVE_STREAMS_BY_YEAR } from '../../data/live-streams';
 
 export const dynamicParams = false;
 
@@ -71,7 +73,7 @@ export default async function ProgramPage({ params }) {
             {program.image ? (
               <figure className="pd-hero-visual">
                 <img src={program.image} alt={program.imageAlt || ''} loading="eager" />
-                <figcaption>《샌드위치 사회복지사 생존기술》 강의 자료에서</figcaption>
+                <figcaption>{program.imageCaption || '《샌드위치 사회복지사 생존기술》 강의 자료에서'}</figcaption>
               </figure>
             ) : null}
           </div>
@@ -88,7 +90,15 @@ export default async function ProgramPage({ params }) {
               <b>{program.result}</b>
             </div>
             <Link href={ask} className="pd-side-cta">이 프로그램 문의하기 <b aria-hidden="true">→</b></Link>
-            <a href={PROFILE_PDF.href} download={PROFILE_PDF.filename} className="pd-side-sub">강사 프로필 PDF ↓</a>
+            <ProfilePdfButton
+              filename={PROFILE_PDF.filename}
+              version={PROFILE_PDF.version}
+              updated={PROFILE_PDF.updated}
+              size={PROFILE_PDF.size}
+              mode="preview"
+              className="pd-side-sub profile-pdf-inline"
+              showMeta={false}
+            />
           </aside>
         </div>
       </header>
@@ -146,11 +156,52 @@ export default async function ProgramPage({ params }) {
         </div>
       </section>
 
-      {d.videos ? (
+      {program.slug === 'live-streaming' ? (
+        <section className="pd-sec live-history">
+          <div className="pd-sec-head">
+            <span className="section-kicker">LIVE OPERATIONS · 2019—2026</span>
+            <h2 className="h2">자체 중계 운영 기록</h2>
+            <p>2019년부터 협회 유튜브 자체 중계를 운영하며 경험을 축적했습니다. 정책토론회·성과공유회·기념행사·온오프믹스 행사와 국회 등 외부 간담회 중계까지 직접 운영합니다.</p>
+          </div>
+
+          <div className="live-summary">
+            <div><strong>{LIVE_STREAM_SUMMARY.totalCount}건</strong><span>전체 라이브 운영</span></div>
+            <div><strong>{LIVE_STREAM_SUMMARY.featuredCount}건</strong><span>조회수 500+ 공개 목록</span></div>
+            <div><strong>2019—2026</strong><span>자체 운영 경험 누적</span></div>
+            <div><strong>국회 등</strong><span>외부 간담회 중계 경험</span></div>
+          </div>
+
+          <p className="live-note">아래 목록은 조회수 500회 이상 영상만 정리했습니다. 그 외 영상은 개별 표기하지 않고 전체 {LIVE_STREAM_SUMMARY.totalCount}건 운영 건수에만 포함했습니다.</p>
+
+          <div className="live-year-list">
+            {Object.entries(LIVE_STREAMS_BY_YEAR)
+              .sort(([a], [b]) => Number(b) - Number(a))
+              .map(([year, items], yearIndex) => (
+                <details className="live-year" key={year} open={yearIndex === 0}>
+                  <summary>
+                    <strong>{year}</strong>
+                    <span>{items.length}건 · 조회수 500회 이상</span>
+                    <b aria-hidden="true">＋</b>
+                  </summary>
+                  <div className="live-stream-list">
+                    {items.map((item) => (
+                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="live-stream-row" key={item.url}>
+                        <time>{item.date.slice(5).replace('-', '.')}</time>
+                        <strong>{item.title}</strong>
+                        <span>{item.views.toLocaleString('ko-KR')}회</span>
+                        <b aria-hidden="true">↗</b>
+                      </a>
+                    ))}
+                  </div>
+                </details>
+              ))}
+          </div>
+        </section>
+      ) : d.videos ? (
         <section className="pd-sec">
           <div className="pd-sec-head">
-            <span className="section-kicker">{program.slug === 'live-streaming' ? 'ON AIR' : 'WORKS'}</span>
-            <h2 className="h2">{program.slug === 'live-streaming' ? '실제 중계 영상' : '직접 만든 영상'}</h2>
+            <span className="section-kicker">WORKS</span>
+            <h2 className="h2">직접 만든 영상</h2>
             <p>{d.videosIntro} 재생하면 유튜브에서 불러옵니다.</p>
           </div>
           <div className="pd-videos">
