@@ -407,7 +407,7 @@ export const PROGRAMS = [
   },
   {
     slug: 'live-streaming',
-    image: '/illust/youtube-live-operations.jpg',
+    image: '/illust/youtube-live-operations.webp',
     imageAlt: '유튜브 라이브와 온오프믹스 행사 중계 운영을 표현한 이미지',
     imageCaption: 'YouTube Live · 온오프믹스 · 현장 중계 운영',
     index: '06',
