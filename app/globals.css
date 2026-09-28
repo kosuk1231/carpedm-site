@@ -3881,3 +3881,53 @@ a.program-card:hover .program-card-visual img { transform: scale(1.03); }
     font-size: 9.5px;
   }
 }
+
+/* ---------- legal pages (privacy / terms) ---------- */
+.legal {
+  max-width: 760px;
+  padding: 64px 0 24px;
+  line-height: 1.85;
+}
+.legal .h2 {
+  margin: 10px 0 6px;
+}
+.legal-date {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0 0 36px;
+}
+.legal h2 {
+  font-family: var(--serif);
+  font-size: 19px;
+  font-weight: 600;
+  margin: 40px 0 10px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.legal p {
+  margin: 0 0 14px;
+}
+.legal ul {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+.legal li {
+  margin-bottom: 8px;
+}
+.legal a {
+  color: var(--teal);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.legal code {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 13px;
+  background: var(--teal-soft);
+  border-radius: 5px;
+  padding: 2px 6px;
+  word-break: break-all;
+}
+@media (max-width: 720px) {
+  .legal { padding-top: 44px; }
+  .legal h2 { font-size: 17px; margin-top: 32px; }
+}

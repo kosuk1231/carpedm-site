@@ -1153,7 +1153,13 @@ export default function Home() {
       <footer className="foot">
         <span>CARPEDM 카르페디엠</span>
         <span className="foot-map">만든 것 · 도구 · 프로그램 · 현장 기록 · 실무 노트 · 강사 소개</span>
-        <Link href="/admin" className="footlink mono">관리자</Link>
+        <span>
+          <Link href="/privacy" className="footlink mono">개인정보처리방침</Link>
+          {' · '}
+          <Link href="/terms" className="footlink mono">서비스 약관</Link>
+          {' · '}
+          <Link href="/admin" className="footlink mono">관리자</Link>
+        </span>
       </footer>
     </div>
   );
