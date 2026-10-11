@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { PROGRAMS } from './data/programs';
 import SpeakerKit from './components/SpeakerKit';
+import YungjungMap from './components/YungjungMap';
 import { NOTES } from './data/notes';
 
 
@@ -683,7 +684,9 @@ export default function Home() {
         </Link>
       </nav>
 
-      <header className="hero">
+      <YungjungMap />
+
+      <header className="hero" id="overview">
         <div className="hero-main">
           <p className="kicker"><span>FIELD-BUILT</span> 사회복지 현장의 스마트워크 · AI 전환</p>
           <h1 className="lede"><span className="lede-line">현장의 문제를</span><span className="lede-line lede-line-strong"><em>작동하는 도구</em>로 바꿉니다.</span></h1>
