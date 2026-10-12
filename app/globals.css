@@ -4080,3 +4080,7 @@ a.program-card:hover .program-card-visual img { transform: scale(1.03); }
 .yv3-title b { font-family: var(--serif); font-size: clamp(40px, 6vw, 72px); font-weight: 700; letter-spacing: .3em; }
 .yv3-title span { font-size: 15px; letter-spacing: .2em; }
 @keyframes yv3-title { 0% { opacity: 0; transform: translate(-50%, 10px); } 18%, 70% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; } }
+.yv-portrait { display: grid; place-items: center; border-radius: 18px; background: linear-gradient(145deg, #F4EAD6, #E2D3B4); }
+.yv-portrait.is-robot { background: linear-gradient(145deg, #E3ECEC, #BFD0D2); }
+.yv-portrait-lg { width: 100%; aspect-ratio: 3 / 4; font-size: 84px; object-fit: cover; }
+.yv-portrait-sm { width: 64px; height: 84px; font-size: 34px; object-fit: cover; border-radius: 10px; }

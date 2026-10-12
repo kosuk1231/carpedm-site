@@ -8,9 +8,9 @@ import {
 } from '../data/villageMap';
 import { rand } from './village3d/kit';
 
-// 융중성 3D: 남쪽 골짜기 길에서 출발해 다리를 건너고, 성문을 지나 성 안을 거닙니다.
+// CARPEDM 캠퍼스 3D: 강 건너 셔틀 정류장에서 출발해 보행교를 건너고, 웰컴 게이트를 지나 캠퍼스를 거닙니다.
 // 지형·건물·사람은 모두 코드로 빚었습니다. 카메라는 걷는 사람 뒤를 따라가며(끌어서 둘러보기, 휠로 거리 조절),
-// 장수들은 다가오면 몸을 돌려 맞이하고, 백성들은 제 볼일을 보러 오갑니다.
+// 팀원(사람·로봇)은 다가오면 몸을 돌려 맞이하고, 캠퍼스 사람들은 제 볼일을 보러 오갑니다.
 
 const EL_MIN = 0.1, EL_MAX = 1.2, EL_DEFAULT = 0.34;
 const DIST_MIN = 4.5, DIST_MAX = 60, DIST_DEFAULT = 11;
@@ -88,7 +88,7 @@ export default function Village3D({ onFail }) {
 
       const world = buildWorld(THREE, renderer, { low });
       const cam = new THREE.PerspectiveCamera(42, 1, 0.3, 600);
-      // 카메라 방위 az: 바라보는 곳에서 카메라가 있는 쪽. 처음엔 남쪽(성 밖)에서 성을 바라봅니다.
+      // 카메라 방위 az: 바라보는 곳에서 카메라가 있는 쪽. 처음엔 남쪽(담장 밖)에서 캠퍼스를 바라봅니다.
       const view = { az: Math.PI / 2, el: EL_DEFAULT, dist: DIST_DEFAULT, intro: 0 };
       const [sx, sz] = toXZ(START.x, START.y);
       const camTarget = new THREE.Vector3(sx, 1.2, sz);
@@ -103,7 +103,7 @@ export default function Village3D({ onFail }) {
       if (post) {
         composer = new post.EffectComposer(renderer);
         composer.addPass(new post.RenderPass(world.scene, cam));
-        composer.addPass(new post.UnrealBloomPass(new THREE.Vector2(512, 512), 0.32, 0.6, 0.86));
+        composer.addPass(new post.UnrealBloomPass(new THREE.Vector2(512, 512), 0.22, 0.5, 0.94));
         composer.addPass(new post.ShaderPass({
           uniforms: { tDiffuse: { value: null }, uAmount: { value: 0.55 } },
           vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
@@ -120,7 +120,7 @@ export default function Village3D({ onFail }) {
         composer.addPass(new post.OutputPass());
       }
 
-      // 장수 상태(순찰하는 장수는 길을 미리 구해 둡니다)
+      // 팀원 상태(순찰하는 팀원은 길을 미리 구해 둡니다)
       const agents = PIECES.map((p) => {
         const st = { id: p.id, x: p.x, y: p.y, yaw: BASE_AZ, home: { x: p.x, y: p.y }, path: null, wait: 2 + Math.random() * 3, out: true };
         if (p.patrol) {
@@ -130,7 +130,7 @@ export default function Village3D({ onFail }) {
         }
         return st;
       });
-      // 백성들이 오가는 자리(성 안 빈 땅에서 미리 골라 둠)
+      // 사람들이 오가는 자리(캠퍼스 안 빈 땅에서 미리 골라 둠)
       const spots = [];
       for (let i = 0; spots.length < 70 && i < 4000; i++) {
         const pt = { x: 2 + rand(i * 2 + 101) * (N - 4), y: 2 + rand(i * 2 + 102) * (N - 4) };
@@ -253,6 +253,7 @@ export default function Village3D({ onFail }) {
       window.addEventListener('blur', blur);
 
       let last = performance.now(), yaw = Math.PI;
+      const occRay = new THREE.Raycaster(); const occDir = new THREE.Vector3(); let occLift = 0;
       const ease = (t) => 1 - Math.pow(1 - t, 3);
       const easeIO = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
       const stepAgent = (st, dt) => {
@@ -312,13 +313,13 @@ export default function Village3D({ onFail }) {
         world.visitor.group.position.set(PX, PY, PZ);
         // 걷는 동안은 카메라가 천천히 등 뒤로 돌아옵니다(최근에 끌어서 돌렸으면 기다림).
         if (moving && now - lastDrag > 1800 && view.intro >= 1) view.az = angleLerp(view.az, Math.atan2(-Math.cos(yaw), -Math.sin(yaw)), Math.min(1, dt * 1.6));
-        // 성문을 처음 지나면 제목을 띄웁니다.
+        // 게이트를 지나면 제목을 띄웁니다.
         const nowInside = pos.current.y < N - 0.6;
         if (nowInside !== inside) { inside = nowInside; setTitle(inside ? 'in' : 'out'); setTimeout(() => setTitle(null), 3600); }
         world.visitor.group.rotation.y = yaw;
         world.visitor.update(dt, moving, t);
 
-        // 장수들: 순찰하거나, 방문자가 오면 몸을 돌려 맞이함
+        // 팀원들: 순찰하거나, 방문자가 오면 몸을 돌려 맞이함
         for (const st of agents) {
           const dist = Math.hypot(pos.current.x - st.x, pos.current.y - st.y);
           const greeting = dist < 3.2;
@@ -368,11 +369,12 @@ export default function Village3D({ onFail }) {
         }
         // 성벽 가까이에서는 카메라를 높여 벽 너머로 내려다봄
         if (inside && view.intro >= 1) {
-          // 성문 바로 안쪽은 길이 트여 있으니 예외
+          // 게이트 바로 안쪽은 길이 트여 있으니 예외
           const nearGate = Math.abs(camTarget.x) < 4 && camTarget.z > 0;
           const edge = nearGate ? N / 2 - Math.max(Math.abs(camTarget.x), -camTarget.z) : N / 2 - Math.max(Math.abs(camTarget.x), Math.abs(camTarget.z));
           el = Math.max(el, THREE.MathUtils.lerp(0.95, el, THREE.MathUtils.smoothstep(edge, 2, 7)));
         }
+        el = THREE.MathUtils.lerp(el, 1.1, occLift);
         if (cam.aspect < 1) dist *= Math.min(1.6, 0.75 / cam.aspect);
         cam.position.set(
           camTarget.x + dist * Math.cos(el) * Math.cos(az),
@@ -381,15 +383,22 @@ export default function Village3D({ onFail }) {
         );
         cam.lookAt(camTarget);
 
-        // 성 안에서는 카메라가 성벽 너머로 빠지지 않게(벽에 가려 사람이 안 보이는 일 방지)
+        // 캠퍼스 안에서는 카메라가 담장 너머로 빠지지 않게
         if (inside && view.intro >= 1) {
-          const lim = N / 2 - 1.2, limS = N / 2 - 3.6; // 남쪽은 성문 문루 처마 안쪽까지 비켜 섬
+          const lim = N / 2 - 1.2, limS = N / 2 - 3.6; // 남쪽은 게이트 캐노피 안쪽까지 비켜 섬
           const cx = THREE.MathUtils.clamp(cam.position.x, -lim, lim), cz = THREE.MathUtils.clamp(cam.position.z, -lim, limS);
           if (cx !== cam.position.x || cz !== cam.position.z) {
             cam.position.x = cx; cam.position.z = cz;
             cam.position.y = Math.max(cam.position.y, 4.2);
             cam.lookAt(camTarget);
           }
+        }
+        // 건물이 사람을 가리는지 살펴, 가리면 다음 프레임부터 카메라를 위로 들어 올려 내려다봄
+        if (view.intro >= 1) {
+          occRay.set(camTarget, occDir.subVectors(cam.position, camTarget).normalize());
+          occRay.far = camTarget.distanceTo(cam.position);
+          const hit = occRay.intersectObjects(world.occluders, true).length > 0;
+          occLift = THREE.MathUtils.clamp(occLift + (hit ? dt * 2.5 : -dt * 0.8), 0, 1);
         }
         // 땅 속으로 카메라가 들어가지 않게
         const camGround = mod.heightAt(cam.position.x, cam.position.z) + 0.6;
@@ -408,7 +417,7 @@ export default function Village3D({ onFail }) {
         for (const b of world.buildings) {
           const pr = project(b.X, b.height, b.Z);
           if (Math.hypot(b.X - PX, b.Z - PZ) > SIGN_RANGE) pr.hidden = true;
-          if (!inside && b.key !== 'gate') pr.hidden = true; // 성 밖에서는 성문 간판만
+          if (!inside && b.key !== 'gate') pr.hidden = true; // 담장 밖에서는 게이트 간판만
           placeLabel(labelRefs.current[`b-${b.key}`], pr);
         }
         const cur = nearRef.current;
@@ -428,6 +437,12 @@ export default function Village3D({ onFail }) {
           const dr = door(b);
           const d = Math.hypot(pos.current.x - dr.x, pos.current.y - dr.y);
           if (d < DOOR_R && d < best) { best = d; found = { kind: 'place', id: b.key }; }
+        }
+        // 건물 입구에 서면 카메라가 입구 바깥쪽에서 건물을 바라보게 천천히 돎
+        if (found?.kind === 'place' && now - lastDrag > 1800 && !moving) {
+          const b = BUILDINGS.find((x) => x.key === found.id);
+          const outAz = b.door ? Math.PI / 2 : 0;
+          view.az = angleLerp(view.az, outAz + 0.35, Math.min(1, dt * 1.5));
         }
         if ((cur?.id || null) !== (found?.id || null)) setNear(found);
       };
@@ -460,7 +475,7 @@ export default function Village3D({ onFail }) {
     : null;
 
   return (
-    <section className="yv yv3" aria-label="융중성 — 걸어서 둘러보는 포트폴리오">
+    <section className="yv yv3" aria-label="CARPEDM 캠퍼스 — 걸어서 둘러보는 포트폴리오">
       <div className="yv-stage yv3-stage" ref={stageRef}>
         <div className="yv3-canvas" ref={hostRef} />
 
@@ -487,20 +502,20 @@ export default function Village3D({ onFail }) {
 
         {!ready && (
           <div className="yv3-loading">
-            <b>융중성으로 가는 길…</b>
-            <span>골짜기와 성을 짓고 있습니다</span>
+            <b>CARPEDM 캠퍼스로 가는 길…</b>
+            <span>캠퍼스를 짓고 있습니다</span>
           </div>
         )}
 
         {title && (
           <div className={`yv3-title ${title === 'in' ? 'is-in' : ''}`} key={title}>
-            {title === 'in' ? (<><b>融中城</b><span>융중성에 들어섰습니다</span></>) : (<><b>城外</b><span>성 밖 골짜기 길</span></>)}
+            {title === 'in' ? (<><b>CARPEDM</b><span>오늘을 붙잡는 팀, 캠퍼스에 오신 것을 환영합니다</span></>) : (<><b>RIVERSIDE</b><span>강 건너 셔틀 정류장</span></>)}
           </div>
         )}
 
         {ready && hint && (
           <div className="yv-hint">
-            <b>성문을 지나 융중성으로 들어가 보세요</b>
+            <b>웰컴 게이트를 지나 CARPEDM 캠퍼스로 들어가 보세요</b>
             <span className="yv-hint-desk">W·방향키로 걷고, 끌어서 둘러보고, 휠로 거리 조절. 사람이나 건물 앞에서 Space</span>
             <span className="yv-hint-touch">가고 싶은 곳을 누르면 걸어가고, 끌면 둘러봅니다</span>
           </div>

@@ -3,25 +3,33 @@
 import Link from 'next/link';
 import { AGENTS, CAMPS } from '../data/agents';
 
-// 장수 카드와 진영 안내. 2.5D·3D 마을이 함께 씁니다.
+// 팀원 카드와 건물 안내.
+// 캐릭터 그림이 아직 없으면 이모지 원판으로 대신합니다(img 에 경로를 넣으면 그림을 씁니다).
+function Portrait({ a, size }) {
+  if (a.img) return <img className={`yv-portrait yv-portrait-${size}`} src={a.img} alt={`${a.name} 그림`} />;
+  return <span className={`yv-portrait yv-portrait-${size} is-${a.kind}`} aria-hidden="true">{a.emoji}</span>;
+}
+
 export default function VillageCards({ open, setOpen }) {
   const agent = open?.kind === 'agent' ? AGENTS[open.id] : null;
   const camp = open?.kind === 'place' ? CAMPS.find((c) => c.key === open.id) : null;
   return (
     <>
       {agent && (
-        <div className="ym-modal" role="dialog" aria-modal="true" aria-label={`${agent.name} 장수 카드`} onClick={() => setOpen(null)}>
+        <div className="ym-modal" role="dialog" aria-modal="true" aria-label={`${agent.name} 카드`} onClick={() => setOpen(null)}>
           <div className="ym-sheet" onClick={(e) => e.stopPropagation()}>
             <button type="button" className="ym-close" onClick={() => setOpen(null)} aria-label="닫기">×</button>
-            <img src={`/agents/${open.id}.png`} alt={`${agent.name} 페이퍼크래프트 피규어`} />
+            <Portrait a={agent} size="lg" />
             <div>
               <span className="ym-place">{agent.emoji} {agent.role}</span>
-              <h3>{agent.name} <small>자 {agent.style}</small></h3>
+              <h3>{agent.name} <small>{agent.kind === 'robot' ? '로봇' : agent.title}</small></h3>
               <p className="yv-quote">“{agent.greet}”</p>
               <p>{agent.desc}</p>
-              <dl>
-                <div><dt>에이전트 id</dt><dd className="mono">{open.id}</dd></div>
-              </dl>
+              {!agent.notAgent && (
+                <dl>
+                  <div><dt>AI 에이전트</dt><dd className="mono">{open.id}</dd></div>
+                </dl>
+              )}
             </div>
           </div>
         </div>
@@ -39,7 +47,7 @@ export default function VillageCards({ open, setOpen }) {
                 <div className="yv-crew">
                   {camp.agents.map((id) => (
                     <button type="button" key={id} onClick={() => setOpen({ kind: 'agent', id })}>
-                      <img src={`/agents/${id}.png`} alt="" />
+                      <Portrait a={AGENTS[id]} size="sm" />
                       <span>{AGENTS[id].name}</span>
                     </button>
                   ))}

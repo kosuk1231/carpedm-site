@@ -1,71 +1,72 @@
-// 융중성의 배치와 이동 규칙.
-// 좌표는 바닥 격자(x, y) 칸 단위입니다. 성 안은 0~N, 성문은 남쪽 성벽(y = N) 가운데,
-// 성 밖으로는 골짜기 길이 남쪽(y > N)으로 이어지고, 도중에 강을 다리로 건넙니다.
+// CARPEDM 캠퍼스의 배치와 이동 규칙.
+// 좌표는 바닥 격자(x, y) 칸 단위입니다. 캠퍼스 안은 0~N, 정문은 남쪽 담장(y = N) 가운데,
+// 담장 밖으로는 골짜기 길이 남쪽(y > N)으로 이어지고, 도중에 강을 보행교로 건넙니다.
 
-export const N = 48;           // 성 한 변의 칸 수
-export const GATE_X = 24;      // 성문 가운데
-export const GATE_HALF = 1.15; // 성문 통로 반폭
-export const OUT_LEN = 16;     // 성 밖 길 길이
-export const ROAD_MIN = GATE_X - 5.5, ROAD_MAX = GATE_X + 5.5; // 성 밖 골짜기 길의 좌우 끝
-export const RIVER_Y = N + 7.5;  // 성 밖 강(가운데 줄)
+export const N = 48;           // 캠퍼스 한 변의 칸 수
+export const GATE_X = 24;      // 정문 가운데
+export const GATE_HALF = 1.15; // 정문 통로 반폭
+export const OUT_LEN = 16;     // 담장 밖 길 길이
+export const ROAD_MIN = GATE_X - 5.5, ROAD_MAX = GATE_X + 5.5; // 담장 밖 골짜기 길의 좌우 끝
+export const RIVER_Y = N + 7.5;  // 담장 밖 강(가운데 줄)
 export const BRIDGE_HALF = 1.25;
 export const SPEED = 5.6;      // 초당 이동 칸 수
-export const TALK_R = 1.5;     // 장수와 대화 가능한 거리
+export const TALK_R = 1.5;     // 인물과 대화 가능한 거리
 export const DOOR_R = 1.4;     // 건물 입구 반경
 
 // 건물 위치. key 는 CAMPS 의 key 와 같습니다. 건물은 입구가 +x 쪽(화면 오른쪽 앞)을 보도록 짓습니다.
 export const BUILDINGS = [
   { key: 'gate', x: GATE_X, y: N, door: [0, 1.8], onWall: true },
-  { key: 'chorye', x: 10, y: 9 },
-  { key: 'workshop', x: 35, y: 9 },
-  { key: 'lecture', x: 9, y: 30 },
-  { key: 'library', x: 39, y: 27 },
-  { key: 'beacon', x: 41, y: 41 },
+  { key: 'mission', x: 10, y: 9 },
+  { key: 'lab', x: 37, y: 9 },
+  { key: 'consult', x: 24, y: 10 },
+  { key: 'academy', x: 9, y: 30 },
+  { key: 'archive', x: 39, y: 27 },
+  { key: 'lounge', x: 41, y: 41 },
 ];
 export const B_R = 1.9; // 건물이 차지하는 반경(충돌)
-// 입구 앞 자리. 성문은 성 밖 쪽 문 앞입니다.
+// 입구 앞 자리. 정문은 담장 밖 쪽 앞입니다.
 export const door = (b) => (b.door ? { x: b.x + b.door[0], y: b.y + b.door[1] } : { x: b.x + 2.5, y: b.y + 0.7 });
 
-// 장수 위치. 맡은 일과 맞는 건물 곁에 세웁니다.
+// 팀원 위치. 맡은 일과 맞는 건물 곁에 세웁니다.
 export const PIECES = [
-  { id: 'main', x: 12.5, y: 14.5 },
-  { id: 'developer', x: 39, y: 7.5 },
-  { id: 'critic', x: 31, y: 13 },
+  { id: 'main', x: 17.5, y: 13 },
+  { id: 'ceo', x: 14.5, y: 6.5 },                                        // 미션컨트롤 앞의 대표
+  { id: 'developer', x: 41.5, y: 7 },
+  { id: 'critic', x: 28.5, y: 14.5 },
   { id: 'trainer', x: 14.5, y: 33 },
   { id: 'researcher', x: 9, y: 35.5 },
   { id: 'writer', x: 35, y: 31 },
   { id: 'editor', x: 43.5, y: 25 },
-  { id: 'minutes', x: 41, y: 32.5 },
-  { id: 'brief', x: GATE_X - 1.6, y: N - 3, patrol: [GATE_X - 1.4, 29] },   // 사신: 성문 안쪽과 광장 사이 큰길을 오가며 손님을 맞습니다
-  { id: 'local', x: GATE_X + 2.3, y: N + 1.4, patrol: [GATE_X + 2.6, N + 4.6] }, // 수문장: 성문 밖을 지킵니다
+  { id: 'minutes', x: 30, y: 8.5 },
+  { id: 'brief', x: GATE_X - 1.6, y: N - 3, patrol: [GATE_X - 1.4, 29] },   // 정문 안쪽과 광장 사이 큰길을 오가며 손님을 맞습니다
+  { id: 'local', x: GATE_X + 2.3, y: N + 1.4, patrol: [GATE_X + 2.6, N + 4.6] }, // 경비 로봇: 정문 밖을 지킵니다
 ];
 export const P_R = 0.45;
 
-// 성 안 풍경: 큰길 장터(stall), 민가(house), 나무·대나무·괴석, 깃발. 건물·입구·장수·길·물과 겹치지 않게 골라 둔 자리입니다.
+// 캠퍼스 풍경: 큰길 키오스크(kiosk)·가로등(lamp), 작은 사무 동(pod), 벤치, 나무·대나무·바위, 현수막(banner).
+// 건물·입구·인물·길·물과 겹치지 않게 골라 둔 자리입니다.
 export const DECOR = [
-  ['stall', 21.4, 32], ['stall', 26.6, 32], ['stall', 21.4, 35], ['stall', 26.6, 35], ['stall', 21.4, 38], ['stall', 26.6, 38],
-  ['stall', 21.4, 41], ['stall', 26.6, 41], ['house', 41.8, 22.6], ['house', 10.8, 24.5], ['house', 7.0, 15.7], ['house', 32.1, 4.8],
-  ['house', 9.6, 3.6], ['house', 25.2, 5.5], ['house', 22.2, 14.7], ['house', 44.9, 44.8], ['house', 15.1, 5.9], ['house', 35.2, 19.8],
-  ['house', 38.6, 19.2], ['house', 3.0, 11.8], ['house', 44.2, 19.7], ['house', 43.5, 34.8], ['house', 15.8, 40.2], ['house', 11.8, 19.6],
-  ['house', 7.2, 44.6], ['house', 34.1, 42.5], ['house', 11.3, 42.9], ['house', 28.1, 15.3], ['house', 41.5, 11.6], ['house', 21.7, 5.5],
-  ['pine', 9.6, 18.2], ['pine', 27.2, 7.6], ['bamboo', 45.3, 31.0], ['rock', 2.6, 42.2], ['pine', 2.7, 30.0], ['bamboo', 16.0, 46.2],
-  ['tree', 5.1, 26.0], ['pine', 37.0, 42.4], ['pine', 17.4, 32.2], ['bamboo', 45.9, 40.9], ['rock', 5.5, 35.1], ['pine', 3.1, 28.5],
-  ['bamboo', 23.2, 12.0], ['tree', 32.8, 23.9], ['pine', 13.2, 2.3], ['pine', 7.8, 23.8], ['bamboo', 29.6, 23.7], ['rock', 45.4, 21.9],
-  ['pine', 5.1, 3.2], ['bamboo', 40.6, 3.6], ['tree', 15.5, 36.9], ['pine', 2.6, 7.8], ['pine', 22.0, 2.9], ['bamboo', 38.6, 12.3],
-  ['rock', 29.7, 21.6], ['pine', 37.6, 44.4], ['bamboo', 22.9, 9.7], ['tree', 2.3, 22.8], ['pine', 13.9, 17.2], ['pine', 29.1, 35.4],
-  ['bamboo', 19.3, 37.0], ['rock', 42.0, 5.7], ['pine', 40.8, 37.2], ['bamboo', 30.7, 10.9], ['tree', 30.3, 33.7], ['pine', 37.7, 4.6],
-  ['pine', 43.9, 5.6], ['bamboo', 15.6, 18.7], ['rock', 11.0, 39.6], ['pine', 27.2, 10.7], ['bamboo', 28.7, 3.0], ['tree', 25.7, 20.2],
-  ['pine', 13.8, 22.8], ['pine', 42.9, 7.5], ['bamboo', 36.4, 2.8], ['rock', 25.3, 8.9], ['pine', 41.9, 15.8], ['bamboo', 15.8, 42.8],
-  ['tree', 11.5, 46.1], ['pine', 41.2, 7.7], ['pine', 12.4, 34.1], ['bamboo', 44.8, 6.9], ['rock', 39.1, 45.8], ['pine', 4.6, 44.0],
-  ['bamboo', 16.3, 22.5], ['tree', 9.8, 22.0], ['flag', 22.4, 30], ['flag', 25.6, 30], ['flag', 21.5, 24], ['flag', 26.5, 24],
-  ['flag', 21.8, N + 1.0], ['flag', 26.2, N + 1.0],
+  ['kiosk', 21.4, 32], ['kiosk', 26.6, 32], ['kiosk', 21.4, 35], ['kiosk', 26.6, 35], ['kiosk', 21.4, 38], ['kiosk', 26.6, 38],
+  ['kiosk', 21.4, 41], ['kiosk', 26.6, 41], ['pod', 41.8, 22.6], ['pod', 10.8, 24.5], ['pod', 7.0, 15.7], ['pod', 32.1, 4.8],
+  ['pod', 9.6, 3.6], ['pod', 22.2, 14.7], ['pod', 44.9, 44.8], ['pod', 38.3, 32.7], ['pod', 35.2, 19.8], ['pod', 38.6, 19.2],
+  ['pod', 3.0, 11.8], ['pod', 44.2, 19.7], ['pod', 43.5, 34.8], ['pod', 11.9, 14.3], ['tree', 44.9, 37.5], ['pine', 15.3, 41.1],
+  ['tree', 6.3, 45.7], ['bench', 36.1, 16.4], ['bamboo', 5.8, 27.7], ['tree', 12.6, 28.5], ['rock', 18.3, 21.9], ['bench', 34.6, 43.6],
+  ['tree', 10.5, 44.0], ['pine', 20.5, 6.4], ['tree', 3.5, 44.5], ['bench', 12.4, 33.1], ['bamboo', 13.2, 38.4], ['tree', 42.5, 10.9],
+  ['rock', 21.6, 4.5], ['bench', 9.6, 18.2], ['tree', 27.2, 7.6], ['pine', 17.9, 41.4], ['tree', 45.3, 31.0], ['bench', 2.6, 42.2],
+  ['bamboo', 32.9, 44.5], ['tree', 2.7, 30.0], ['rock', 16.0, 46.2], ['bench', 5.1, 26.0], ['tree', 34.5, 41.8], ['pine', 37.0, 42.4],
+  ['tree', 17.4, 32.2], ['bench', 45.9, 40.9], ['bamboo', 5.5, 35.1], ['tree', 3.1, 28.5], ['rock', 32.8, 23.9], ['bench', 13.2, 2.3],
+  ['tree', 42.0, 31.1], ['pine', 7.8, 23.8], ['tree', 29.6, 23.7], ['bench', 15.8, 39.1], ['bamboo', 45.4, 21.9], ['tree', 5.1, 3.2],
+  ['rock', 40.6, 3.6], ['bench', 15.5, 36.9], ['tree', 2.6, 7.8], ['pine', 22.0, 2.9], ['tree', 37.6, 44.4], ['bench', 32.2, 10.7],
+  ['bamboo', 2.3, 22.8], ['tree', 13.9, 17.2], ['rock', 29.1, 35.4], ['bench', 19.3, 37.0], ['tree', 40.8, 37.2], ['pine', 30.7, 10.9],
+  ['tree', 30.3, 33.7], ['bench', 11.3, 41.8], ['bamboo', 37.7, 4.6], ['tree', 43.9, 5.6], ['rock', 15.6, 18.7], ['bench', 11.0, 39.6],
+  ['banner', 21.6, 30.5], ['banner', 26.4, 30.5], ['banner', 21.6, 21.5], ['banner', 26.4, 21.5], ['lamp', 22.4, 33.5], ['lamp', 25.6, 33.5],
+  ['lamp', 22.4, 36.5], ['lamp', 25.6, 36.5], ['lamp', 22.4, 39.5], ['lamp', 25.6, 39.5], ['lamp', 22.4, 42.5], ['lamp', 25.6, 42.5],
 ];
-export const DECOR_R = { pine: 0.5, bamboo: 0.55, rock: 0.5, tree: 0.5, flag: 0.25, stall: 0.9, house: 1.5 };
+export const DECOR_R = { pine: 0.5, bamboo: 0.55, rock: 0.5, tree: 0.5, bench: 0.6, banner: 0.25, lamp: 0.15, kiosk: 0.9, pod: 1.5 };
 
 // 물: 연못 [중심, 반지름], 개울(꺾은선). 걸어서 건널 수 없습니다.
-export const PONDS = [[[19, 10], 1.6], [[32, 38], 2.0], [[6, 21], 1.3]];
+export const PONDS = [[[13, 21], 1.6], [[32, 38], 2.0], [[6, 21], 1.3]];
 export const STREAMS = [
-  [[17, 0], [18.5, 4], [17.5, 7.5], [19, 10]],
   [[32, 38], [29, 41.5], [27.5, 45]],
 ];
 export const STREAM_HALF = 0.4;
@@ -80,19 +81,19 @@ export const inWater = (x, y) => {
   return false;
 };
 
-export const START = { x: GATE_X, y: N + OUT_LEN - 2 }; // 성 밖 골짜기 길에서 출발
+export const START = { x: GATE_X, y: N + OUT_LEN - 2 }; // 강 건너 셔틀 정류장에서 출발
 export const PLAZA = { x: 24, y: 26 };
 
-// 성 밖 강물(다리 위는 지날 수 있음)
+// 담장 밖 강물(다리 위는 지날 수 있음)
 export const riverZ = (x) => RIVER_Y + Math.sin(x * 0.18) * 1.2;
 const inRiver = (x, y) => Math.abs(y - riverZ(x)) < 1.3 && Math.abs(x - GATE_X) > BRIDGE_HALF;
 
 export const blocked = (x, y) => {
   if (x < 0.8 || x > N - 0.8 || y < 0.8) return true;
   if (y > N - 0.8) {
-    // 성벽: 성문 통로로만 지날 수 있음
+    // 담장: 정문 통로로만 지날 수 있음
     if (y < N + 0.8) return Math.abs(x - GATE_X) > GATE_HALF;
-    // 성 밖 골짜기 길
+    // 담장 밖 골짜기 길
     if (x < ROAD_MIN || x > ROAD_MAX || y > N + OUT_LEN) return true;
     if (inRiver(x, y)) return true;
   }

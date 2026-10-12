@@ -1,5 +1,5 @@
 // 융중성 바깥의 실제 지형: 성이 앉은 평지, 남쪽으로 뻗은 골짜기 길, 길을 가로지르는 강과 다리,
-// 둘레의 구릉과 먼 산, 숲과 바위, 바람에 눕는 풀. 그리고 성벽과 모서리 망루.
+// 둘레의 구릉과 먼 산, 숲과 바위, 바람에 눕는 풀. 그리고 캠퍼스 담장과 모서리 조명탑, 셔틀 정류장.
 
 import { N, GATE_X, OUT_LEN, RIVER_Y, BRIDGE_HALF, riverZ } from '../../data/villageMap';
 import { rand, hash3 } from './kit';
@@ -115,23 +115,25 @@ export function buildTerrain(THREE, kit, scene) {
   scene.add(river);
   updates.push((t) => { waterUniforms.uTime.value = t; });
 
-  // 다리(아치형 나무 다리와 난간)
+  // 보행교: 흰 아치 상판, 유리 난간, 손잡이 조명
+  const bridgeGlass = track(new THREE.MeshToonMaterial({ color: '#BFE0E4', gradientMap: kit.ramp, transparent: true, opacity: 0.45 }));
   const bridge = new THREE.Group();
   const X0 = GATE_X - HALF, Zr = riverWorldZ(X0);
   bridge.position.set(X0, 0, Zr);
-  const plank = toon('#8A6440'), rail = toon('#A8392A');
+  const plank = toon('#ECE8DF'), rail = toon('#2E3436');
   for (let i = -12; i <= 12; i++) {
     const dz = (i / 12) * 2.6;
     const y = 0.55 * Math.cos((dz / 2.6) * Math.PI * 0.5);
     bridge.add(mesh(new THREE.BoxGeometry(2.8, 0.1, 0.22), plank, { y: y - 0.02, z: dz, rx: -Math.sin((dz / 2.6) * Math.PI * 0.5) * 0.35 }));
-    if (i % 3 === 0) for (const s of [-1, 1]) bridge.add(mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.6, 6), rail, { x: s * 1.35, y: y + 0.3, z: dz }));
+    if (i % 3 === 0) for (const s of [-1, 1]) bridge.add(mesh(new THREE.BoxGeometry(0.04, 0.6, 0.04), rail, { x: s * 1.35, y: y + 0.3, z: dz }));
+    if (i % 2 === 0) for (const s of [-1, 1]) bridge.add(mesh(new THREE.BoxGeometry(0.02, 0.5, 0.22), bridgeGlass, { x: s * 1.35, y: y + 0.28, z: dz, cast: false }));
   }
   for (const s of [-1, 1]) {
     const pts = [];
     for (let i = -12; i <= 12; i++) { const dz = (i / 12) * 2.6; pts.push(new THREE.Vector3(s * 1.35, 0.55 * Math.cos((dz / 2.6) * Math.PI * 0.5) + 0.6, dz)); }
-    bridge.add(mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.045, 6), rail));
+    bridge.add(mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.04, 6), toon('#FFE2A8', { emissive: 0xFFB45A, emissiveIntensity: 0.6 })));
   }
-  for (const s of [-1, 1]) for (const z of [-2.2, 2.2]) bridge.add(mesh(new THREE.CylinderGeometry(0.12, 0.14, 1.6, 8), toon('#5A4630'), { x: s * 1.2, y: -0.5, z }));
+  for (const s of [-1, 1]) for (const z of [-2.2, 2.2]) bridge.add(mesh(new THREE.CylinderGeometry(0.12, 0.14, 1.6, 8), toon('#CFC8BA'), { x: s * 1.2, y: -0.5, z }));
   scene.add(bridge);
 
   // 성 밖 흙길(다리 앞뒤로 나눔)
@@ -229,69 +231,61 @@ export function buildTerrain(THREE, kit, scene) {
   scene.add(grass);
   updates.push((t) => { grassUniforms.uTime.value = t; });
 
-  // 성벽: 네 면, 남쪽 가운데는 성문 자리로 비움
-  const brick = (() => {
+  // 캠퍼스 담장: 낮은 석재 담 + 위쪽 생울타리, 남쪽 가운데는 정문 자리로 비움
+  const WALL_H = 1.1, WALL_T = 0.9;
+  const stoneTex = (() => {
     const c = document.createElement('canvas');
     c.width = 128; c.height = 64;
     const g2 = c.getContext('2d');
-    g2.fillStyle = '#BFB093'; g2.fillRect(0, 0, 128, 64);
-    g2.strokeStyle = 'rgba(110,96,70,.45)'; g2.lineWidth = 2;
-    for (let r = 0; r < 4; r++) {
-      g2.beginPath(); g2.moveTo(0, r * 16); g2.lineTo(128, r * 16); g2.stroke();
-      for (let k = 0; k < 4; k++) { const x = k * 32 + (r % 2) * 16; g2.beginPath(); g2.moveTo(x, r * 16); g2.lineTo(x, r * 16 + 16); g2.stroke(); }
-    }
-    for (let i = 0; i < 40; i++) { g2.fillStyle = `rgba(90,80,60,${rand(i) * 0.12})`; g2.fillRect(rand(i + 1) * 128, rand(i + 2) * 64, 10, 6); }
+    g2.fillStyle = '#D6D0C2'; g2.fillRect(0, 0, 128, 64);
+    g2.strokeStyle = 'rgba(120,112,98,.35)'; g2.lineWidth = 2;
+    for (let r = 0; r < 2; r++) { g2.beginPath(); g2.moveTo(0, r * 32); g2.lineTo(128, r * 32); g2.stroke(); for (let k = 0; k < 3; k++) { const x = k * 48 + (r % 2) * 24; g2.beginPath(); g2.moveTo(x, r * 32); g2.lineTo(x, r * 32 + 32); g2.stroke(); } }
     return canvasTex(c, { repeat: true });
   })();
-  const WALL_H = 3.4, WALL_T = 1.3;
-  const wallMat = (len) => {
-    const t = brick.clone(); t.needsUpdate = true; t.repeat.set(len / 2.4, WALL_H / 1.2); track(t);
-    return toon('#ffffff', { map: t });
-  };
+  const hedge = toon('#5E8A4B');
   const wallSeg = (x0, z0, x1, z1) => {
     const len = Math.hypot(x1 - x0, z1 - z0);
-    const m = mesh(new THREE.BoxGeometry(len, WALL_H, WALL_T), wallMat(len), { x: (x0 + x1) / 2, y: WALL_H / 2, z: (z0 + z1) / 2, ry: -Math.atan2(z1 - z0, x1 - x0) });
-    scene.add(m);
+    const t = stoneTex.clone(); t.needsUpdate = true; t.repeat.set(len / 2.4, 1); track(t);
+    const ry = -Math.atan2(z1 - z0, x1 - x0);
+    scene.add(mesh(new THREE.BoxGeometry(len, WALL_H, WALL_T), toon('#ffffff', { map: t }), { x: (x0 + x1) / 2, y: WALL_H / 2, z: (z0 + z1) / 2, ry }));
+    scene.add(mesh(new THREE.BoxGeometry(len, 0.7, WALL_T * 0.8), hedge, { x: (x0 + x1) / 2, y: WALL_H + 0.3, z: (z0 + z1) / 2, ry }));
   };
-  const H = HALF, GAP = 1.9;
+  const H = HALF, GAP = 3.1;
   wallSeg(-H, -H, H, -H);
   wallSeg(-H, -H, -H, H);
   wallSeg(H, -H, H, H);
   wallSeg(-H, H, -GAP, H);
   wallSeg(GAP, H, H, H);
-  // 성가퀴(바깥쪽 가장자리를 따라)
-  const merlonGeo = track(new THREE.BoxGeometry(0.5, 0.55, 0.35));
-  const merlons = new THREE.InstancedMesh(merlonGeo, toon('#B3A487'), 400);
-  let mc = 0;
-  const addMerlons = (x0, z0, x1, z1, ox, oz) => {
-    const len = Math.hypot(x1 - x0, z1 - z0), k = Math.floor(len / 1.0);
-    for (let i = 0; i < k; i++) {
-      const t = (i + 0.5) / k;
-      ps.set(x0 + (x1 - x0) * t + ox, WALL_H + 0.27, z0 + (z1 - z0) * t + oz);
-      q4.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.atan2(z1 - z0, x1 - x0)); sc.set(1, 1, 1);
-      mtx.compose(ps, q4, sc); merlons.setMatrixAt(mc++, mtx);
-    }
-  };
-  const o = WALL_T / 2 - 0.18;
-  addMerlons(-H, -H, H, -H, 0, -o);
-  addMerlons(-H, -H, -H, H, -o, 0);
-  addMerlons(H, -H, H, H, o, 0);
-  addMerlons(-H, H, -GAP, H, 0, o);
-  addMerlons(GAP, H, H, H, 0, o);
-  merlons.count = mc; merlons.castShadow = true;
-  scene.add(merlons);
-  // 모서리 망루
+  // 모서리 조명탑(밤처럼 은은한 빛)
   for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
-    const tw = new THREE.Group();
-    tw.position.set(sx * H, 0, sz * H);
-    tw.add(mesh(new THREE.BoxGeometry(2.6, WALL_H + 1.2, 2.6), wallMat(2.6), { y: (WALL_H + 1.2) / 2 }));
-    tw.add(mesh(new THREE.BoxGeometry(1.8, 1.1, 1.8), toon('#E2D2B0'), { y: WALL_H + 1.75 }));
-    for (const a of [-1, 1]) for (const b of [-1, 1]) tw.add(mesh(new THREE.CylinderGeometry(0.07, 0.07, 1.1, 6), toon('#A8392A'), { x: a * 0.85, y: WALL_H + 1.75, z: b * 0.85 }));
-    const roof = curvedRoof(1.55, 1.55, 1.0, 0.1, 0.32, toon('#ffffff', { map: tileTex('#3C3F44', '#2A2C30'), side: THREE.DoubleSide }));
-    roof.position.y = WALL_H + 2.3;
-    tw.add(roof);
-    scene.add(tw);
+    scene.add(mesh(new THREE.BoxGeometry(1.4, 3.6, 1.4), toon('#E6E1D6'), { x: sx * H, y: 1.8, z: sz * H }));
+    scene.add(mesh(new THREE.BoxGeometry(1.5, 0.3, 1.5), toon('#FFE2A8', { emissive: 0xFFB45A, emissiveIntensity: 0.7 }), { x: sx * H, y: 3.3, z: sz * H, cast: false }));
+    scene.add(mesh(new THREE.BoxGeometry(1.6, 0.12, 1.6), toon('#2E3436'), { x: sx * H, y: 3.66, z: sz * H }));
   }
+  // 셔틀 정류장(출발점 옆): 지붕, 벤치, 노선 표지판
+  const stop = new THREE.Group();
+  const SZ = HALF + OUT_LEN - 2;
+  stop.position.set(X0 + 2.8, heightAt(X0 + 2.8, SZ), SZ);
+  stop.add(mesh(new THREE.BoxGeometry(1.6, 0.08, 2.4), toon('#2E3436'), { y: 2.3 }));
+  for (const z of [-1.1, 1.1]) stop.add(mesh(new THREE.BoxGeometry(0.08, 2.3, 0.08), toon('#2E3436'), { x: 0.7, y: 1.15, z }));
+  stop.add(mesh(new THREE.BoxGeometry(0.04, 1.6, 2.2), bridgeGlass, { x: 0.72, y: 1.2, cast: false }));
+  stop.add(mesh(new THREE.BoxGeometry(0.4, 0.06, 1.8), toon('#B98A5A'), { x: 0.4, y: 0.45 }));
+  stop.add(mesh(new THREE.BoxGeometry(0.06, 0.7, 0.5), toon('#43706A'), { x: -0.5, y: 2.75, z: -1.0 }));
+  scene.add(stop);
+  // 자율주행 셔틀: 정류장 앞을 오감
+  const shuttle = new THREE.Group();
+  shuttle.add(mesh(new THREE.BoxGeometry(1.4, 1.2, 2.6), toon('#F4F1EA'), { y: 0.95 }));
+  shuttle.add(mesh(new THREE.BoxGeometry(1.42, 0.5, 2.3), track(new THREE.MeshToonMaterial({ color: '#4F7D86', gradientMap: kit.ramp, transparent: true, opacity: 0.8 })), { y: 1.15, cast: false }));
+  shuttle.add(mesh(new THREE.BoxGeometry(1.44, 0.12, 2.62), toon('#E0995A'), { y: 0.55 }));
+  for (const x of [-0.7, 0.7]) for (const z of [-0.9, 0.9]) shuttle.add(mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.14, 14), toon('#2E3436'), { x, y: 0.3, z, rz: Math.PI / 2 }));
+  scene.add(shuttle);
+  updates.push((t) => {
+    const k = (Math.sin(t * 0.12) + 1) / 2; // 천천히 왕복
+    const Z = HALF + 20 + k * 30;
+    const X = X0 - 3.2 + Math.sin(Z * 0.05) * 2 * smooth(V0, V1, Z);
+    shuttle.position.set(X, heightAt(X, Z), Z);
+    shuttle.rotation.y = Math.cos(t * 0.12) > 0 ? 0 : Math.PI;
+  });
 
   return { update: (t) => updates.forEach((f) => f(t)) };
 }
