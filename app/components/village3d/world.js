@@ -1,7 +1,7 @@
 // CARPEDM 캠퍼스 3D 장면 전체: 하늘·먼 산·골짜기 지형·강·담장·캠퍼스 건물·사람과 로봇.
 
 import {
-  N, GATE_X, BUILDINGS, door, PIECES, DECOR, PONDS, STREAMS, STREAM_HALF, PLAZA, CAMPUS,
+  NX, NY, GATE_X, BUILDINGS, PIECES, DECOR, PONDS, STREAMS, STREAM_HALF, PLAZA, CAMPUS, PROMENADE, PROM_HALF, BRANCHES, QUAD,
 } from '../../data/villageMap';
 import {
   createKit, rand, hash3, cloudCanvas, ridgeCanvas, bannerCanvas, radialCanvas, petalCanvas, skyCanvas,
@@ -14,62 +14,59 @@ import { makePerson, PEOPLE, TOWNSFOLK } from './people';
 import { AGENTS } from '../../data/agents';
 
 
-export const HALF = N / 2;
-export const toXZ = (x, y) => [x - HALF, y - HALF];
+export const HX = NX / 2, HY = NY / 2;
+export const toXZ = (x, y) => [x - HX, y - HY];
 export const BASE_AZ = Math.PI / 4;
 
 function groundCanvas() {
-  const S = 3072, k = S / N;
+  // 캠퍼스 바닥 그림(NX×NY 칸): 잔디 결, 가로수 산책로, 건물로 가는 샛길, 쉼터 광장, 잔디 쿼드
+  const k = 40, SW = NX * k, SH = NY * k;
   const c = document.createElement('canvas');
-  c.width = c.height = S;
+  c.width = SW; c.height = SH;
   const g = c.getContext('2d');
-  g.fillStyle = '#C9C08E';
-  g.fillRect(0, 0, S, S);
-  for (let i = 0; i < 180; i++) {
-    const x = rand(i + 300) * S, y = rand(i + 400) * S, r = (1 + rand(i + 500) * 2.6) * k;
+  g.fillStyle = '#B8C48C';
+  g.fillRect(0, 0, SW, SH);
+  for (let i = 0; i < 320; i++) {
+    const x = rand(i + 300) * SW, y = rand(i + 400) * SH, r = (1 + rand(i + 500) * 2.6) * k;
     const grad = g.createRadialGradient(x, y, 0, x, y, r);
     const green = rand(i + 600) > 0.3;
-    grad.addColorStop(0, green ? 'rgba(126,156,90,.6)' : 'rgba(226,207,163,.7)');
-    grad.addColorStop(1, green ? 'rgba(126,156,90,0)' : 'rgba(226,207,163,0)');
+    grad.addColorStop(0, green ? 'rgba(126,156,90,.55)' : 'rgba(214,204,160,.6)');
+    grad.addColorStop(1, green ? 'rgba(126,156,90,0)' : 'rgba(214,204,160,0)');
     g.fillStyle = grad;
     g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
   }
   g.lineCap = 'round';
-  for (let i = 0; i < 7000; i++) {
-    const x = rand(i + 900) * S, y = rand(i + 4000) * S;
-    g.strokeStyle = rand(i + 7000) > 0.5 ? 'rgba(92,120,66,.45)' : 'rgba(116,140,80,.35)';
-    g.lineWidth = 1.6;
+  for (let i = 0; i < 12000; i++) {
+    const x = rand(i + 900) * SW, y = rand(i + 4000) * SH;
+    g.strokeStyle = rand(i + 7000) > 0.5 ? 'rgba(92,120,66,.42)' : 'rgba(116,140,80,.32)';
+    g.lineWidth = 1.4;
     g.beginPath();
-    g.moveTo(x, y); g.lineTo(x - 2, y - 7);
-    g.moveTo(x + 2, y); g.lineTo(x + 3, y - 8);
-    g.moveTo(x + 4, y); g.lineTo(x + 7, y - 6);
+    g.moveTo(x, y); g.lineTo(x - 2, y - 6);
+    g.moveTo(x + 2, y); g.lineTo(x + 3, y - 7);
     g.stroke();
   }
-  const road = (w, color) => {
-    g.strokeStyle = color; g.lineWidth = w * k;
-    for (const b of BUILDINGS) {
-      const d = door(b);
-      g.beginPath(); g.moveTo(PLAZA.x * k, PLAZA.y * k); g.lineTo(d.x * k, d.y * k); g.stroke();
-    }
-  };
-  road(1.1, 'rgba(150,146,136,.6)');
-  road(0.86, '#E6E2D8');
-  // 디딤돌
-  for (const b of BUILDINGS) {
-    const d = door(b);
-    for (let t = 0.1; t < 0.95; t += 0.09) {
-      const x = (PLAZA.x + (d.x - PLAZA.x) * t) * k, y = (PLAZA.y + (d.y - PLAZA.y) * t) * k;
-      g.fillStyle = 'rgba(190,184,170,.5)';
-      g.beginPath(); g.ellipse(x + (rand(t * 99 + b.x) - 0.5) * 14, y + (rand(t * 77 + b.y) - 0.5) * 14, 11, 8, rand(t) * 3, 0, Math.PI * 2); g.fill();
-    }
-  }
-  // 광장: 둥근 잔디 마당과 바닥 원형 띠, 가운데 CARPEDM 글자
+  // 잔디 쿼드: 더 푸른 타원 마당과 가로지르는 오솔길
+  g.save(); g.translate(QUAD.x * k, QUAD.y * k);
+  g.beginPath(); g.ellipse(0, 0, QUAD.rx * k, QUAD.ry * k, 0, 0, Math.PI * 2); g.fillStyle = '#93B26A'; g.fill();
+  g.lineWidth = 0.7 * k; g.strokeStyle = '#DCD6C6';
+  g.beginPath(); g.moveTo(-QUAD.rx * k, 0); g.lineTo(QUAD.rx * k, 0); g.moveTo(-QUAD.rx * 0.7 * k, -QUAD.ry * 0.7 * k); g.lineTo(QUAD.rx * 0.7 * k, QUAD.ry * 0.7 * k); g.stroke();
+  g.restore();
+  const line = (pts, w, color) => { g.strokeStyle = color; g.lineWidth = w * k; g.lineJoin = 'round'; g.beginPath(); pts.forEach((p, i) => (i ? g.lineTo(p.x * k, p.y * k) : g.moveTo(p.x * k, p.y * k))); g.stroke(); };
+  // 샛길(건물 입구 → 산책로)과 쿼드로 드는 길
+  for (const br of BRANCHES) { line(br, 1.3, 'rgba(150,146,136,.55)'); line(br, 1.05, '#E3DED2'); }
+  const quadLink = [{ x: PLAZA.x + 2, y: PLAZA.y - 1.5 }, { x: QUAD.x - QUAD.rx, y: QUAD.y + 0.5 }];
+  line(quadLink, 1.0, 'rgba(150,146,136,.5)'); line(quadLink, 0.8, '#E3DED2');
+  // 가로수 산책로: 테두리 + 밝은 포장 + 가운데 판석 줄눈
+  line(PROMENADE, PROM_HALF * 2 + 0.35, 'rgba(140,134,120,.7)');
+  line(PROMENADE, PROM_HALF * 2, '#EAE5DA');
+  g.setLineDash([0.5 * k, 0.5 * k]); line(PROMENADE, 0.06, 'rgba(160,152,138,.6)'); g.setLineDash([]);
+  // 쉼터 광장: 둥근 포장 마당, 가운데 둥근 잔디와 CARPEDM 글자
   const cx = PLAZA.x * k, cy = PLAZA.y * k;
-  g.beginPath(); g.arc(cx, cy, 3.2 * k, 0, Math.PI * 2); g.fillStyle = '#E4DFD3'; g.fill();
+  g.beginPath(); g.arc(cx, cy, 3.3 * k, 0, Math.PI * 2); g.fillStyle = '#E4DFD3'; g.fill();
   g.lineWidth = 6; g.strokeStyle = '#B9B2A3'; g.stroke();
-  g.beginPath(); g.arc(cx, cy, 2.5 * k, 0, Math.PI * 2); g.fillStyle = '#93B26A'; g.fill();
-  g.setLineDash([18, 14]); g.beginPath(); g.arc(cx, cy, 2.85 * k, 0, Math.PI * 2); g.lineWidth = 4; g.strokeStyle = '#E0995A'; g.stroke(); g.setLineDash([]);
-  g.save(); g.translate(cx, cy + 1.6 * k); g.fillStyle = 'rgba(244,241,234,.95)'; g.font = `800 ${Math.round(0.55 * k)}px Pretendard, sans-serif`; g.textAlign = 'center'; g.fillText('CARPEDM', 0, 0); g.restore();
+  g.beginPath(); g.arc(cx, cy, 2.2 * k, 0, Math.PI * 2); g.fillStyle = '#93B26A'; g.fill();
+  g.setLineDash([18, 14]); g.beginPath(); g.arc(cx, cy, 2.6 * k, 0, Math.PI * 2); g.lineWidth = 4; g.strokeStyle = '#E0995A'; g.stroke(); g.setLineDash([]);
+  g.save(); g.translate(cx, cy + 0.2 * k); g.fillStyle = 'rgba(244,241,234,.95)'; g.font = `800 ${Math.round(0.55 * k)}px Pretendard, sans-serif`; g.textAlign = 'center'; g.fillText('CARPEDM', 0, 0); g.restore();
   return c;
 }
 
@@ -95,12 +92,12 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
   scene.add(sun);
 
   // 땅
-  // 캠퍼스 땅: 굽은 부지 모양 그대로(격자 좌표 x→X, y→Z), 바닥 그림은 0~N 칸에 맞춰 붙임
-  const shape = new THREE.Shape(CAMPUS.map((p) => new THREE.Vector2(p.x - HALF, -(p.y - HALF))));
+  // 캠퍼스 땅: 굽은 부지 모양 그대로(격자 좌표 x→X, y→Z), 바닥 그림은 NX×NY 칸에 맞춰 붙임
+  const shape = new THREE.Shape(CAMPUS.map((p) => new THREE.Vector2(p.x - HX, -(p.y - HY))));
   const groundGeo = track(new THREE.ShapeGeometry(shape, 1));
   groundGeo.rotateX(-Math.PI / 2);
   { const p = groundGeo.attributes.position, uv = groundGeo.attributes.uv;
-    for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) + HALF) / N, 1 - (p.getZ(i) + HALF) / N); }
+    for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) + HX) / NX, 1 - (p.getZ(i) + HY) / NY); }
   const groundMat = toon('#ffffff', { map: canvasTex(groundCanvas()) }).clone();
   groundMat.polygonOffset = true; groundMat.polygonOffsetFactor = -1; groundMat.polygonOffsetUnits = -1;
   track(groundMat);
@@ -317,6 +314,7 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
     const built = buildBuilding(THREE, kit, b.key);
     const [X, Z] = toXZ(b.x, b.y);
     built.group.position.set(X, 0, Z);
+    if (b.face === -1) built.group.rotation.y = Math.PI; // 입구가 서쪽(산책로 쪽)
     built.group.traverse((o) => { o.userData.pick = { kind: 'place', id: b.key }; });
     scene.add(built.group);
     if (b.key !== 'gate') occluders.push(built.group);
@@ -328,9 +326,9 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
   const petalGeo = track(new THREE.BufferGeometry());
   const petalPos = new Float32Array(petalCount * 3);
   for (let i = 0; i < petalCount; i++) {
-    petalPos[i * 3] = (rand(i + 1) - 0.5) * N * 1.2;
+    petalPos[i * 3] = (rand(i + 1) - 0.5) * NX * 1.2;
     petalPos[i * 3 + 1] = rand(i + 2) * 12;
-    petalPos[i * 3 + 2] = (rand(i + 3) - 0.5) * N * 1.2;
+    petalPos[i * 3 + 2] = (rand(i + 3) - 0.5) * NY * 1.1;
   }
   petalGeo.setAttribute('position', new THREE.BufferAttribute(petalPos, 3));
   scene.add(new THREE.Points(petalGeo, track(new THREE.PointsMaterial({ map: canvasTex(petalCanvas()), size: 0.32, transparent: true, depthWrite: false, alphaTest: 0.2 }))));
@@ -372,7 +370,7 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
       let y = pp.getY(i) - dt * (0.35 + rand(i + 9) * 0.35);
       let x = pp.getX(i) + dt * (0.45 + Math.sin(t * 0.7 + i) * 0.35);
       const z = pp.getZ(i) + Math.cos(t * 0.5 + i * 1.3) * dt * 0.3;
-      if (y < 0.05) { y = 10 + rand(i + t) * 3; x = (rand(i + t * 3) - 0.5) * N * 1.2 - 4; }
+      if (y < 0.05) { y = 10 + rand(i + t) * 3; x = (rand(i + t * 3) - 0.5) * NX * 1.2 - 4; }
       pp.setXYZ(i, x, y, z);
     }
     pp.needsUpdate = true;
@@ -384,5 +382,12 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
     scene.traverse((o) => { o.geometry?.dispose?.(); });
   };
 
-  return { scene, buildings, people, visitor, folk, pickables, occluders, update, dispose };
+  // 그림자 범위가 걷는 곳을 따라오게(캠퍼스가 길어서 한 번에 다 덮지 않음). 4칸 단위로 옮겨 그림자 떨림을 줄임
+  const focus = (X, Z) => {
+    const fx = Math.round(X / 4) * 4, fz = Math.round(Z / 4) * 4;
+    sun.target.position.set(fx, 0, fz);
+    sun.position.set(fx - 18, 40, fz + 22);
+  };
+
+  return { scene, buildings, people, visitor, folk, pickables, occluders, update, dispose, focus };
 }

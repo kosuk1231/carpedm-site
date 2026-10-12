@@ -1,11 +1,11 @@
 // CARPEDM 캠퍼스 둘레의 도심: 굽은 캠퍼스 부지를 따라 도는 순환도로와 사방으로 뻗은 굽은 길,
-// 남쪽 큰길(캠퍼스 보도에 바로 붙음), 길을 피해 앉은 파스텔 톤 빌딩, 가로수, 생울타리, 먼 산줄기, 오가는 차와 셔틀.
+// 남쪽 큰길(캠퍼스 보도에 바로 붙음), 길을 피해 앉은 파스텔 톤 빌딩, 가로수, 생울타리, 먼 산줄기. 차는 다니지 않는 조용한 거리.
 
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { N, GATE_X, OUT_LEN, CAMPUS, offsetPoly, inPoly, HEDGE_IN } from '../../data/villageMap';
+import { NX, NY, GATE_X, OUT_LEN, CAMPUS, offsetPoly, inPoly, HEDGE_IN } from '../../data/villageMap';
 import { rand } from './kit';
 
-const HALF = N / 2;
+const HX = NX / 2, HY = NY / 2;
 // 3D 좌표(X, Z)의 땅 높이: 도심은 평지
 export function heightAt() {
   return 0;
@@ -40,7 +40,7 @@ function laneCanvas() {
 export function buildTerrain(THREE, kit, scene) {
   const { track, toon, mesh, canvasTex } = kit;
   const updates = [];
-  const X0 = GATE_X - HALF;
+  const X0 = GATE_X - HX;
   const clay = (color, extra = {}) => track(new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra }));
 
   // 바닥: 연한 보도블록 색의 넓은 평지
@@ -52,12 +52,12 @@ export function buildTerrain(THREE, kit, scene) {
   flat(700, 700, 0, 0, clay('#E2DCD0'), -0.02);
 
   // 캠퍼스 둘레(격자 좌표 → 3D 좌표)
-  const toW = (p) => [p.x - HALF, p.y - HALF];
+  const toW = (p) => [p.x - HX, p.y - HY];
   const ROAD = 7;
   const RING_OFF = OUT_LEN + ROAD / 2;            // 둘레에서 순환도로 중심까지
   const rim = CAMPUS.map(toW);
   const ring = offsetPoly(CAMPUS, RING_OFF).map(toW);
-  const STREET_Z = HALF + RING_OFF;               // 캠퍼스 남쪽 큰길(동서)
+  const STREET_Z = HY + RING_OFF;               // 캠퍼스 남쪽 큰길(동서)
 
   // 띠 모양(두 곡선 사이) 바닥
   const band = (inner, outer, y, mat, closed = true) => {
@@ -77,7 +77,7 @@ export function buildTerrain(THREE, kit, scene) {
   // 캠퍼스를 두른 보도(남쪽은 큰길 앞 보도)와 낮은 경계석
   band(rim, offsetPoly(CAMPUS, OUT_LEN).map(toW), -0.006, clay('#EAE5DA'));
   band(offsetPoly(CAMPUS, -0.05).map(toW), offsetPoly(CAMPUS, 0.35).map(toW), 0.02, clay('#D3CCBD'));
-  flat(6, OUT_LEN + 3, X0, HALF + OUT_LEN / 2 - 1.5, clay('#F2EEE6'), -0.003); // 입구 앞 밝은 포장
+  flat(6, OUT_LEN + 3, X0, HY + OUT_LEN / 2 - 1.5, clay('#F2EEE6'), -0.003); // 입구 앞 밝은 포장
 
   // 도로: 곡선을 따라 까는 아스팔트 띠 + 차선
   const lane = canvasTex(laneCanvas(), { repeat: true });
@@ -163,7 +163,7 @@ export function buildTerrain(THREE, kit, scene) {
         const w = 5 + rand(k) * 6, d = 5 + rand(k + 1) * 6;
         const x = gx + (j ? 4 : -3) + (rand(k + 2) - 0.5) * 3, z = gz + (rand(k + 3) - 0.5) * 6;
         if (Math.hypot(x, z) > 168) continue;
-        if (inPoly(keepOut, x + HALF, z + HALF)) continue;
+        if (inPoly(keepOut, x + HX, z + HY)) continue;
         if (roadDist(x, z) < ROAD / 2 + Math.max(w, d) * 0.72 + 1) continue;
         const near = Math.hypot(x, z - 10);
         const h = 3 + rand(k + 4) * (near < 60 ? 9 : 26) + (near > 90 ? rand(k + 5) * 18 : 0);
@@ -240,8 +240,8 @@ export function buildTerrain(THREE, kit, scene) {
     }
   }
   const campusPad = offsetPoly(CAMPUS, 0.5);
-  const keep = spots.filter(([x, z]) => !inPoly(campusPad, x + HALF, z + HALF)
-    && !(z > HALF - 1 && z < STREET_Z && Math.abs(x) < HALF + 1)
+  const keep = spots.filter(([x, z]) => !inPoly(campusPad, x + HX, z + HY)
+    && !(z > HY - 1 && z < STREET_Z && Math.abs(x) < HX + 1)
     && roadDist(x, z) > ROAD / 2 + 0.8);
   const trunks = new THREE.InstancedMesh(trunkGeo, clay('#8A6448'), keep.length);
   const crowns = new THREE.InstancedMesh(crownGeo, clay('#8DBA6E'), keep.length);
@@ -261,9 +261,9 @@ export function buildTerrain(THREE, kit, scene) {
   let accH = 0;
   for (let i = 0; i < hedgeLine.length; i++) {
     const a = hedgeLine[i], b = hedgeLine[(i + 1) % hedgeLine.length];
-    if (CAMPUS[i].y > N - 0.4 && CAMPUS[(i + 1) % CAMPUS.length].y > N - 0.4) continue;
+    if (CAMPUS[i].y > NY - 0.4 && CAMPUS[(i + 1) % CAMPUS.length].y > NY - 0.4) continue;
     const l = Math.hypot(b.x - a.x, b.y - a.y);
-    for (let s = (0.7 - accH % 0.7) % 0.7; s < l; s += 0.7) bushes.push([a.x + (b.x - a.x) * s / l - HALF, a.y + (b.y - a.y) * s / l - HALF]);
+    for (let s = (0.7 - accH % 0.7) % 0.7; s < l; s += 0.7) bushes.push([a.x + (b.x - a.x) * s / l - HX, a.y + (b.y - a.y) * s / l - HY]);
     accH += l;
   }
   const bushGeo = track(new THREE.IcosahedronGeometry(0.55, 1)); bushGeo.scale(1, 0.85, 1); bushGeo.translate(0, 0.42, 0);
@@ -276,51 +276,9 @@ export function buildTerrain(THREE, kit, scene) {
   });
   bushMesh.castShadow = true; bushMesh.receiveShadow = true; scene.add(bushMesh);
 
-  // 오가는 차: 순환도로와 큰길·바깥 길을 곡선 따라 달림
-  const carCols = ['#F2B8A0', '#A9CBE0', '#F4E1A0', '#B8D8B0', '#E0B8D8', '#F4F1EA'];
-  const track2 = (pl, closed) => {
-    const pts = closed ? [...pl, pl[0]] : pl;
-    const cum = [0];
-    for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
-    return { pts, cum, len: cum[cum.length - 1] };
-  };
-  const at = (tr, s) => {
-    s = ((s % tr.len) + tr.len) % tr.len;
-    let lo = 0, hi = tr.cum.length - 1;
-    while (hi - lo > 1) { const m = (lo + hi) >> 1; if (tr.cum[m] <= s) lo = m; else hi = m; }
-    const [ax, az] = tr.pts[lo], [bx, bz] = tr.pts[hi];
-    const u = (s - tr.cum[lo]) / (tr.cum[hi] - tr.cum[lo] || 1);
-    return { x: ax + (bx - ax) * u, z: az + (bz - az) * u, dx: bx - ax, dz: bz - az };
-  };
-  const routes = [
-    [track2(ring, true), 6], [track2(roads.main, false), 4], [track2(roads.south, false), 2],
-    [track2(roads.east, false), 2], [track2(roads.north, false), 2], [track2(roads.west, false), 2],
-  ];
-  const cars = [];
-  let ci = 0;
-  for (const [tr, count] of routes) {
-    for (let i = 0; i < count; i++, ci++) {
-      const c = new THREE.Group();
-      c.add(mesh(new THREE.BoxGeometry(2.4, 0.7, 1.2), clay(carCols[ci % carCols.length]), { y: 0.55 }));
-      c.add(mesh(new THREE.BoxGeometry(1.4, 0.55, 1.1), clay('#BFD8E2', { transparent: true, opacity: 0.85 }), { x: -0.1, y: 1.15 }));
-      for (const x of [-0.8, 0.8]) for (const z of [-0.6, 0.6]) c.add(mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.18, 12), clay('#3A3F44'), { x, y: 0.25, z, rx: Math.PI / 2 }));
-      scene.add(c);
-      cars.push({ c, tr, dir: i % 2 ? 1 : -1, off: rand(ci) * tr.len, speed: 6 + rand(ci + 3) * 4 });
-    }
-  }
-  updates.push((t) => {
-    for (const car of cars) {
-      const p = at(car.tr, car.off + t * car.speed * car.dir);
-      const l = Math.hypot(p.dx, p.dz) || 1;
-      const nx = -p.dz / l, nz = p.dx / l;
-      car.c.position.set(p.x + nx * 1.6 * car.dir, 0, p.z + nz * 1.6 * car.dir);
-      car.c.rotation.y = Math.atan2(-p.dz * car.dir, p.dx * car.dir);
-    }
-  });
-
   // 셔틀 정류장(출발점 옆, 보도 끝 차도 쪽): 지붕, 벤치, 노선 표지판. 뒤판은 캠퍼스 쪽
   const stop = new THREE.Group();
-  stop.position.set(X0 + 6.2, 0, HALF + OUT_LEN - 0.9);
+  stop.position.set(X0 + 6.2, 0, HY + OUT_LEN - 0.9);
   stop.rotation.y = Math.PI / 2;
   stop.add(mesh(new THREE.BoxGeometry(1.6, 0.08, 2.4), toon('#2E3436'), { y: 2.3 }));
   for (const z of [-1.1, 1.1]) stop.add(mesh(new THREE.BoxGeometry(0.08, 2.3, 0.08), toon('#2E3436'), { x: 0.7, y: 1.15, z }));
@@ -328,18 +286,5 @@ export function buildTerrain(THREE, kit, scene) {
   stop.add(mesh(new THREE.BoxGeometry(0.4, 0.06, 1.8), toon('#B98A5A'), { x: 0.4, y: 0.45 }));
   stop.add(mesh(new THREE.BoxGeometry(0.06, 0.7, 0.5), toon('#43706A'), { x: -0.5, y: 2.75, z: -1.0 }));
   scene.add(stop);
-  // 자율주행 셔틀: 정류장 앞 큰길을 오감
-  const shuttle = new THREE.Group();
-  shuttle.add(mesh(new THREE.BoxGeometry(2.6, 1.2, 1.4), toon('#F4F1EA'), { y: 0.95 }));
-  shuttle.add(mesh(new THREE.BoxGeometry(2.3, 0.5, 1.42), clay('#4F7D86', { transparent: true, opacity: 0.8 }), { y: 1.15, cast: false }));
-  shuttle.add(mesh(new THREE.BoxGeometry(2.62, 0.12, 1.44), toon('#E0995A'), { y: 0.55 }));
-  for (const x of [-0.9, 0.9]) for (const z of [-0.7, 0.7]) shuttle.add(mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.14, 14), toon('#2E3436'), { x, y: 0.3, z, rx: Math.PI / 2 }));
-  scene.add(shuttle);
-  updates.push((t) => {
-    const k2 = Math.sin(t * 0.1);
-    shuttle.position.set(X0 + k2 * 40, 0, STREET_Z - 1.6);
-    shuttle.rotation.y = Math.cos(t * 0.1) > 0 ? 0 : Math.PI;
-  });
-
   return { update: (t) => updates.forEach((f) => f(t)) };
 }

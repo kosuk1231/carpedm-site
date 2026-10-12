@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AGENTS, CAMPS } from '../data/agents';
 import VillageCards from './VillageCards';
 import {
-  N, SPEED, DOOR_R, BUILDINGS, door, PIECES, START, PLAZA, blocked, findPath,
+  NX, NY, SPEED, DOOR_R, BUILDINGS, door, PIECES, START, PLAZA, blocked, findPath,
 } from '../data/villageMap';
 import { rand } from './village3d/kit';
 
@@ -212,7 +212,7 @@ export default function Village3D({ onFail }) {
       // 사람들이 오가는 자리(캠퍼스 안 빈 땅에서 미리 골라 둠)
       const spots = [];
       for (let i = 0; spots.length < 70 && i < 4000; i++) {
-        const pt = { x: 2 + rand(i * 2 + 101) * (N - 4), y: 2 + rand(i * 2 + 102) * (N - 4) };
+        const pt = { x: 2 + rand(i * 2 + 101) * (NX - 4), y: 2 + rand(i * 2 + 102) * (NY - 4) };
         if (!blocked(pt.x, pt.y)) spots.push(pt);
       }
       const folk = world.folk.map((f, i) => {
@@ -256,7 +256,7 @@ export default function Village3D({ onFail }) {
         const hits = raycaster.intersectObjects(world.pickables, true);
         for (const h of hits) if (h.object.userData.pick) return h.object.userData.pick;
         const hit = new THREE.Vector3();
-        if (raycaster.ray.intersectPlane(groundPlane, hit)) return { kind: 'ground', x: hit.x + N / 2, y: hit.z + N / 2 };
+        if (raycaster.ray.intersectPlane(groundPlane, hit)) return { kind: 'ground', x: hit.x + NX / 2, y: hit.z + NY / 2 };
         return null;
       };
 
@@ -302,7 +302,7 @@ export default function Village3D({ onFail }) {
         setHint(false);
         if (hit.kind === 'agent') { interact({ kind: 'agent', id: hit.id }); return; }
         if (hit.kind === 'place') { target.current = findPath(pos.current, door(BUILDINGS.find((b) => b.key === hit.id))); return; }
-        target.current = findPath(pos.current, { x: THREE.MathUtils.clamp(hit.x, 1, N - 1), y: THREE.MathUtils.clamp(hit.y, 1, N - 1) });
+        target.current = findPath(pos.current, { x: THREE.MathUtils.clamp(hit.x, 1, NX - 1), y: THREE.MathUtils.clamp(hit.y, 1, NY + 3) });
       };
       const onWheel = (e) => {
         if (!activeRef.current) return;
@@ -427,7 +427,7 @@ export default function Village3D({ onFail }) {
         // 걷는 동안은 카메라가 천천히 등 뒤로 돌아옵니다(최근에 끌어서 돌렸으면 기다림).
         if (moving && now - lastDrag > 1800 && view.intro >= 1) view.az = angleLerp(view.az, Math.atan2(-Math.cos(yaw), -Math.sin(yaw)), Math.min(1, dt * 1.6));
         // 캠퍼스에 들어서면 제목을 띄웁니다.
-        const nowInside = pos.current.y < N - 0.6;
+        const nowInside = pos.current.y < NY - 0.6;
         if (nowInside !== inside) { inside = nowInside; setTitle(inside ? 'in' : 'out'); setTimeout(() => setTitle(null), 3600); }
         world.visitor.group.rotation.y = yaw;
         world.visitor.update(dt, moving ? visV : 0, t, cam);
@@ -510,6 +510,7 @@ export default function Village3D({ onFail }) {
         const camGround = mod.heightAt(cam.position.x, cam.position.z) + 0.6;
         if (cam.position.y < camGround) { cam.position.y = camGround; cam.lookAt(camTarget); }
 
+        world.focus(camTarget.x, camTarget.z);
         world.update(t, dt);
         if (composer) composer.render(); else renderer.render(world.scene, cam);
 

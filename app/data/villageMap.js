@@ -1,16 +1,19 @@
 // CARPEDM 캠퍼스의 배치와 이동 규칙.
-// 좌표는 바닥 격자(x, y) 칸 단위입니다. 캠퍼스 안은 0~N. 남쪽(y = N)은 담장 없이 열려 있어
-// 큰길 보도(y = N ~ N + OUT_LEN)에서 바로 걸어 들어옵니다.
+// 좌표는 바닥 격자(x, y) 칸 단위입니다. 캠퍼스는 동서 0~NX, 남북 0~NY 로 남북으로 긴 학교 부지입니다.
+// 남쪽(y = NY) 큰길 보도에서 바로 들어와, 가로수 산책로를 따라 북쪽으로 걸으며 건물을 차례로 만납니다.
 
-export const N = 48;           // 캠퍼스 한 변의 칸 수
-export const GATE_X = 24;      // 남쪽 입구(웰컴 사인) 가운데
+export const NX = 56;          // 캠퍼스 동서 폭(칸)
+export const NY = 88;          // 캠퍼스 남북 길이(칸). 남쪽 끝이 큰길
+export const N = NY;           // 남쪽 경계(옛 이름)
+export const GATE_X = 28;      // 남쪽 입구(웰컴 사인) 가운데
 export const OUT_LEN = 4;      // 캠퍼스 남쪽 보도 폭(그 너머가 큰길)
+export const SPEED = 4.0;      // 방문자 초당 이동 칸 수(가볍게 뛰는 속도)
+export const DOOR_R = 1.4;     // 건물 입구 반경
 
-// 캠퍼스 땅 모양: 반듯한 사각형이 아니라 실제 도시의 학교 부지처럼 둘레가 굽은 땅.
-// 남쪽(큰길 쪽)만 곧게 열려 있고, 나머지는 굽은 생울타리와 보도로 둘러싸입니다. 아래 점들을 부드러운 곡선으로 잇습니다.
+// 캠퍼스 땅 모양: 남북으로 긴, 둘레가 굽은 학교 부지. 남쪽(큰길 쪽)만 곧게 열려 있습니다.
 const CAMPUS_CTRL = [
-  [1.5, 48], [12, 48], [24, 48], [36, 48], [46.5, 48], [47.6, 41], [46.4, 33], [47.4, 25], [45.6, 17], [42.2, 9.5],
-  [37.5, 3.2], [30, 0.8], [21, 1.8], [13, 0.6], [6.5, 2.2], [2.6, 6.5], [1.0, 13], [2.4, 21], [0.9, 29], [2.0, 37], [0.9, 43.5],
+  [3, 88], [16, 88], [28, 88], [40, 88], [53, 88], [54.6, 79], [53, 67], [55, 55], [53.4, 43], [55, 31], [52.6, 19], [48.5, 9],
+  [41, 3], [31, 1], [21, 2.2], [12, 1.4], [5.5, 5.5], [2.2, 14], [3.4, 26], [1.4, 38], [3.0, 50], [1.3, 62], [2.6, 74], [1.4, 83],
 ];
 function catmullClosed(pts, steps) {
   const out = [], n = pts.length;
@@ -19,12 +22,26 @@ function catmullClosed(pts, steps) {
     for (let k = 0; k < steps; k++) {
       const t = k / steps, t2 = t * t, t3 = t2 * t;
       const f = (a, b, c, d) => 0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3);
-      out.push({ x: f(p0[0], p1[0], p2[0], p3[0]), y: Math.min(N, f(p0[1], p1[1], p2[1], p3[1])) });
+      out.push({ x: f(p0[0], p1[0], p2[0], p3[0]), y: Math.min(NY, f(p0[1], p1[1], p2[1], p3[1])) });
     }
   }
   return out;
 }
-export const CAMPUS = catmullClosed(CAMPUS_CTRL, 10);
+function catmullOpen(pts, step = 0.8) {
+  const out = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+    const seg = Math.max(2, Math.ceil(Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) / step));
+    for (let k = 0; k < seg; k++) {
+      const t = k / seg, t2 = t * t, t3 = t2 * t;
+      const f = (a, b, c, d) => 0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3);
+      out.push({ x: f(p0[0], p1[0], p2[0], p3[0]), y: f(p0[1], p1[1], p2[1], p3[1]) });
+    }
+  }
+  const l = pts[pts.length - 1]; out.push({ x: l[0], y: l[1] });
+  return out;
+}
+export const CAMPUS = catmullClosed(CAMPUS_CTRL, 8);
 export function inPoly(poly, x, y) {
   let c = false;
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
@@ -45,114 +62,140 @@ export function offsetPoly(poly, d) {
     return { x: p.x + sgn * (ty / l) * d, y: p.y - sgn * (tx / l) * d };
   });
 }
-const isFront = (a, b) => a.y > N - 0.4 && b.y > N - 0.4; // 남쪽 큰길에 열린 부분
-// 생울타리(남쪽 제외)까지의 거리
+const segDist = (px, py, ax, ay, bx, by) => {
+  const dx = bx - ax, dy = by - ay;
+  const u = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy || 1)));
+  return Math.hypot(px - (ax + u * dx), py - (ay + u * dy));
+};
+const lineDist = (pl, x, y) => { let b = Infinity; for (let i = 0; i < pl.length - 1; i++) b = Math.min(b, segDist(x, y, pl[i].x, pl[i].y, pl[i + 1].x, pl[i + 1].y)); return b; };
+const isFront = (a, b) => a.y > NY - 0.4 && b.y > NY - 0.4; // 남쪽 큰길에 열린 부분
 function hedgeDist(x, y) {
   let best = Infinity;
   for (let i = 0; i < CAMPUS.length; i++) {
     const a = CAMPUS[i], b = CAMPUS[(i + 1) % CAMPUS.length];
-    if (isFront(a, b)) continue;
-    const dx = b.x - a.x, dy = b.y - a.y;
-    const u = Math.max(0, Math.min(1, ((x - a.x) * dx + (y - a.y) * dy) / (dx * dx + dy * dy || 1)));
-    best = Math.min(best, Math.hypot(x - (a.x + u * dx), y - (a.y + u * dy)));
+    if (!isFront(a, b)) best = Math.min(best, segDist(x, y, a.x, a.y, b.x, b.y));
   }
   return best;
 }
+export const nearHedge = (x, y) => hedgeDist(x, y);
 export const HEDGE_IN = 0.45;  // 울타리는 둘레에서 이만큼 안쪽
+
+// 가로수 산책로: 입구에서 북쪽 끝까지 완만하게 굽이치는 큰길. 건물은 이 길 양옆에 번호 순서대로 섭니다.
+export const PROMENADE = catmullOpen([[28, 92], [28, 82], [25.5, 72], [24.5, 62], [26.5, 53], [30.5, 44], [31, 34], [28.5, 24], [27, 15], [28, 6]]);
+export const PROM_HALF = 1.25;
+// 산책로 가운데 쉼터 광장과 그 동쪽 잔디 마당(쿼드)
+export const PLAZA = { x: 25.5, y: 58 };
+export const QUAD = { x: 38, y: 50, rx: 6, ry: 4.5 };
+
+// 건물 위치. key 는 CAMPS 의 key 와 같습니다. face: 1 이면 입구가 동쪽(+x), -1 이면 서쪽(-x) — 모두 산책로를 바라봅니다.
+export const BUILDINGS = [
+  { key: 'gate', x: GATE_X, y: NY, door: [0, 0.6], open: true }, // 웰컴 사인: 막지 않는 열린 입구
+  { key: 'academy', x: 13, y: 73, face: 1 },
+  { key: 'consult', x: 43, y: 63, face: -1 },
+  { key: 'lab', x: 14, y: 45, face: 1 },
+  { key: 'archive', x: 44.5, y: 36, face: -1 },
+  { key: 'mission', x: 14, y: 19, face: 1 },
+  { key: 'lounge', x: 41.5, y: 12, face: -1 },
+];
+export const B_R = 1.9; // 건물이 차지하는 반경(충돌)
+// 입구 앞 자리
+export const door = (b) => (b.door ? { x: b.x + b.door[0], y: b.y + b.door[1] } : { x: b.x + 2.5 * (b.face || 1), y: b.y + 0.7 * (b.face || 1) });
+// 각 건물 입구에서 산책로로 이어지는 샛길(산책로 위 가장 가까운 점까지)
+export const BRANCHES = BUILDINGS.filter((b) => !b.open).map((b) => {
+  const d = door(b);
+  let best = PROMENADE[0], bd = Infinity;
+  for (const p of PROMENADE) { const k = Math.hypot(p.x - d.x, p.y - d.y); if (k < bd) { bd = k; best = p; } }
+  return [d, { x: best.x, y: best.y }];
+});
+
+// 팀원 위치. 맡은 일과 맞는 건물 곁에 세웁니다.
+export const PIECES = [
+  { id: 'local', x: GATE_X + 3.2, y: NY - 0.5, patrol: [GATE_X + 3.2, NY - 4] },   // 환영 로봇: 입구에서 손님을 맞습니다
+  { id: 'brief', x: GATE_X - 2.6, y: NY - 4, patrol: [PLAZA.x - 2.5, PLAZA.y + 3] }, // 입구와 쉼터 광장 사이 산책로를 오갑니다
+  { id: 'trainer', x: 18.5, y: 76.5 },
+  { id: 'researcher', x: 11, y: 78.5 },
+  { id: 'critic', x: 37.5, y: 66 },
+  { id: 'developer', x: 19, y: 48.5 },
+  { id: 'minutes', x: 17.5, y: 40 },
+  { id: 'writer', x: 39, y: 39.5 },
+  { id: 'editor', x: 40, y: 31.5 },
+  { id: 'main', x: 20, y: 22 },
+  { id: 'ceo', x: 18, y: 15.5 },
+];
+export const P_R = 0.45;
+
+// 물: 서쪽 숲 속 작은 연못 하나. 걸어서 건널 수 없습니다.
+export const PONDS = [[[20, 31], 2.2]];
+export const STREAMS = [];
+export const STREAM_HALF = 0.4;
+export const inWater = (x, y) => PONDS.some(([[cx, cy], r]) => Math.hypot(x - cx, y - cy) < r + 0.1);
+
+// 캠퍼스 풍경: 산책로 가로수(tree)·가로등(lamp)·벤치, 숲(tree·pine·bamboo·rock), 작은 사무 동(pod), 입구 현수막(banner), 광장 커피 카트(kiosk).
+// 산책로·샛길·건물·연못을 피해 자리를 정합니다(매번 같은 배치).
+export const DECOR_R = { pine: 0.5, bamboo: 0.55, rock: 0.5, tree: 0.5, bench: 0.6, banner: 0.25, lamp: 0.15, kiosk: 0.9, pod: 1.5 };
+const rnd = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+export const DECOR = (() => {
+  const out = [];
+  const branchDist = (x, y) => Math.min(...BRANCHES.map(([a, b]) => segDist(x, y, a.x, a.y, b.x, b.y)));
+  const free = (x, y, r, gap = 1.2) => inPoly(CAMPUS, x, y) && hedgeDist(x, y) > r + 1.0 && y < NY - 1
+    && !BUILDINGS.some((b) => !b.open && Math.hypot(x - b.x, y - b.y) < B_R + r + 1.6)
+    && !BUILDINGS.some((b) => { const d = door(b); return Math.hypot(x - d.x, y - d.y) < 2.4; })
+    && branchDist(x, y) > PROM_HALF + r + 0.5 && !PONDS.some(([[cx, cy], pr]) => Math.hypot(x - cx, y - cy) < pr + r + 1)
+    && Math.hypot(x - PLAZA.x, y - PLAZA.y) > 3.6 + r
+    && !out.some(([t, ox, oy]) => Math.hypot(x - ox, y - oy) < r + DECOR_R[t] + gap);
+  // 산책로 가로수와 가로등: 길 양옆에 줄지어
+  let acc = 0, side = 1;
+  for (let i = 1; i < PROMENADE.length; i++) {
+    const a = PROMENADE[i - 1], b = PROMENADE[i];
+    const l = Math.hypot(b.x - a.x, b.y - a.y); if (!l) continue;
+    const nx = -(b.y - a.y) / l, ny = (b.x - a.x) / l;
+    const before = acc; acc += l;
+    if (Math.floor(acc / 4.2) !== Math.floor(before / 4.2) && b.y < NY - 4) {
+      for (const s of [-1, 1]) { const x = b.x + nx * s * 2.7, y = b.y + ny * s * 2.7; if (free(x, y, 0.5, 0.6)) out.push(['tree', x, y]); }
+    }
+    if (Math.floor(acc / 8.4 + 0.5) !== Math.floor(before / 8.4 + 0.5) && b.y < NY - 2) {
+      side = -side; const x = b.x + nx * side * 1.75, y = b.y + ny * side * 1.75; if (free(x, y, 0.15, 0.3)) out.push(['lamp', x, y]);
+    }
+    if (Math.floor(acc / 13 + 0.3) !== Math.floor(before / 13 + 0.3) && b.y < NY - 6) {
+      const x = b.x - nx * side * 1.95, y = b.y - ny * side * 1.95; if (free(x, y, 0.6, 0.4)) out.push(['bench', x, y]);
+    }
+  }
+  // 입구 현수막과 광장 커피 카트·벤치
+  out.push(['banner', GATE_X - 2.4, NY - 3], ['banner', GATE_X + 2.4, NY - 3]);
+  for (const [dx, dy] of [[4.6, -1.5], [-4.4, 1.8]]) out.push(['kiosk', PLAZA.x + dx, PLAZA.y + dy]);
+  for (const [dx, dy] of [[0, -4.4], [3.6, 3.4], [-3.4, -3.2]]) if (free(PLAZA.x + dx, PLAZA.y + dy, 0.6, 0.3) || true) out.push(['bench', PLAZA.x + dx, PLAZA.y + dy]);
+  // 쿼드 둘레 나무
+  for (let k = 0; k < 9; k++) { const a = (k / 9) * Math.PI * 2; const x = QUAD.x + Math.cos(a) * (QUAD.rx + 1.6), y = QUAD.y + Math.sin(a) * (QUAD.ry + 1.6); if (free(x, y, 0.5, 0.8)) out.push(['tree', x, y]); }
+  // 숲과 작은 사무 동: 남는 땅에 고루
+  const kinds = ['tree', 'pine', 'rock', 'tree', 'bamboo', 'pine', 'pod'];
+  for (let i = 0; out.length < 150 && i < 2500; i++) {
+    const t = kinds[i % kinds.length];
+    const x = 2 + rnd(i * 2 + 1) * (NX - 4), y = 2 + rnd(i * 2 + 2) * (NY - 6);
+    if (Math.hypot(x - QUAD.x, (y - QUAD.y) * QUAD.rx / QUAD.ry) < QUAD.rx + 0.8) continue;
+    if (lineDist(PROMENADE, x, y) < PROM_HALF + DECOR_R[t] + (t === 'pod' ? 3 : 1.6)) continue;
+    if (free(x, y, DECOR_R[t], t === 'pod' ? 2.5 : 1.0)) out.push([t, x, y]);
+  }
+  return out;
+})();
+
+export const START = { x: GATE_X, y: NY + OUT_LEN - 0.8 }; // 큰길 셔틀 정류장에서 출발
+
 // 걸을 수 있는 땅 미리 계산(0.25칸 격자): 캠퍼스 안(울타리 앞까지) + 남쪽 보도
 const MR = 4;
-const MW = N * MR + 1, MH = (N + 8) * MR + 1;
+const MW = NX * MR + 1, MH = (NY + 8) * MR + 1;
 const walkMask = new Uint8Array(MW * MH);
 for (let j = 0; j < MH; j++) for (let i = 0; i < MW; i++) {
   const x = i / MR, y = j / MR;
-  const side = y > N - 0.5 && y <= N + 4 && x > 0.8 && x < N - 0.8;
+  const side = y > NY - 0.5 && y <= NY + OUT_LEN && x > 0.8 && x < NX - 0.8;
   walkMask[j * MW + i] = side || (inPoly(CAMPUS, x, y) && hedgeDist(x, y) > HEDGE_IN + 0.5) ? 1 : 0;
 }
 const walkable = (x, y) => {
   const i = Math.round(x * MR), j = Math.round(y * MR);
   return i >= 0 && j >= 0 && i < MW && j < MH && walkMask[j * MW + i] === 1;
 };
-export const nearHedge = (x, y) => hedgeDist(x, y);
-
-export const SPEED = 4.0;      // 방문자 초당 이동 칸 수(가볍게 뛰는 속도)
-export const TALK_R = 1.5;     // 인물과 대화 가능한 거리
-export const DOOR_R = 1.4;     // 건물 입구 반경
-
-// 건물 위치. key 는 CAMPS 의 key 와 같습니다. 건물은 입구가 +x 쪽(화면 오른쪽 앞)을 보도록 짓습니다.
-export const BUILDINGS = [
-  { key: 'gate', x: GATE_X, y: N, door: [0, 0.6], open: true }, // 웰컴 사인: 막지 않는 열린 입구
-  { key: 'mission', x: 10, y: 9 },
-  { key: 'lab', x: 37, y: 9 },
-  { key: 'consult', x: 24, y: 10 },
-  { key: 'academy', x: 9, y: 30 },
-  { key: 'archive', x: 39, y: 27 },
-  { key: 'lounge', x: 41, y: 41 },
-];
-export const B_R = 1.9; // 건물이 차지하는 반경(충돌)
-// 입구 앞 자리. 웰컴 사인은 보도와 캠퍼스 경계입니다.
-export const door = (b) => (b.door ? { x: b.x + b.door[0], y: b.y + b.door[1] } : { x: b.x + 2.5, y: b.y + 0.7 });
-
-// 팀원 위치. 맡은 일과 맞는 건물 곁에 세웁니다.
-export const PIECES = [
-  { id: 'main', x: 17.5, y: 13 },
-  { id: 'ceo', x: 14.5, y: 6.5 },                                        // 미션컨트롤 앞의 대표
-  { id: 'developer', x: 40.5, y: 11.5 },
-  { id: 'critic', x: 28.5, y: 14.5 },
-  { id: 'trainer', x: 14.5, y: 33 },
-  { id: 'researcher', x: 9, y: 35.5 },
-  { id: 'writer', x: 35, y: 31 },
-  { id: 'editor', x: 43.5, y: 25 },
-  { id: 'minutes', x: 30, y: 8.5 },
-  { id: 'brief', x: GATE_X - 1.6, y: N - 3, patrol: [GATE_X - 1.4, 29] },   // 입구와 광장 사이 큰길을 오가며 손님을 맞습니다
-  { id: 'local', x: GATE_X + 2.6, y: N + 1.4, patrol: [GATE_X + 2.6, N - 2.5] }, // 환영 로봇: 입구에서 손님을 맞습니다
-];
-export const P_R = 0.45;
-
-// 캠퍼스 풍경: 큰길 키오스크(kiosk)·가로등(lamp), 작은 사무 동(pod), 벤치, 나무·대나무·바위, 현수막(banner).
-// 건물·입구·인물·길·물과 겹치지 않게 골라 둔 자리입니다.
-const DECOR_ALL = [
-  ['kiosk', 21.4, 32], ['kiosk', 26.6, 32], ['kiosk', 21.4, 35], ['kiosk', 26.6, 35], ['kiosk', 21.4, 38], ['kiosk', 26.6, 38],
-  ['kiosk', 21.4, 41], ['kiosk', 26.6, 41], ['pod', 41.8, 22.6], ['pod', 10.8, 24.5], ['pod', 7.0, 15.7], ['pod', 32.1, 4.8],
-  ['pod', 9.6, 3.6], ['pod', 22.2, 14.7], ['pod', 44.9, 44.8], ['pod', 38.3, 32.7], ['pod', 35.2, 19.8], ['pod', 38.6, 19.2],
-  ['pod', 3.0, 11.8], ['pod', 44.2, 19.7], ['pod', 43.5, 34.8], ['pod', 11.9, 14.3], ['tree', 44.9, 37.5], ['pine', 15.3, 41.1],
-  ['tree', 6.3, 45.7], ['bench', 36.1, 16.4], ['bamboo', 5.8, 27.7], ['tree', 12.6, 28.5], ['rock', 18.3, 21.9], ['bench', 34.6, 43.6],
-  ['tree', 10.5, 44.0], ['pine', 20.5, 6.4], ['tree', 3.5, 44.5], ['bench', 12.4, 33.1], ['bamboo', 13.2, 38.4], ['tree', 42.5, 10.9],
-  ['rock', 21.6, 4.5], ['bench', 9.6, 18.2], ['tree', 27.2, 7.6], ['pine', 17.9, 41.4], ['tree', 45.3, 31.0], ['bench', 2.6, 42.2],
-  ['bamboo', 32.9, 44.5], ['tree', 2.7, 30.0], ['rock', 16.0, 46.2], ['bench', 5.1, 26.0], ['tree', 34.5, 41.8], ['pine', 37.0, 42.4],
-  ['tree', 17.4, 32.2], ['bench', 45.9, 40.9], ['bamboo', 5.5, 35.1], ['tree', 3.1, 28.5], ['rock', 32.8, 23.9], ['bench', 13.2, 2.3],
-  ['tree', 42.0, 31.1], ['pine', 7.8, 23.8], ['tree', 29.6, 23.7], ['bench', 15.8, 39.1], ['bamboo', 45.4, 21.9], ['tree', 5.1, 3.2],
-  ['rock', 40.6, 3.6], ['bench', 15.5, 36.9], ['tree', 2.6, 7.8], ['pine', 22.0, 2.9], ['tree', 37.6, 44.4], ['bench', 32.2, 10.7],
-  ['bamboo', 2.3, 22.8], ['tree', 13.9, 17.2], ['rock', 29.1, 35.4], ['bench', 19.3, 37.0], ['tree', 40.8, 37.2], ['pine', 30.7, 10.9],
-  ['tree', 30.3, 33.7], ['bench', 11.3, 41.8], ['bamboo', 37.7, 4.6], ['tree', 43.9, 5.6], ['rock', 15.6, 18.7], ['bench', 11.0, 39.6],
-  ['banner', 21.6, 30.5], ['banner', 26.4, 30.5], ['banner', 21.6, 21.5], ['banner', 26.4, 21.5], ['lamp', 22.4, 33.5], ['lamp', 25.6, 33.5],
-  ['lamp', 22.4, 36.5], ['lamp', 25.6, 36.5], ['lamp', 22.4, 39.5], ['lamp', 25.6, 39.5], ['lamp', 22.4, 42.5], ['lamp', 25.6, 42.5],
-];
-// 굽은 둘레 밖이나 울타리에 걸리는 풍경은 뺌
-export const DECOR = DECOR_ALL.filter(([, x, y]) => inPoly(CAMPUS, x, y) && hedgeDist(x, y) > 1.3);
-export const DECOR_R = { pine: 0.5, bamboo: 0.55, rock: 0.5, tree: 0.5, bench: 0.6, banner: 0.25, lamp: 0.15, kiosk: 0.9, pod: 1.5 };
-
-// 물: 연못 [중심, 반지름], 개울(꺾은선). 걸어서 건널 수 없습니다.
-export const PONDS = [[[13, 21], 1.6], [[32, 38], 2.0], [[6, 21], 1.3]];
-export const STREAMS = [
-  [[32, 38], [29, 41.5], [27.5, 45]],
-];
-export const STREAM_HALF = 0.4;
-const segDist = (px, py, [ax, ay], [bx, by]) => {
-  const dx = bx - ax, dy = by - ay;
-  const u = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)));
-  return Math.hypot(px - (ax + u * dx), py - (ay + u * dy));
-};
-export const inWater = (x, y) => {
-  for (const [[cx, cy], r] of PONDS) if (Math.hypot(x - cx, y - cy) < r + 0.1) return true;
-  for (const s of STREAMS) for (let i = 0; i < s.length - 1; i++) if (segDist(x, y, s[i], s[i + 1]) < STREAM_HALF) return true;
-  return false;
-};
-
-export const START = { x: GATE_X, y: N + OUT_LEN - 0.8 }; // 큰길 셔틀 정류장에서 출발
-export const PLAZA = { x: 24, y: 26 };
 
 const blockedRaw = (x, y) => {
-  if (y > N + OUT_LEN || !walkable(x, y)) return true; // 캠퍼스 밖·울타리·차도
+  if (y > NY + OUT_LEN || !walkable(x, y)) return true; // 캠퍼스 밖·울타리·차도
   for (const b of BUILDINGS) if (!b.open && Math.hypot(x - b.x, y - b.y) < B_R) return true;
   for (const [t, dx, dy] of DECOR) if (Math.hypot(x - dx, y - dy) < DECOR_R[t]) return true;
   if (inWater(x, y)) return true;
@@ -196,9 +239,9 @@ export const blocked = (x, y) => {
 // 길찾기: 반 칸 격자 위 A*. 건물·장수·나무를 돌아서 갑니다.
 const G = 2; // 한 칸을 몇 조각으로 나눌지
 export function findPath(from, to) {
-  const W = N * G;
+  const W = NX * G;
   const cell = (x, y) => [Math.round(x * G), Math.round(y * G)];
-  const H = (N + OUT_LEN) * G;
+  const H = (NY + OUT_LEN) * G;
   const free = (i, j) => i >= 0 && j >= 0 && i <= W && j <= H && !blocked(i / G, j / G);
   let [ti, tj] = cell(to.x, to.y);
   if (!free(ti, tj)) {
