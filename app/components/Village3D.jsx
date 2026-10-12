@@ -259,6 +259,7 @@ export default function Village3D({ onFail }) {
       const stepAgent = (st, dt) => {
         // 순찰 경로를 따라 한 걸음
         const wp = st.path[0];
+        if (!wp) return 0;
         const tx = wp.x - st.x, ty = wp.y - st.y;
         const d = Math.hypot(tx, ty);
         if (d < 0.1) { st.path.shift(); return 0.55; }
@@ -289,6 +290,7 @@ export default function Village3D({ onFail }) {
           if (k.has('right')) { dx += right.x; dy += right.y; }
           if (k.has('left'))  { dx -= right.x; dy -= right.y; }
           if (dx || dy) target.current = null;
+          else if (target.current && !target.current.length) target.current = null;
           else if (target.current) {
             const wp = target.current[0];
             const tx = wp.x - pos.current.x, ty = wp.y - pos.current.y;
