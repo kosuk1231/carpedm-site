@@ -10,11 +10,11 @@ import { buildBuilding } from './buildings';
 import { buildTerrain, heightAt, groundY } from './terrain';
 
 export { heightAt, groundY };
-import { makePerson, makeSpritePerson, PEOPLE, TOWNSFOLK } from './people';
+import { makePerson, makeDirPerson, SHEET_ASPECT, PEOPLE } from './people';
 import { AGENTS } from '../../data/agents';
 
-// 카드 그림(클레이 피규어)을 그대로 세울 팀원. 대표는 사진이라 3D 인형으로 둡니다.
-const AGENT_ART = Object.fromEntries(Object.entries(AGENTS).filter(([id, a]) => !a.notAgent && a.img).map(([id, a]) => [id, a.img]));
+// 캠퍼스를 오가는 이름 없는 사람들(다섯 방향 그림이 있는 인물)
+const FOLK = [['staff', 1], ['student', 1], ['rider', 1], ['elder', 0.95], ['staff', 0.97], ['student', 1.02], ['rider', 0.98], ['elder', 1]];
 
 export const HALF = N / 2;
 export const toXZ = (x, y) => [x - HALF, y - HALF];
@@ -337,7 +337,7 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
   // 사람들
   const people = {};
   for (const p of PIECES) {
-    const person = AGENT_ART[p.id] ? makeSpritePerson(THREE, kit, AGENT_ART[p.id], p.id) : makePerson(THREE, kit, PEOPLE[p.id]);
+    const person = SHEET_ASPECT[p.id] ? makeDirPerson(THREE, kit, p.id) : makePerson(THREE, kit, PEOPLE[p.id]);
     const [X, Z] = toXZ(p.x, p.y);
     person.group.position.set(X, 0, Z);
     person.group.rotation.y = BASE_AZ;
@@ -345,15 +345,14 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
     scene.add(person.group);
     people[p.id] = person;
   }
-  const visitor = makePerson(THREE, kit, PEOPLE.visitor);
+  const visitor = makeDirPerson(THREE, kit, 'visitor');
   scene.add(visitor.group);
   // 캠퍼스 사람들(이름 없는 직원·수강생·방문객·로봇)
-  const folk = TOWNSFOLK.map((spec) => {
-    const f = makePerson(THREE, kit, spec);
-    if (spec.scale) f.group.scale.setScalar(spec.scale);
+  const folk = FOLK.map(([id, sc]) => {
+    const f = makeDirPerson(THREE, kit, id, { scale: sc });
     scene.add(f.group);
     return f;
-  });
+  });;
 
   const update = (t, dt) => {
     waterUniforms.uTime.value = t;

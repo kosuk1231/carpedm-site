@@ -395,96 +395,110 @@ function makeRobot(THREE, kit, spec) {
   return { group: g, update };
 }
 
-// 카드 그림(클레이 피규어)으로 걷는 인물. 받침을 지운 그림(<id>-walk.png)을
-// 윗몸 한 장 + 다리 두 장으로 잘라, 다리를 엉덩이 높이에서 번갈아 흔들어 걷게 합니다(종이 인형 방식).
-// hip: 다리가 갈라지는 높이(위에서부터 비율), split: 두 다리 사이 가로 위치, legL·legR: 다리 좌우 끝.
-const RIG = {
-  main:      { hip: 0.729, split: 0.53, legL: 0.27, legR: 0.85, H: 2.15 },
-  critic:    { hip: 0.682, split: 0.543, legL: 0.26, legR: 0.87, H: 2.15 },
-  writer:    { hip: 0.724, split: 0.532, legL: 0.25, legR: 0.87, H: 2.15 },
-  trainer:   { hip: 0.700, split: 0.493, legL: 0.24, legR: 0.79, H: 2.15 },
-  brief:     { hip: 0.642, split: 0.55, legL: 0.33, legR: 0.79, H: 2.15 },
-  developer: { hip: 0.858, split: 0.514, legL: 0.22, legR: 0.79, H: 1.75 },
-  local:     { hip: 0.865, split: 0.52, legL: 0.21, legR: 0.85, H: 2.05 },
-  editor:    { roll: true, H: 1.7 },
-  minutes:   { roll: true, H: 1.5 },
-  researcher:{ fly: true, H: 1.35 },
+// 다섯 방향 그림(턴어라운드 시트)으로 걷는 클레이 인물.
+// public/agents/dir/<id>-0..4.webp = 정면, 45도 앞, 옆, 45도 뒤, 뒤. 옆을 볼 때 그림 속 인물은 화면 오른쪽을 향합니다.
+// 인물이 향한 방향과 카메라 방향의 각도로 그림을 고르고, 왼쪽을 향하면 좌우를 뒤집어 8방향을 냅니다.
+// 걷기: 정면·뒤에서는 두 다리를 번갈아 들고, 옆·대각선에서는 다리 부분을 두 겹으로 겹쳐 가위처럼 벌립니다.
+export const SHEET_ASPECT = {"brief": [0.3786, 0.3929, 0.3833, 0.4024, 0.3714], "ceo": [0.3881, 0.4048, 0.3881, 0.3976, 0.3786], "critic": [0.419, 0.4333, 0.3881, 0.4071, 0.4048], "developer": [0.6714, 0.631, 0.4095, 0.6048, 0.669], "editor": [0.781, 0.7476, 0.4905, 0.7262, 0.7571], "elder": [0.3905, 0.4167, 0.369, 0.4286, 0.3952], "local": [0.6214, 0.6048, 0.5167, 0.6238, 0.6119], "main": [0.4714, 0.4452, 0.4143, 0.4333, 0.4548], "minutes": [0.7976, 0.869, 0.7429, 0.869, 0.8048], "researcher": [1.419, 1.3619, 1.0143, 1.3619, 1.45], "rider": [0.4119, 0.4381, 0.4262, 0.4, 0.4], "staff": [0.3833, 0.3976, 0.3833, 0.3929, 0.369], "student": [0.4619, 0.4286, 0.419, 0.4333, 0.4571], "trainer": [0.369, 0.3905, 0.3714, 0.3619, 0.3667], "visitor": [0.3952, 0.4048, 0.3857, 0.4119, 0.3857], "writer": [0.469, 0.4357, 0.4119, 0.4357, 0.4452]};
+const KIND = {
+  developer: { hip: 0.80, H: 1.55 },
+  local:     { hip: 0.80, H: 1.85 },
+  editor:    { roll: true, H: 1.55 },
+  minutes:   { roll: true, H: 1.25 },
+  researcher:{ fly: true, H: 0.95 },
+  default:   { hip: 0.70, H: 2.2 },
 };
 
-export function makeSpritePerson(THREE, kit, url, id) {
-  const rig = RIG[id] || { H: 2.1 };
+export function makeDirPerson(THREE, kit, id, { scale = 1 } = {}) {
+  const rig = KIND[id] || KIND.default;
+  const H = rig.H * scale;
+  const asp = SHEET_ASPECT[id];
   const g = new THREE.Group();
-  const walkUrl = url.replace(/\.png$/, '-walk.png');
-  const base = kit.track(new THREE.TextureLoader().load(walkUrl, () => layout()));
-  base.colorSpace = THREE.SRGBColorSpace;
-  base.anisotropy = 8;
-  const H = rig.H;
-  const piece = (u0, u1, v0, v1, cx, cy, order) => {
-    const t = kit.track(base.clone());
-    t.repeat.set(u1 - u0, v1 - v0); t.offset.set(u0, v0);
-    const sp = new THREE.Sprite(kit.track(new THREE.SpriteMaterial({ map: t, alphaTest: 0.5, toneMapped: false })));
-    sp.center.set(cx, cy); sp.renderOrder = order;
-    sp.userData.u = [u0, u1]; sp.userData.v = [v0, v1];
-    g.add(sp);
-    return sp;
+  const inner = new THREE.Group();   // 부모 회전을 상쇄해 화면 기준으로 조각을 놓는 판
+  g.add(inner);
+  const loader = new THREE.TextureLoader();
+  const tex = [0, 1, 2, 3, 4].map((i) => {
+    const t = kit.track(loader.load(`/agents/dir/${id}-${i}.webp`));
+    t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+    return t;
+  });
+  const mk = (order) => {
+    const sp = new THREE.Sprite(kit.track(new THREE.SpriteMaterial({ alphaTest: 0.5, toneMapped: false })));
+    sp.renderOrder = order; inner.add(sp); return sp;
   };
-  // 텍스처 v 는 아래가 0. 그림 위쪽에서 hip 비율만큼 내려온 곳이 엉덩이.
-  const legs = [];
-  let upper;
-  if (rig.hip) {
-    const vh = 1 - rig.hip;
-    upper = piece(0, 1, vh - 0.03, 1, 0.5, 0, 2);
-    legs.push(piece(rig.legL, rig.split, 0, vh, 0.5, 1, 1));
-    legs.push(piece(rig.split, rig.legR, 0, vh, 0.5, 1, 1));
-  } else {
-    upper = piece(0, 1, 0, 1, 0.5, 0, 2);
-  }
-  let aspect = 0.4;
-  function layout() { const img = base.image; if (img && img.width) aspect = img.width / img.height; }
+  const upper = mk(2), legA = mk(1), legB = mk(1);
+  // 조각마다 텍스처를 복제해 잘라 씀(같은 이미지를 공유하므로 메모리는 그대로)
+  const crop = (sp, view, u0, u1, v0, v1) => {
+    let t = sp.userData.tex?.[view];
+    if (!t) {
+      t = kit.track(tex[view].clone()); t.needsUpdate = true;
+      (sp.userData.tex ||= [])[view] = t;
+    }
+    t.repeat.set(u1 - u0, v1 - v0); t.offset.set(u0, v0);
+    if (sp.material.map !== t) { sp.material.map = t; sp.material.needsUpdate = true; }
+  };
   // 발밑 그림자
   const sh = document.createElement('canvas'); sh.width = sh.height = 64;
   const c = sh.getContext('2d'); const gr = c.createRadialGradient(32, 32, 0, 32, 32, 32);
   gr.addColorStop(0, 'rgba(40,30,20,.4)'); gr.addColorStop(1, 'rgba(40,30,20,0)'); c.fillStyle = gr; c.fillRect(0, 0, 64, 64);
-  const blob = new THREE.Mesh(kit.track(new THREE.PlaneGeometry(1.1, 0.8)), kit.track(new THREE.MeshBasicMaterial({ map: kit.track(new THREE.CanvasTexture(sh)), transparent: true, depthWrite: false })));
+  const blob = new THREE.Mesh(kit.track(new THREE.PlaneGeometry(1.1 * scale, 0.8 * scale)), kit.track(new THREE.MeshBasicMaterial({ map: kit.track(new THREE.CanvasTexture(sh)), transparent: true, depthWrite: false })));
   blob.rotation.x = -Math.PI / 2; blob.position.y = 0.03;
-  g.add(blob);
+  inner.add(blob);
 
-  let phase = rand0(), walkAmt = 0, flip = 1;
-  const last = new THREE.Vector3(), now = new THREE.Vector3(), right = new THREE.Vector3();
+  let phase = rand0(), walkAmt = 0;
+  const right = new THREE.Vector3(), toCam = new THREE.Vector3(), here = new THREE.Vector3();
   const update = (dt, speed, t, cam) => {
     walkAmt += (Math.min(1, speed) - walkAmt) * Math.min(1, dt * 8);
     phase += dt * (10 * walkAmt + 1.2);
-    g.getWorldPosition(now);
-    if (cam) right.setFromMatrixColumn(cam.matrixWorld, 0);
-    if (cam && walkAmt > 0.2) {
-      const side = (now.x - last.x) * right.x + (now.z - last.z) * right.z;
-      if (Math.abs(side) > 0.002) flip = side < 0 ? -1 : 1;
-    }
-    last.copy(now);
-    const W = H * aspect; // 그림 전체 폭(월드 단위)
-    const swing = Math.sin(phase) * 0.38 * walkAmt;
-    const bob = Math.abs(Math.cos(phase)) * 0.06 * walkAmt;
-    const lift = rig.fly ? 0.9 + Math.sin(t * 2 + phase) * 0.1 : 0;
-    const roll = rig.roll ? Math.sin(phase * 2) * 0.03 * walkAmt : 0;
-    const breathe = Math.sin(t * 2 + phase) * 0.01;
-    // 화면 기준 가로 오프셋을 월드 좌표로
-    const place = (sp, xScreen, y) => sp.position.set(right.x * xScreen * flip, y, right.z * xScreen * flip);
+    const yaw = g.rotation.y;
+    inner.rotation.y = -yaw;
+    if (!cam) return;
+    right.setFromMatrixColumn(cam.matrixWorld, 0); right.y = 0; right.normalize();
+    g.getWorldPosition(here);
+    toCam.subVectors(cam.position, here); toCam.y = 0; toCam.normalize();
+    const fx = Math.sin(yaw), fz = Math.cos(yaw);
+    const ang = Math.acos(Math.max(-1, Math.min(1, fx * toCam.x + fz * toCam.z)));
+    const view = Math.min(4, Math.round(ang / (Math.PI / 4)));
+    const flip = view === 0 || view === 4 ? 1 : (fx * right.x + fz * right.z) >= 0 ? 1 : -1;
+    const W = H * asp[view];
+    const swing = Math.sin(phase) * walkAmt;
+    const bob = Math.abs(Math.cos(phase)) * 0.06 * walkAmt * scale;
+    const place = (sp, xs, y) => sp.position.set(right.x * xs, y, right.z * xs);
     if (rig.hip) {
-      const hipY = (1 - rig.hip) * H + 0.02;
-      const uh = upper.userData.v[1] - upper.userData.v[0];
-      upper.scale.set(W * flip, H * uh * (1 + breathe), 1);
-      place(upper, 0, hipY - 0.03 * H + bob);
-      upper.material.rotation = Math.sin(phase) * 0.03 * walkAmt * flip;
-      legs.forEach((leg, i) => {
-        const [u0, u1] = leg.userData.u;
-        leg.scale.set(W * (u1 - u0) * flip, hipY - 0.02, 1);
-        place(leg, ((u0 + u1) / 2 - 0.5) * W, hipY + bob * 0.5);
-        leg.material.rotation = (i ? -swing : swing);
-      });
+      const hv = 1 - rig.hip;               // 엉덩이 높이(텍스처 v, 아래가 0)
+      const hipY = hv * H;
+      crop(upper, view, 0, 1, hv - 0.025, 1);
+      upper.center.set(0.5, 0);
+      upper.scale.set(W * flip, H * (1 - hv + 0.025), 1);
+      place(upper, 0, hipY - 0.025 * H + bob);
+      upper.material.rotation = Math.sin(phase) * 0.025 * walkAmt * flip;
+      if (view === 0 || view === 4) {
+        // 정면·뒤: 왼다리·오른다리를 번갈아 들어 올림
+        crop(legA, view, 0, 0.5, 0, hv); crop(legB, view, 0.5, 1, 0, hv);
+        for (const [sp, s, k] of [[legA, -1, 1], [legB, 1, -1]]) {
+          sp.center.set(0.5, 0); sp.material.rotation = 0;
+          sp.scale.set(W * 0.5, hipY, 1);
+          place(sp, s * W * 0.25, Math.max(0, k * swing) * 0.12 * H * 0.35 + bob * 0.4);
+        }
+      } else {
+        // 옆·대각선: 다리 부분 두 장을 엉덩이에서 가위처럼 벌림
+        crop(legA, view, 0, 1, 0, hv); crop(legB, view, 0, 1, 0, hv);
+        for (const [sp, k] of [[legA, 1], [legB, -1]]) {
+          sp.center.set(0.5, 1);
+          sp.scale.set(W * flip, hipY, 1);
+          place(sp, 0, hipY + bob * 0.5);
+          sp.material.rotation = k * swing * 0.32;
+        }
+      }
+      legA.visible = legB.visible = true;
     } else {
-      upper.scale.set(W * flip, H * (1 + breathe), 1);
-      place(upper, 0, 0.02 + lift + bob * 0.5);
-      upper.material.rotation = roll * flip;
+      crop(upper, view, 0, 1, 0, 1);
+      upper.center.set(0.5, 0);
+      upper.scale.set(W * flip, H, 1);
+      const lift = rig.fly ? 0.9 + Math.sin(t * 2 + phase) * 0.1 : 0;
+      place(upper, 0, 0.02 + lift + (rig.roll ? Math.abs(Math.sin(phase * 2)) * 0.03 * walkAmt : bob));
+      upper.material.rotation = (rig.roll ? Math.sin(phase * 2) * 0.05 * walkAmt : 0) * flip;
+      legA.visible = legB.visible = false;
     }
     blob.scale.setScalar(rig.fly ? 0.7 : 1 - bob);
   };

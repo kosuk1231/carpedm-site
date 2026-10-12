@@ -317,7 +317,7 @@ export default function Village3D({ onFail }) {
         const nowInside = pos.current.y < N - 0.6;
         if (nowInside !== inside) { inside = nowInside; setTitle(inside ? 'in' : 'out'); setTimeout(() => setTitle(null), 3600); }
         world.visitor.group.rotation.y = yaw;
-        world.visitor.update(dt, moving, t);
+        world.visitor.update(dt, moving, t, cam);
 
         // 팀원들: 순찰하거나, 방문자가 오면 몸을 돌려 맞이함
         for (const st of agents) {
@@ -365,7 +365,7 @@ export default function Village3D({ onFail }) {
           const [fx, fz] = toXZ(f.x, f.y);
           f.person.group.position.set(fx, 0, fz);
           f.person.group.rotation.y = f.yaw;
-          f.person.update(dt, speed, t);
+          f.person.update(dt, speed, t, cam);
         }
 
         // 카메라: 처음에는 하늘에서 맴돌며 내려옵니다.

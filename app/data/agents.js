@@ -58,7 +58,7 @@ export const AGENTS = {
     desc: '긴 내용을 추려 꼭 전할 말만 전합니다. 손님을 맞고 팀 사이를 오가며 소식을 잇습니다.',
   },
   local: {
-    emoji: '🔒', name: '지킴이', kind: 'robot', title: '환영 로봇', img: '/agents/local.png',
+    emoji: '🔒', name: '지킴이', kind: 'robot', title: '환영 로봇', img: '/agents/dir/local-0.webp',
     role: '로컬 전용 처리',
     greet: '반가워요! CARPEDM 캠퍼스에 오신 걸 환영해요. 방문증 여기 있어요.',
     desc: '정문에서 손님을 가장 먼저 반기는 환영 로봇입니다. 손님 이야기는 반갑게 듣고, 바깥으로 내보내면 안 되는 자료는 이 기기 안에서만 소중히 다룹니다.',
