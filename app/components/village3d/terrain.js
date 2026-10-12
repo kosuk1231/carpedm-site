@@ -23,17 +23,18 @@ export function fbm(x, z, oct = 5) {
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
 // 3D 좌표(X, Z)의 땅 높이
-const VALLEY_END = 70;
+const VALLEY_END = HALF + 56;
+const V0 = HALF + 16, V1 = HALF + 46; // 골짜기가 굽기 시작하는 구간
 export const riverWorldZ = (X) => riverZ(X + HALF) - HALF;
 export function heightAt(X, Z) {
   // 평평해야 하는 곳: 성 둘레와 남쪽 골짜기 바닥
-  const dCity = Math.hypot(Math.max(Math.abs(X) - 16.5, 0), Math.max(Math.abs(Z) - 16.5, 0));
-  const valleyHalf = 6 + Math.max(0, Z - 30) * 0.12;
-  const dValley = Z > 10 ? Math.hypot(Math.max(Math.abs(X + Math.sin(Z * 0.05) * 2 * smooth(30, 60, Z)) - valleyHalf, 0), Math.max(Z - VALLEY_END, 0)) : 1e3;
+  const dCity = Math.hypot(Math.max(Math.abs(X) - (HALF + 2.5), 0), Math.max(Math.abs(Z) - (HALF + 2.5), 0));
+  const valleyHalf = 6 + Math.max(0, Z - V0) * 0.12;
+  const dValley = Z > HALF - 4 ? Math.hypot(Math.max(Math.abs(X + Math.sin(Z * 0.05) * 2 * smooth(V0, V1, Z)) - valleyHalf, 0), Math.max(Z - VALLEY_END, 0)) : 1e3;
   const d = Math.min(dCity, dValley);
-  const r = Math.hypot(X, Z - 6);
+  const r = Math.hypot(X, Z - (HALF - 8));
   let h = fbm(X * 0.035, Z * 0.035) * 9 * smooth(0, 14, d);
-  h += smooth(42, 95, r) * (fbm(X * 0.02 + 9, Z * 0.02 - 3, 4) * 46 + 6);
+  h += smooth(HALF + 28, HALF + 81, r) * (fbm(X * 0.02 + 9, Z * 0.02 - 3, 4) * 46 + 6);
   h += smooth(0, 8, d) * 0.6;
   // 강이 골짜기를 깎음
   // 강: 둘레가 높든 낮든 일정한 깊이의 물길로 깎음(언덕을 지나면 협곡이 됨)
@@ -153,7 +154,7 @@ export function buildTerrain(THREE, kit, scene) {
     const q = g2.attributes.position;
     for (let i = 0; i < q.count; i++) {
       const Z = q.getZ(i) + (z0 + z1) / 2;
-      const X = X0 + q.getX(i) + Math.sin(Z * 0.05) * 2 * smooth(30, 60, Z);
+      const X = X0 + q.getX(i) + Math.sin(Z * 0.05) * 2 * smooth(V0, V1, Z);
       q.setX(i, X); q.setZ(i, Z); q.setY(i, heightAt(X, Z) + 0.04);
     }
     roadTex.repeat.set(1, len / 6);
@@ -162,7 +163,7 @@ export function buildTerrain(THREE, kit, scene) {
     scene.add(m);
   };
   roadStrip(HALF + 0.5, Zr - 2.7);
-  roadStrip(Zr + 2.7, 66);
+  roadStrip(Zr + 2.7, HALF + 52);
 
   // 숲: 구릉에 소나무를 흩뿌림(인스턴스 한 벌)
   const trunkGeo = track(new THREE.CylinderGeometry(0.12, 0.2, 1.8, 5));
@@ -171,17 +172,17 @@ export function buildTerrain(THREE, kit, scene) {
   crownGeo.translate(0, 2.6, 0);
   const crown2 = track(new THREE.ConeGeometry(0.85, 2.0, 7));
   crown2.translate(0, 3.6, 0);
-  const COUNT = 900;
+  const COUNT = 1100;
   const trunks = new THREE.InstancedMesh(trunkGeo, toon('#5A3F26'), COUNT);
   const crowns = new THREE.InstancedMesh(crownGeo, toon('#4A6B4C'), COUNT);
   const crowns2 = new THREE.InstancedMesh(crown2, toon('#567A56'), COUNT);
   const mtx = new THREE.Matrix4(), q4 = new THREE.Quaternion(), sc = new THREE.Vector3(), ps = new THREE.Vector3();
   let n = 0;
   for (let i = 0; n < COUNT && i < 20000; i++) {
-    const X = (rand(i * 3 + 1) - 0.5) * 220, Z = (rand(i * 3 + 2) - 0.5) * 220 + 10;
+    const X = (rand(i * 3 + 1) - 0.5) * 240, Z = (rand(i * 3 + 2) - 0.5) * 240 + 10;
     const h = heightAt(X, Z);
-    if (Math.abs(X) < 18 && Math.abs(Z) < 18) continue;               // 성 안·성벽 둘레
-    if (Z > 12 && Math.abs(X) < 8 + Math.max(0, Z - 30) * 0.12) continue; // 골짜기 길
+    if (Math.abs(X) < HALF + 4 && Math.abs(Z) < HALF + 4) continue;               // 성 안·성벽 둘레
+    if (Z > HALF - 2 && Math.abs(X) < 8 + Math.max(0, Z - V0) * 0.12) continue; // 골짜기 길
     if (Math.abs(Z - riverWorldZ(X)) < 3.5) continue;                     // 강가
     if (h > 26 || fbm(X * 0.05, Z * 0.05, 3) < 0.42) continue;           // 숲이 성긴 곳
     const s = 0.8 + rand(i) * 0.7;
@@ -211,8 +212,8 @@ export function buildTerrain(THREE, kit, scene) {
   const grass = new THREE.InstancedMesh(bladeGeo, grassMat, GRASS);
   let g = 0;
   for (let i = 0; g < GRASS && i < 60000; i++) {
-    const X = (rand(i * 7 + 11) - 0.5) * 70, Z = 14 + rand(i * 7 + 12) * 60;
-    if (Math.abs(X - X0 - Math.sin(Z * 0.05) * 2 * smooth(30, 60, Z)) < 2.6) continue; // 길 위는 비움
+    const X = (rand(i * 7 + 11) - 0.5) * 80, Z = HALF + rand(i * 7 + 12) * 60;
+    if (Math.abs(X - X0 - Math.sin(Z * 0.05) * 2 * smooth(V0, V1, Z)) < 2.6) continue; // 길 위는 비움
     if (Math.abs(Z - riverWorldZ(X)) < 2.6) continue;
     if (Z < HALF + 1.5) continue;
     const h = heightAt(X, Z);

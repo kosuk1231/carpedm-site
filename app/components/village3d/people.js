@@ -24,6 +24,12 @@ export const TOWNSFOLK = [
   { robe: '#6B3A2E', trim: '#B48A3A', hat: 'helmet', armor: '#6E6F76', item: 'spear' },
   { robe: '#8FA38A', trim: '#E8DFCB', hat: 'topknot', item: 'basket' },
   { robe: '#C9B48A', trim: '#6B4A2E', hat: 'straw', item: 'none' },
+  { robe: '#7A4A6E', trim: '#E8DFCB', hat: 'topknot', item: 'basket' },
+  { robe: '#E8DFCB', trim: '#3E6E8A', hat: 'guan', hatColor: '#2A2420', item: 'none' },
+  { robe: '#B8803A', trim: '#4A3220', hat: 'topknot', scale: 0.7 },
+  { robe: '#4E5A3A', trim: '#B48A3A', hat: 'helmet', armor: '#6E6F76', item: 'spear' },
+  { robe: '#9A6A5A', trim: '#F1E4C8', hat: 'straw', item: 'basket' },
+  { robe: '#5D6E84', trim: '#E8DFCB', hat: 'topknot', item: 'scroll' },
 ];
 
 const SKIN = '#F0CFA6';

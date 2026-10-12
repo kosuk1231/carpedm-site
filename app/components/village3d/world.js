@@ -1,7 +1,7 @@
 // 융중성 3D 장면 전체: 하늘·먼 산·골짜기 지형·강·성벽·성 안 마을·건물·사람.
 
 import {
-  N, BUILDINGS, door, PIECES, DECOR, PONDS, STREAMS, STREAM_HALF, PLAZA,
+  N, GATE_X, BUILDINGS, door, PIECES, DECOR, PONDS, STREAMS, STREAM_HALF, PLAZA,
 } from '../../data/villageMap';
 import {
   createKit, rand, hash3, cloudCanvas, ridgeCanvas, bannerCanvas, radialCanvas, petalCanvas, skyCanvas,
@@ -17,13 +17,13 @@ export const toXZ = (x, y) => [x - HALF, y - HALF];
 export const BASE_AZ = Math.PI / 4;
 
 function groundCanvas() {
-  const S = 2048, k = S / N;
+  const S = 3072, k = S / N;
   const c = document.createElement('canvas');
   c.width = c.height = S;
   const g = c.getContext('2d');
   g.fillStyle = '#C9C08E';
   g.fillRect(0, 0, S, S);
-  for (let i = 0; i < 70; i++) {
+  for (let i = 0; i < 180; i++) {
     const x = rand(i + 300) * S, y = rand(i + 400) * S, r = (1 + rand(i + 500) * 2.6) * k;
     const grad = g.createRadialGradient(x, y, 0, x, y, r);
     const green = rand(i + 600) > 0.3;
@@ -33,7 +33,7 @@ function groundCanvas() {
     g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
   }
   g.lineCap = 'round';
-  for (let i = 0; i < 2600; i++) {
+  for (let i = 0; i < 7000; i++) {
     const x = rand(i + 900) * S, y = rand(i + 4000) * S;
     g.strokeStyle = rand(i + 7000) > 0.5 ? 'rgba(92,120,66,.45)' : 'rgba(116,140,80,.35)';
     g.lineWidth = 1.6;
@@ -101,10 +101,10 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
   scene.add(new THREE.HemisphereLight(0xFFF6E5, 0x7A6E52, 1.5));
   scene.add(new THREE.AmbientLight(0xFFF4E0, 0.25));
   const sun = new THREE.DirectionalLight(0xFFE6C0, 2.4);
-  sun.position.set(-12, 30, 16);
+  sun.position.set(-18, 40, 22);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(low ? 1024 : 2048, low ? 1024 : 2048);
-  Object.assign(sun.shadow.camera, { left: -28, right: 28, top: 34, bottom: -24, near: 1, far: 110 });
+  sun.shadow.mapSize.set(low ? 2048 : 4096, low ? 2048 : 4096);
+  Object.assign(sun.shadow.camera, { left: -40, right: 40, top: 46, bottom: -34, near: 1, far: 140 });
   sun.target.position.set(0, 0, 6);
   scene.add(sun.target);
   sun.shadow.bias = -0.0006;
@@ -224,6 +224,9 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
   const stalkGeo = track(new THREE.CylinderGeometry(0.045, 0.05, 1, 6));
   const leafGeo = track(new THREE.PlaneGeometry(0.5, 0.075));
   leafGeo.translate(0.25, 0, 0);
+  const leafMats = ['#6E9A55', '#5E8A4B', '#7FA862', '#8AAE5E'].map((c) => toon(c));
+  const houseTile = kit.tileTex('#4A4E54', '#363A40');
+  const thatchTex = kit.tileTex('#9C7C48', '#7E6236');
   const sway = [], flags = [];
   DECOR.forEach(([type, x, y], i) => {
     const [X, Z] = toXZ(x, y);
@@ -268,6 +271,39 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
       }
       geo.computeVertexNormals();
       g.add(mesh(geo, rockMat, { y: 0.78, ry: rand(i) * 3, s: [0.8, 1.7, 0.7] }));
+    } else if (type === 'tree') {
+      // 활엽수(느티나무 느낌): 굵은 줄기 + 뭉게뭉게 잎
+      g.add(mesh(new THREE.CylinderGeometry(0.14, 0.24, 1.5, 7), pineTrunk, { y: 0.75 }));
+      for (let k = 0; k < 5; k++) {
+        const r = 0.7 + rand(i * 5 + k) * 0.35;
+        g.add(mesh(new THREE.IcosahedronGeometry(r, 1), leafMats[(i + k) % leafMats.length], {
+          x: (rand(i + k * 3) - 0.5) * 1.1, y: 1.9 + rand(i * 2 + k) * 0.7, z: (rand(i + k * 7) - 0.5) * 1.1,
+        }));
+      }
+      g.scale.setScalar(0.85 + rand(i + 1) * 0.3);
+    } else if (type === 'house') {
+      // 민가: 흙벽, 나무 기둥, 기와 또는 초가 지붕, 장독, 빨랫줄
+      const thatch = rand(i) > 0.55;
+      const w = 1.6 + rand(i + 1) * 0.5, d = 1.3 + rand(i + 2) * 0.3;
+      g.add(mesh(new THREE.BoxGeometry(w * 1.15, 0.18, d * 1.25), toon('#B9AE96'), { y: 0.09 }));
+      g.add(mesh(new THREE.BoxGeometry(w, 1.0, d), toon(thatch ? '#E3D3B0' : '#EADCC0'), { y: 0.68 }));
+      for (const a of [-1, 1]) for (const b of [-1, 1]) g.add(mesh(new THREE.BoxGeometry(0.09, 1.0, 0.09), toon('#6B4A2E'), { x: a * w / 2, y: 0.68, z: b * d / 2 }));
+      g.add(mesh(new THREE.BoxGeometry(0.05, 0.62, 0.42), toon('#4A3220'), { x: w / 2 + 0.01, y: 0.5 }));
+      const roof = kit.curvedRoof(w * 0.72, d * 0.78, thatch ? 0.7 : 0.55, w * 0.3, thatch ? 0.04 : 0.2,
+        toon('#ffffff', { map: thatch ? thatchTex : houseTile, side: THREE.DoubleSide }));
+      roof.position.y = 1.18;
+      g.add(roof);
+      for (let k = 0; k < 3; k++) g.add(mesh(new THREE.SphereGeometry(0.16 - k * 0.02, 8, 6), toon('#5A3A28'), { x: -w / 2 - 0.25, y: 0.17, z: -d / 2 + 0.25 + k * 0.32, s: [1, 1.2, 1] }));
+      g.rotation.y = Math.round(rand(i + 7) * 3) * (Math.PI / 2);
+    } else if (type === 'stall') {
+      // 장터 좌판: 차양, 상판 위 물건
+      const awn = ['#B23A2E', '#3E6E8A', '#C9A24A', '#5E8A55'][i % 4];
+      g.add(mesh(new THREE.BoxGeometry(1.4, 0.08, 0.8), toon('#7A5638'), { y: 0.75 }));
+      for (const a of [-1, 1]) for (const b of [-1, 1]) g.add(mesh(new THREE.CylinderGeometry(0.04, 0.04, a < 0 ? 1.7 : 1.5, 5), toon('#5A3F26'), { x: a * 0.65, y: (a < 0 ? 1.7 : 1.5) / 2, z: b * 0.36 }));
+      g.add(mesh(new THREE.BoxGeometry(1.6, 0.05, 1.0), toon(awn, { side: THREE.DoubleSide }), { y: 1.62, rz: 0.12 }));
+      for (let k = 0; k < 4; k++) g.add(mesh(k % 2 ? new THREE.SphereGeometry(0.12, 8, 6) : new THREE.BoxGeometry(0.22, 0.14, 0.18),
+        toon(['#E2A34A', '#C9542E', '#EFE4C6', '#7A9A4A'][(i + k) % 4]), { x: -0.45 + k * 0.3, y: 0.87, z: (rand(i + k) - 0.5) * 0.3 }));
+      g.rotation.y = x < GATE_X ? 0 : Math.PI; // 좌판 앞이 큰길을 봄
     } else if (type === 'flag') {
       g.add(mesh(new THREE.CylinderGeometry(0.05, 0.06, 3.6, 6), poleMat, { y: 1.8 }));
       const geo = track(new THREE.PlaneGeometry(1, 1.55, 10, 4));

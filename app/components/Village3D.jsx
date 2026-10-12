@@ -13,9 +13,9 @@ import { rand } from './village3d/kit';
 // 장수들은 다가오면 몸을 돌려 맞이하고, 백성들은 제 볼일을 보러 오갑니다.
 
 const EL_MIN = 0.1, EL_MAX = 1.2, EL_DEFAULT = 0.34;
-const DIST_MIN = 4.5, DIST_MAX = 42, DIST_DEFAULT = 10.5;
+const DIST_MIN = 4.5, DIST_MAX = 60, DIST_DEFAULT = 11;
 const HEAD_H = 2.25;
-const SIGN_RANGE = 36, NAME_RANGE = 13;
+const SIGN_RANGE = 50, NAME_RANGE = 14;
 
 const angleLerp = (a, b, k) => {
   let d = (b - a) % (Math.PI * 2);
@@ -92,7 +92,7 @@ export default function Village3D({ onFail }) {
       const view = { az: Math.PI / 2, el: EL_DEFAULT, dist: DIST_DEFAULT, intro: 0 };
       const [sx, sz] = toXZ(START.x, START.y);
       const camTarget = new THREE.Vector3(sx, 1.2, sz);
-      const introFrom = new THREE.Vector3(0, 2, 4);
+      const introFrom = new THREE.Vector3(0, 2, 8);
       const introStart = performance.now();
       let lastDrag = -1e9;
       let inside = false;
@@ -132,7 +132,7 @@ export default function Village3D({ onFail }) {
       });
       // 백성들이 오가는 자리(성 안 빈 땅에서 미리 골라 둠)
       const spots = [];
-      for (let i = 0; spots.length < 36 && i < 2000; i++) {
+      for (let i = 0; spots.length < 70 && i < 4000; i++) {
         const pt = { x: 2 + rand(i * 2 + 101) * (N - 4), y: 2 + rand(i * 2 + 102) * (N - 4) };
         if (!blocked(pt.x, pt.y)) spots.push(pt);
       }
@@ -361,7 +361,7 @@ export default function Village3D({ onFail }) {
           const e = easeIO(view.intro);
           camTarget.copy(introFrom).lerp(tmp.set(PX, PY + 1.2, PZ), e);
           el = THREE.MathUtils.lerp(0.62, view.el, e);
-          dist = THREE.MathUtils.lerp(78, view.dist, e);
+          dist = THREE.MathUtils.lerp(110, view.dist, e);
           az = view.az + (1 - e) * 0.7;
         } else {
           camTarget.lerp(tmp.set(PX, PY + 1.2, PZ), 1 - Math.pow(0.002, dt));
