@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { AGENTS, CAMPS } from '../data/agents';
+import { CloudSea, Drift, Flora, Ground, Sky } from './villageScenery';
 
 // 융중 마을: 비스듬히 내려다보는(아이소메트릭) 2.5D 마을을 방문자 캐릭터로 걸어 다닙니다.
 // 좌표는 바닥 격자(x, y) 단위로 계산하고, 화면에는 아이소메트릭으로 투영합니다.
@@ -11,9 +12,10 @@ import { AGENTS, CAMPS } from '../data/agents';
 const N = 28;            // 마을 한 변의 칸 수
 const TW = 96;           // 칸 하나의 화면 가로
 const TH = 48;           // 칸 하나의 화면 세로
-const PAD = 300;         // 위쪽 여백(높은 건물이 잘리지 않도록)
-const WORLD_W = N * TW;
-const WORLD_H = N * TH + PAD + 120;
+const PAD = 420;         // 위쪽 여백(뒤쪽 산과 높은 건물이 잘리지 않도록)
+const MX = 420;          // 좌우 여백(산과 구름 바다)
+const WORLD_W = N * TW + MX * 2;
+const WORLD_H = N * TH + PAD + 360;
 const SPEED = 4.6;       // 초당 이동 칸 수
 const TALK_R = 1.5;      // 장수와 대화 가능한 거리
 const DOOR_R = 1.4;      // 건물 입구 반경
@@ -53,10 +55,34 @@ const PIECES = [
 ];
 const P_R = 0.45;
 
-const TREES = [
-  [1.5, 2], [2.5, 11], [1.6, 13], [2, 25.5], [10, 1.5], [12.5, 2.2], [25.5, 1.8], [26.5, 8], [26.4, 17], [13, 9.5], [9, 26.5], [8, 1.8], [26.5, 26.5], [3, 8], [11.5, 19.5], [18, 26.5], [1.6, 22],
+// 풍경 소품: 소나무·대나무·바위·깃발. 건물·입구·장수·길·물과 겹치지 않게 골라 둔 자리입니다.
+const DECOR = [
+  ['pine', 2.7, 14.2], ['pine', 2.2, 12.3], ['bamboo', 3.0, 3.5], ['rock', 17.3, 25.5], ['pine', 26.2, 2.4], ['bamboo', 23.2, 8.6], ['pine', 9.1, 22.1],
+  ['pine', 18.8, 11.2], ['bamboo', 2.7, 6.5], ['rock', 19.9, 8.6], ['pine', 26.3, 4.2], ['bamboo', 11.9, 20.6], ['pine', 5.1, 13.7], ['pine', 13.3, 18.2],
+  ['bamboo', 2.8, 19.2], ['rock', 11.1, 18.3], ['pine', 2.7, 20.9], ['bamboo', 8.3, 11.8], ['pine', 7.2, 13.6], ['pine', 25.6, 18.9], ['bamboo', 9.9, 2.5],
+  ['rock', 1.2, 5.1], ['pine', 3.8, 10.5], ['bamboo', 1.9, 23.6], ['pine', 7.7, 10.1], ['pine', 10.5, 4.3], ['bamboo', 22.9, 26.6], ['rock', 24.2, 7.0],
+  ['pine', 1.8, 25.5], ['bamboo', 15.1, 1.9], ['pine', 14.7, 26.2], ['pine', 1.9, 8.4], ['bamboo', 25.2, 26.5], ['rock', 25.6, 10.5],
+  ['flag', 12.9, 16.7], ['flag', 11.15, 13.45], ['flag', 16.6, 12.7], ['flag', 11.3, 21.6],
 ];
-const T_R = 0.5;
+const DECOR_R = { pine: 0.5, bamboo: 0.55, rock: 0.5, flag: 0.25 };
+
+// 물: 연못 [중심, 반지름], 개울(꺾은선). 걸어서 건널 수 없습니다.
+const PONDS = [[[12.2, 8.2], 1.15], [[8.6, 24.6], 1.5]];
+const STREAMS = [
+  [[11.4, 0], [12.5, 3], [11.7, 5.8], [12.2, 8.2]],
+  [[8.6, 24.6], [6.2, 26], [4.6, 28]],
+];
+const STREAM_HALF = 0.4;
+const segDist = (px, py, [ax, ay], [bx, by]) => {
+  const dx = bx - ax, dy = by - ay;
+  const u = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)));
+  return Math.hypot(px - (ax + u * dx), py - (ay + u * dy));
+};
+const inWater = (x, y) => {
+  for (const [[cx, cy], r] of PONDS) if (Math.hypot(x - cx, y - cy) < r + 0.1) return true;
+  for (const s of STREAMS) for (let i = 0; i < s.length - 1; i++) if (segDist(x, y, s[i], s[i + 1]) < STREAM_HALF) return true;
+  return false;
+};
 
 const START = { x: 14, y: 14.6 };
 const PLAZA = { x: 14, y: 14 };
@@ -65,7 +91,8 @@ const blocked = (x, y) => {
   if (x < 0.8 || y < 0.8 || x > N - 0.8 || y > N - 0.8) return true;
   for (const b of BUILDINGS) if (Math.hypot(x - b.x, y - b.y) < B_R) return true;
   for (const p of PIECES) if (Math.hypot(x - p.x, y - p.y) < P_R) return true;
-  for (const [tx, ty] of TREES) if (Math.hypot(x - tx, y - ty) < T_R) return true;
+  for (const [t, dx, dy] of DECOR) if (Math.hypot(x - dx, y - dy) < DECOR_R[t]) return true;
+  if (inWater(x, y)) return true;
   return false;
 };
 
@@ -278,23 +305,14 @@ export default function YungjungVillage() {
     const a = toScreen(PLAZA.x, PLAZA.y), d0 = door(b), d = toScreen(d0.x, d0.y);
     return `M${a.sx} ${a.sy} L${d.sx} ${d.sy}`;
   });
-  const corner = (x, y) => { const s = toScreen(x, y); return `${s.sx},${s.sy}`; };
 
   return (
     <section className="yv" aria-label="융중 마을 — 걸어서 둘러보는 포트폴리오">
       <div className="yv-stage" ref={stageRef} onPointerDown={onGround}>
+        <Sky />
         <div className="yv-world" ref={worldRef} style={{ width: WORLD_W, height: WORLD_H }}>
-          <svg className="yv-ground" width={WORLD_W} height={WORLD_H} aria-hidden="true">
-            <defs>
-              <pattern id="yv-grain" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(28)">
-                <rect width="9" height="9" fill="#D7BF97" />
-                <rect width="2" height="9" fill="#CFB68B" />
-              </pattern>
-            </defs>
-            <polygon points={`${corner(0, 0)} ${corner(N, 0)} ${corner(N, N)} ${corner(0, N)}`} fill="url(#yv-grain)" stroke="#8C6A42" strokeWidth="3" />
-            {roads.map((d, i) => <path key={i} d={d} className="yv-road" />)}
-            <ellipse cx={toScreen(PLAZA.x, PLAZA.y).sx} cy={toScreen(PLAZA.x, PLAZA.y).sy} rx="150" ry="75" className="yv-plaza" />
-          </svg>
+          <Ground N={N} TW={TW} TH={TH} W={WORLD_W} H={WORLD_H} toScreen={toScreen} ponds={PONDS} streams={STREAMS} roads={roads} plaza={PLAZA} />
+          <CloudSea N={N} toScreen={toScreen} />
 
           {BUILDINGS.map((b) => <Building key={b.key} b={b} />)}
 
@@ -304,11 +322,11 @@ export default function YungjungVillage() {
             return <span key={b.key} className="yv-sign" style={{ left: sx, top: sy - 175, zIndex: Math.round((b.x + b.y) * 10) + 5 }}>{c.no} {c.place}</span>;
           })}
 
-          {TREES.map(([x, y]) => {
+          {DECOR.map(([t, x, y], i) => {
             const { sx, sy } = toScreen(x, y);
             return (
-              <div key={`${x}-${y}`} className="yv-obj yv-tree" style={{ left: sx, top: sy, zIndex: Math.round((x + y) * 10) }} aria-hidden="true">
-                <i /><b />
+              <div key={`${t}-${x}-${y}`} className={`yv-obj yv-decor yv-decor-${t}`} style={{ left: sx, top: sy, zIndex: Math.round((x + y) * 10) }}>
+                <Flora type={t} seed={i} />
               </div>
             );
           })}
@@ -332,6 +350,8 @@ export default function YungjungVillage() {
             <img className="yv-player-body" src="/village/visitor.png" alt="" draggable="false" />
           </div>
         </div>
+
+        <Drift />
 
         {hint && (
           <div className="yv-hint">
@@ -371,7 +391,6 @@ export default function YungjungVillage() {
               <p className="yv-quote">“{agent.greet}”</p>
               <p>{agent.desc}</p>
               <dl>
-                <div><dt>쓰는 모델</dt><dd>{agent.model}</dd></div>
                 <div><dt>에이전트 id</dt><dd className="mono">{open.id}</dd></div>
               </dl>
             </div>
