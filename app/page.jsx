@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { PROGRAMS } from './data/programs';
 import SpeakerKit from './components/SpeakerKit';
-import YungjungMap from './components/YungjungMap';
+import YungjungVillage from './components/YungjungVillage';
 import { NOTES } from './data/notes';
 
 
@@ -684,7 +684,7 @@ export default function Home() {
         </Link>
       </nav>
 
-      <YungjungMap />
+      <YungjungVillage />
 
       <header className="hero" id="overview">
         <div className="hero-main">

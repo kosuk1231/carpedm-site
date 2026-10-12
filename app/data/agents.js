@@ -6,51 +6,61 @@ export const AGENTS = {
   main: {
     emoji: '🪶', name: '제갈량', style: '공명',
     role: '배분·종합', model: 'Claude Sonnet 5',
+    greet: '어서 오십시오. 융중 마을을 안내하겠습니다. 길을 따라 진영을 하나씩 둘러보시지요.',
     desc: '요청을 받아 누구에게 무엇을 맡길지 정하고, 돌아온 결과를 하나로 엮어 내놓습니다. 대부분의 일은 남을 부르지 않고 직접 끝냅니다.',
   },
   developer: {
     emoji: '🔨', name: '조운', style: '자룡',
     role: '코딩·디버깅', model: 'GPT-5.6',
+    greet: '만들 것이 있으면 말씀만 하십시오. 공방에서 끝내 가지고 나오겠습니다.',
     desc: '장판파에서 홀로 대군 속으로 들어가 맡은 것을 안고 나왔습니다. 떠들지 않고 결과로 말합니다.',
   },
   critic: {
     emoji: '🧐', name: '사마의', style: '중달',
     role: '비평·전략 검토', model: 'Claude Opus 5',
+    greet: '좋다는 말은 끝까지 읽고 나서 하겠습니다.',
     desc: '상대의 수를 끝까지 읽고, 허점이 드러나기 전에는 성문을 열지 않습니다. 칭찬에 인색합니다.',
   },
   researcher: {
     emoji: '🔍', name: '서서', style: '원직',
     role: '조사·자료 읽기', model: 'Claude Sonnet 5',
+    greet: '자료는 제가 찾아오겠습니다. 판단은 군사께서 하십시오.',
     desc: '형세를 읽어다 바치고, 답을 대신 내기보다 맞는 사람을 천거합니다. 말은 적고 집요합니다.',
   },
   writer: {
     emoji: '✍️', name: '주유', style: '공근',
     role: '초고 집필', model: 'Claude Sonnet 5',
+    greet: '초고는 제가 씁니다. 다만 겪지 않은 일은 쓰지 않습니다.',
     desc: '음률에 밝아 한 가락만 어긋나도 알아챘습니다. 남의 목소리로 쓸 때도 그 귀를 씁니다.',
   },
   editor: {
     emoji: '📕', name: '관우', style: '운장',
     role: '교열', model: 'GPT-5.6',
+    greet: '어긋난 문장은 누가 썼든 고칩니다.',
     desc: '진중에서도 춘추를 놓지 않았습니다. 어긋난 문장은 누가 썼든 봐주지 않습니다.',
   },
   trainer: {
     emoji: '🎓', name: '유비', style: '현덕',
     role: '강의안·교안', model: 'Claude Sonnet 5',
+    greet: '어려운 말은 쉽게, 쉬운 말은 깊게. 강의 진영에 오신 것을 환영합니다.',
     desc: '어려운 말로 누르지 않고 듣는 사람 눈높이에서 말했습니다. 강의가 하는 일이 그것입니다.',
   },
   minutes: {
     emoji: '📝', name: '방통', style: '사원',
     role: '회의록 초안', model: 'Claude Sonnet 5',
+    greet: '회의에서 나온 말만 적습니다. 나오지 않은 말은 적지 않습니다.',
     desc: '백 일 밀린 송사를 한나절에 막힘없이 처리했습니다. 듣고 가려 적는 일이 빠릅니다.',
   },
   brief: {
     emoji: '📨', name: '노숙', style: '자경',
     role: '요약', model: '로컬 Gemma',
+    greet: '긴 말은 줄이고, 전할 말만 전하겠습니다.',
     desc: '오와 촉 사이를 오가며 양쪽 말을 다 듣고, 추려서 전할 말만 전했습니다.',
   },
   local: {
     emoji: '🔒', name: '장료', style: '문원',
     role: '로컬 전용 처리', model: '로컬 Gemma',
+    greet: '이 성문 안의 자료는 바깥으로 나가지 않습니다.',
     desc: '합비 성문을 지켜냈습니다. 바깥으로 내보내면 안 되는 자료는 이 기기 안에서만 다룹니다.',
   },
 };
