@@ -5,7 +5,7 @@
 export const N = 48;           // 캠퍼스 한 변의 칸 수
 export const GATE_X = 24;      // 남쪽 입구(웰컴 사인) 가운데
 export const OUT_LEN = 4;      // 캠퍼스 남쪽 보도 폭(그 너머가 큰길)
-export const SPEED = 5.6;      // 초당 이동 칸 수
+export const SPEED = 4.0;      // 방문자 초당 이동 칸 수(가볍게 뛰는 속도)
 export const TALK_R = 1.5;     // 인물과 대화 가능한 거리
 export const DOOR_R = 1.4;     // 건물 입구 반경
 
@@ -84,11 +84,33 @@ export const blocked = (x, y) => {
   if (x < 0.8 || x > N - 0.8 || y < 0.8) return true;
   if (y > N + OUT_LEN) return true; // 보도 너머는 차도
   for (const b of BUILDINGS) if (!b.open && Math.hypot(x - b.x, y - b.y) < B_R) return true;
-  for (const p of PIECES) if (!p.patrol && Math.hypot(x - p.x, y - p.y) < P_R) return true;
   for (const [t, dx, dy] of DECOR) if (Math.hypot(x - dx, y - dy) < DECOR_R[t]) return true;
   if (inWater(x, y)) return true;
   return false;
 };
+
+// 두 점 사이가 막힘 없이 트였는지(사람 몸 폭을 감안해 좌우로도 살핌)
+export function clearLine(a, b) {
+  const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy);
+  if (!d) return true;
+  const nx = -dy / d * 0.22, ny = dx / d * 0.22;
+  for (let s = 0.2; s < d; s += 0.2) {
+    const x = a.x + dx * s / d, y = a.y + dy * s / d;
+    if (blocked(x, y) || blocked(x + nx, y + ny) || blocked(x - nx, y - ny)) return false;
+  }
+  return true;
+}
+// 격자 길을 곧게 펴기: 보이는 가장 먼 점으로 바로 감(지그재그 없이 사람처럼 대각선으로 걸음)
+function smoothPath(from, path) {
+  const out = [];
+  let cur = from, i = 0;
+  while (i < path.length) {
+    let j = path.length - 1;
+    while (j > i && !clearLine(cur, path[j])) j--;
+    out.push(path[j]); cur = path[j]; i = j + 1;
+  }
+  return out;
+}
 
 // 길찾기: 반 칸 격자 위 A*. 건물·장수·나무를 돌아서 갑니다.
 const G = 2; // 한 칸을 몇 조각으로 나눌지
@@ -123,7 +145,7 @@ export function findPath(from, to) {
       while (came.has(k)) { path.push({ x: Math.floor(k / 1000) / G, y: (k % 1000) / G }); k = came.get(k); }
       path.reverse();
       if (path.length) path[path.length - 1] = { x: ti / G, y: tj / G };
-      return path;
+      return smoothPath(from, path);
     }
     for (const [di, dj] of dirs) {
       const ni = c.i + di, nj = c.j + dj;

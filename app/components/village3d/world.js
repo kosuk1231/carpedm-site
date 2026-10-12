@@ -10,11 +10,9 @@ import { buildBuilding } from './buildings';
 import { buildTerrain, heightAt, groundY } from './terrain';
 
 export { heightAt, groundY };
-import { makePerson, makeDirPerson, SHEET_ASPECT, PEOPLE } from './people';
+import { makePerson, PEOPLE, TOWNSFOLK } from './people';
 import { AGENTS } from '../../data/agents';
 
-// 캠퍼스를 오가는 이름 없는 사람들(다섯 방향 그림이 있는 인물)
-const FOLK = [['staff', 1], ['student', 1], ['rider', 1], ['elder', 0.95], ['staff', 0.97], ['student', 1.02], ['rider', 0.98], ['elder', 1]];
 
 export const HALF = N / 2;
 export const toXZ = (x, y) => [x - HALF, y - HALF];
@@ -337,7 +335,7 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
   // 사람들
   const people = {};
   for (const p of PIECES) {
-    const person = SHEET_ASPECT[p.id] ? makeDirPerson(THREE, kit, p.id) : makePerson(THREE, kit, PEOPLE[p.id]);
+    const person = makePerson(THREE, kit, PEOPLE[p.id]);
     const [X, Z] = toXZ(p.x, p.y);
     person.group.position.set(X, 0, Z);
     person.group.rotation.y = BASE_AZ;
@@ -345,14 +343,15 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
     scene.add(person.group);
     people[p.id] = person;
   }
-  const visitor = makeDirPerson(THREE, kit, 'visitor');
+  const visitor = makePerson(THREE, kit, PEOPLE.visitor);
   scene.add(visitor.group);
   // 캠퍼스 사람들(이름 없는 직원·수강생·방문객·로봇)
-  const folk = FOLK.map(([id, sc]) => {
-    const f = makeDirPerson(THREE, kit, id, { scale: sc });
+  const folk = TOWNSFOLK.map((spec) => {
+    const f = makePerson(THREE, kit, spec);
+    f.flying = spec.robot === 'drone';
     scene.add(f.group);
     return f;
-  });;
+  });
 
   const update = (t, dt) => {
     waterUniforms.uTime.value = t;

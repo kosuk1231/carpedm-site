@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AGENTS, CAMPS } from '../data/agents';
 import VillageCards from './VillageCards';
 import {
-  N, SPEED, TALK_R, DOOR_R, BUILDINGS, door, PIECES, START, blocked, findPath,
+  N, SPEED, TALK_R, DOOR_R, BUILDINGS, door, PIECES, START, PLAZA, blocked, findPath,
 } from '../data/villageMap';
 import { rand } from './village3d/kit';
 
@@ -22,6 +22,13 @@ const angleLerp = (a, b, k) => {
   if (d > Math.PI) d -= Math.PI * 2;
   if (d < -Math.PI) d += Math.PI * 2;
   return a + d * k;
+};
+// 정해진 속도(라디안) 이상으로는 돌지 않게 몸을 돌림
+const turnToward = (a, b, maxStep) => {
+  let d = (b - a) % (Math.PI * 2);
+  if (d > Math.PI) d -= Math.PI * 2;
+  if (d < -Math.PI) d += Math.PI * 2;
+  return a + Math.max(-maxStep, Math.min(maxStep, d * Math.min(1, maxStep * 3)));
 };
 
 export default function Village3D({ onFail }) {
@@ -62,14 +69,15 @@ export default function Village3D({ onFail }) {
       const low = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 800;
       if (!low) {
         try {
-          const [ec, rp, bp, sp, op] = await Promise.all([
+          const [ec, rp, bp, sp, op, ao] = await Promise.all([
             import('three/addons/postprocessing/EffectComposer.js'),
             import('three/addons/postprocessing/RenderPass.js'),
             import('three/addons/postprocessing/UnrealBloomPass.js'),
             import('three/addons/postprocessing/ShaderPass.js'),
             import('three/addons/postprocessing/OutputPass.js'),
+            import('three/addons/postprocessing/GTAOPass.js'),
           ]);
-          post = { ...ec, ...rp, ...bp, ...sp, ...op };
+          post = { ...ec, ...rp, ...bp, ...sp, ...op, ...ao };
         } catch { post = null; }
       }
       if (disposed) return;
@@ -103,6 +111,13 @@ export default function Village3D({ onFail }) {
       if (post) {
         composer = new post.EffectComposer(renderer);
         composer.addPass(new post.RenderPass(world.scene, cam));
+        // 앰비언트 오클루전: 발밑·건물 모서리·나무 아래에 부드러운 접지 그늘
+        if (post.GTAOPass) {
+          const ao = new post.GTAOPass(world.scene, cam, host.clientWidth || 1024, host.clientHeight || 640);
+          ao.updateGtaoMaterial({ radius: 0.6, distanceExponent: 1.5, thickness: 1.2, scale: 1.0, samples: 12 });
+          ao.blendIntensity = 0.85;
+          composer.addPass(ao);
+        }
         composer.addPass(new post.UnrealBloomPass(new THREE.Vector2(512, 512), 0.18, 0.4, 0.99));
         composer.addPass(new post.ShaderPass({
           uniforms: { tDiffuse: { value: null }, uAmount: { value: 0.55 } },
@@ -121,8 +136,8 @@ export default function Village3D({ onFail }) {
       }
 
       // 팀원 상태(순찰하는 팀원은 길을 미리 구해 둡니다)
-      const agents = PIECES.map((p) => {
-        const st = { id: p.id, x: p.x, y: p.y, yaw: BASE_AZ, home: { x: p.x, y: p.y }, path: null, wait: Math.random() * 3, out: true };
+      const agents = PIECES.map((p, i) => {
+        const st = { id: p.id, x: p.x, y: p.y, yaw: BASE_AZ, home: { x: p.x, y: p.y }, path: null, wait: 1 + Math.random() * 4, out: true, v: 0, maxV: 1.45 + rand(i + 40) * 0.45 };
         if (p.patrol) {
           const far = { x: p.patrol[0], y: p.patrol[1] };
           st.routeOut = findPath(st.home, far) || [];
@@ -138,7 +153,7 @@ export default function Village3D({ onFail }) {
       }
       const folk = world.folk.map((f, i) => {
         const sp = spots[(i * 5) % spots.length];
-        return { person: f, x: sp.x, y: sp.y, yaw: rand(i) * 6, path: null, wait: rand(i + 3) * 4 };
+        return { person: f, x: sp.x, y: sp.y, yaw: rand(i) * 6, path: null, wait: rand(i + 3) * 4, v: 0, maxV: (f.flying ? 2.2 : 1.35) + rand(i + 60) * 0.5 };
       });
 
       const resize = () => {
@@ -252,21 +267,42 @@ export default function Village3D({ onFail }) {
       window.addEventListener('keyup', ku);
       window.addEventListener('blur', blur);
 
-      let last = performance.now(), yaw = Math.PI;
+      let last = performance.now(), yaw = Math.PI, visV = 0;
       const occRay = new THREE.Raycaster(); const occDir = new THREE.Vector3(); let occLift = 0;
       const ease = (t) => 1 - Math.pow(1 - t, 3);
       const easeIO = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-      const stepAgent = (st, dt) => {
-        // 순찰 경로를 따라 한 걸음
-        const wp = st.path[0];
-        if (!wp) return 0;
-        const tx = wp.x - st.x, ty = wp.y - st.y;
-        const d = Math.hypot(tx, ty);
-        if (d < 0.1) { st.path.shift(); return 0.55; }
-        const s = Math.min(d, SPEED * 0.4 * dt);
-        st.x += (tx / d) * s; st.y += (ty / d) * s;
-        st.yaw = angleLerp(st.yaw, Math.atan2(tx, ty), Math.min(1, dt * 8));
-        return 0.55;
+      // 걷는 사람 한 걸음: 출발할 땐 서서히 빨라지고, 도착할 땐 천천히 멈추며, 크게 돌 땐 속도를 줄이고 몸을 먼저 돌림.
+      // 앞에 다른 사람이 있으면 잠깐 비켜 서서 기다림. 반환값은 실제 이동 속도(초당 칸).
+      const walkers = [...agents, ...folk, pos.current];
+      const stepAgent = (st, dt, stop = false) => {
+        const wp = st.path && st.path[0];
+        let want = 0, hx = 0, hy = 0;
+        if (wp && !stop) {
+          const tx = wp.x - st.x, ty = wp.y - st.y;
+          const d = Math.hypot(tx, ty);
+          if (d < (st.path.length > 1 ? 0.35 : 0.06)) { st.path.shift(); if (!st.path.length) st.path = null; }
+          if (d > 1e-4) {
+            hx = tx / d; hy = ty / d;
+            let rest = d;
+            for (let k = 1; st.path && k < st.path.length && rest < 3; k++) rest += Math.hypot(st.path[k].x - st.path[k - 1].x, st.path[k].y - st.path[k - 1].y);
+            const turn = Math.abs(Math.atan2(Math.sin(Math.atan2(hx, hy) - st.yaw), Math.cos(Math.atan2(hx, hy) - st.yaw)));
+            want = Math.min(st.maxV, 0.25 + rest * 1.2) * Math.max(0.15, Math.cos(Math.min(turn, 1.45)));
+            // 앞사람 양보
+            for (const o of walkers) {
+              if (o === st) continue;
+              const ox = o.x - st.x, oy = o.y - st.y, od = Math.hypot(ox, oy);
+              if (od < 1.1 && (ox * hx + oy * hy) / od > 0.55) { want = Math.min(want, Math.max(0, (od - 0.6) * 1.5)); }
+            }
+            st.yaw = turnToward(st.yaw, Math.atan2(hx, hy), dt * (want > 0.3 ? 4.5 : 7));
+          }
+        }
+        st.v += THREE.MathUtils.clamp(want - st.v, -dt * 3.2, dt * 2.2);
+        if (st.v < 0.01 && !want) st.v = 0;
+        if (st.v && (hx || hy)) {
+          const nx = st.x + hx * st.v * dt, ny = st.y + hy * st.v * dt;
+          if (!blocked(nx, ny)) { st.x = nx; st.y = ny; } else st.v = 0;
+        }
+        return st.v;
       };
 
       const loop = () => {
@@ -301,15 +337,26 @@ export default function Village3D({ onFail }) {
         }
         const len = Math.hypot(dx, dy);
         let moving = 0;
+        // 방문자 속도: 출발·멈춤을 부드럽게
+        visV += THREE.MathUtils.clamp((len > 0 ? SPEED : 0) - visV, -dt * 16, dt * 10);
         if (len > 0) {
-          const s = (SPEED * dt) / len;
+          // 다른 사람과 부딪히지 않게(몸을 통과하지 않음)
+          for (const o of walkers) {
+            if (o === pos.current) continue;
+            const ox = o.x - pos.current.x, oy = o.y - pos.current.y, od = Math.hypot(ox, oy);
+            if (od < 0.75 && (ox * dx + oy * dy) / (od * len) > 0.3) {
+              const side = (ox * dy - oy * dx) > 0 ? -1 : 1; // 옆으로 비켜 감
+              dx += -dy / len * side * 0.9; dy += dx / len * side * 0.9;
+            }
+          }
+          const s = (visV * dt) / Math.hypot(dx, dy);
           const nx = pos.current.x + dx * s, ny = pos.current.y + dy * s;
           if (!blocked(nx, ny)) { pos.current.x = nx; pos.current.y = ny; moving = 1; }
           else if (!blocked(nx, pos.current.y)) { pos.current.x = nx; moving = 1; }
           else if (!blocked(pos.current.x, ny)) { pos.current.y = ny; moving = 1; }
           else target.current = null;
           yaw = angleLerp(yaw, Math.atan2(dx, dy), Math.min(1, dt * 10));
-        }
+        } else visV = 0;
         const [PX, PZ] = toXZ(pos.current.x, pos.current.y);
         const PY = groundY(pos.current.x, pos.current.y);
         world.visitor.group.position.set(PX, PY, PZ);
@@ -319,37 +366,34 @@ export default function Village3D({ onFail }) {
         const nowInside = pos.current.y < N - 0.6;
         if (nowInside !== inside) { inside = nowInside; setTitle(inside ? 'in' : 'out'); setTimeout(() => setTitle(null), 3600); }
         world.visitor.group.rotation.y = yaw;
-        world.visitor.update(dt, moving, t, cam);
+        world.visitor.update(dt, moving ? visV : 0, t, cam);
 
-        // 팀원들: 순찰하거나, 방문자가 오면 몸을 돌려 맞이함
+        // 팀원들: 맡은 건물 둘레와 광장을 실제로 오가고, 방문자가 다가오면 멈춰 몸을 돌려 맞이함
         for (const st of agents) {
           const dist = Math.hypot(pos.current.x - st.x, pos.current.y - st.y);
           const greeting = dist < 3.2;
-          let speed = 0;
-          if (st.routeOut && !greeting) {
-            if (st.path && st.path.length) speed = stepAgent(st, dt);
-            else if ((st.wait -= dt) <= 0) {
-              st.path = (st.out ? st.routeOut : st.routeBack).map((p) => ({ ...p }));
+          if (!st.path && !greeting && (st.wait -= dt) <= 0) {
+            if (st.routeOut) {
+              st.path = findPath(st, st.out ? st.routeOut[st.routeOut.length - 1] || st.home : st.home);
               st.out = !st.out;
-              st.wait = 3 + Math.random() * 3;
-            }
-          }
-          else if (!st.routeOut && !greeting) {
-            // 순찰 없는 팀원은 제 건물 둘레를 천천히 거닒
-            if (st.path && st.path.length) speed = stepAgent(st, dt);
-            else if ((st.wait -= dt) <= 0) {
+              st.wait = 3 + Math.random() * 4;
+            } else {
+              // 집에서 멀면 돌아가고, 아니면 가까운 곳이나 가끔 광장·이웃 건물까지 다녀옴
+              const away = Math.hypot(st.x - st.home.x, st.y - st.home.y);
               let to = null;
-              for (let k = 0; k < 12 && !to; k++) {
-                const a = Math.random() * Math.PI * 2, r = 1.2 + Math.random() * 2.6;
+              if (away > 4) to = st.home;
+              else if (Math.random() < 0.18) to = Math.random() < 0.5 ? { x: PLAZA.x + (Math.random() - 0.5) * 4, y: PLAZA.y + (Math.random() - 0.5) * 4 } : door(BUILDINGS[1 + Math.floor(Math.random() * (BUILDINGS.length - 1))]);
+              for (let k = 0; k < 14 && !to; k++) {
+                const a = Math.random() * Math.PI * 2, r = 1.5 + Math.random() * 3.5;
                 const c = { x: st.home.x + Math.cos(a) * r, y: st.home.y + Math.sin(a) * r };
                 if (!blocked(c.x, c.y)) to = c;
               }
-              st.path = to ? (findPath(st, to) || []) : [];
-              st.wait = 2.5 + Math.random() * 4;
+              st.path = to ? findPath(st, to) : null;
+              st.wait = 2 + Math.random() * 5;
             }
           }
-          if (greeting) st.yaw = angleLerp(st.yaw, Math.atan2(pos.current.x - st.x, pos.current.y - st.y), Math.min(1, dt * 5));
-          else if (!speed && !st.routeOut) st.yaw = angleLerp(st.yaw, BASE_AZ, Math.min(1, dt * 2));
+          const speed = stepAgent(st, dt, greeting);
+          if (greeting) st.yaw = turnToward(st.yaw, Math.atan2(pos.current.x - st.x, pos.current.y - st.y), dt * 4);
           const person = world.people[st.id];
           const [ax, az] = toXZ(st.x, st.y);
           person.group.position.set(ax, groundY(st.x, st.y), az);
@@ -357,13 +401,12 @@ export default function Village3D({ onFail }) {
           person.update(dt, speed, t, cam);
         }
         for (const f of folk) {
-          let speed = 0;
-          if (f.path && f.path.length) speed = stepAgent(f, dt) * 0.9;
-          else if ((f.wait -= dt) <= 0) {
+          if (!f.path && (f.wait -= dt) <= 0) {
             const to = spots[Math.floor(Math.random() * spots.length)];
-            f.path = findPath(f, to) || [];
-            f.wait = 2 + Math.random() * 5;
+            f.path = findPath(f, to);
+            f.wait = 1.5 + Math.random() * 6;
           }
+          const speed = stepAgent(f, dt);
           const [fx, fz] = toXZ(f.x, f.y);
           f.person.group.position.set(fx, 0, fz);
           f.person.group.rotation.y = f.yaw;
