@@ -4084,3 +4084,4 @@ a.program-card:hover .program-card-visual img { transform: scale(1.03); }
 .yv-portrait.is-robot { background: linear-gradient(145deg, #E3ECEC, #BFD0D2); }
 .yv-portrait-lg { width: 100%; aspect-ratio: 3 / 4; font-size: 84px; object-fit: cover; }
 .yv-portrait-sm { width: 64px; height: 84px; font-size: 34px; object-fit: cover; border-radius: 10px; }
+img.yv-portrait { background: radial-gradient(ellipse at 50% 60%, #F4EAD6, #E8DCC2); object-fit: contain; padding: 6px; }
