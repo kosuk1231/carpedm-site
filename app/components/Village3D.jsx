@@ -122,7 +122,7 @@ export default function Village3D({ onFail }) {
 
       // 팀원 상태(순찰하는 팀원은 길을 미리 구해 둡니다)
       const agents = PIECES.map((p) => {
-        const st = { id: p.id, x: p.x, y: p.y, yaw: BASE_AZ, home: { x: p.x, y: p.y }, path: null, wait: 2 + Math.random() * 3, out: true };
+        const st = { id: p.id, x: p.x, y: p.y, yaw: BASE_AZ, home: { x: p.x, y: p.y }, path: null, wait: Math.random() * 3, out: true };
         if (p.patrol) {
           const far = { x: p.patrol[0], y: p.patrol[1] };
           st.routeOut = findPath(st.home, far) || [];
@@ -330,6 +330,20 @@ export default function Village3D({ onFail }) {
               st.path = (st.out ? st.routeOut : st.routeBack).map((p) => ({ ...p }));
               st.out = !st.out;
               st.wait = 3 + Math.random() * 3;
+            }
+          }
+          else if (!st.routeOut && !greeting) {
+            // 순찰 없는 팀원은 제 건물 둘레를 천천히 거닒
+            if (st.path && st.path.length) speed = stepAgent(st, dt);
+            else if ((st.wait -= dt) <= 0) {
+              let to = null;
+              for (let k = 0; k < 12 && !to; k++) {
+                const a = Math.random() * Math.PI * 2, r = 1.2 + Math.random() * 2.6;
+                const c = { x: st.home.x + Math.cos(a) * r, y: st.home.y + Math.sin(a) * r };
+                if (!blocked(c.x, c.y)) to = c;
+              }
+              st.path = to ? (findPath(st, to) || []) : [];
+              st.wait = 2.5 + Math.random() * 4;
             }
           }
           if (greeting) st.yaw = angleLerp(st.yaw, Math.atan2(pos.current.x - st.x, pos.current.y - st.y), Math.min(1, dt * 5));

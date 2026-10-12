@@ -395,53 +395,98 @@ function makeRobot(THREE, kit, spec) {
   return { group: g, update };
 }
 
-// 카드 그림(클레이 피규어)을 그대로 세운 인물. 그림은 늘 카메라를 바라보고,
-// 걸을 때는 통통 튀듯 들썩이며, 움직이는 방향에 따라 좌우를 뒤집습니다.
-const FLOAT = { researcher: 0.9 }; // 드론은 공중에 뜸
-const HEIGHT = { researcher: 1.5, developer: 1.8, editor: 1.75, minutes: 1.55, local: 2.1 };
+// 카드 그림(클레이 피규어)으로 걷는 인물. 받침을 지운 그림(<id>-walk.png)을
+// 윗몸 한 장 + 다리 두 장으로 잘라, 다리를 엉덩이 높이에서 번갈아 흔들어 걷게 합니다(종이 인형 방식).
+// hip: 다리가 갈라지는 높이(위에서부터 비율), split: 두 다리 사이 가로 위치, legL·legR: 다리 좌우 끝.
+const RIG = {
+  main:      { hip: 0.729, split: 0.53, legL: 0.27, legR: 0.85, H: 2.15 },
+  critic:    { hip: 0.682, split: 0.543, legL: 0.26, legR: 0.87, H: 2.15 },
+  writer:    { hip: 0.724, split: 0.532, legL: 0.25, legR: 0.87, H: 2.15 },
+  trainer:   { hip: 0.700, split: 0.493, legL: 0.24, legR: 0.79, H: 2.15 },
+  brief:     { hip: 0.642, split: 0.55, legL: 0.33, legR: 0.79, H: 2.15 },
+  developer: { hip: 0.858, split: 0.514, legL: 0.22, legR: 0.79, H: 1.75 },
+  local:     { hip: 0.865, split: 0.52, legL: 0.21, legR: 0.85, H: 2.05 },
+  editor:    { roll: true, H: 1.7 },
+  minutes:   { roll: true, H: 1.5 },
+  researcher:{ fly: true, H: 1.35 },
+};
+
 export function makeSpritePerson(THREE, kit, url, id) {
+  const rig = RIG[id] || { H: 2.1 };
   const g = new THREE.Group();
-  const tex = kit.track(new THREE.TextureLoader().load(url, (t) => {
-    const img = t.image;
-    if (img && img.width) sprite.scale.set((H * img.width) / img.height * flip, H, 1);
-  }));
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 8;
-  const H = HEIGHT[id] || 2.2;
-  let flip = 1;
-  const sprite = new THREE.Sprite(kit.track(new THREE.SpriteMaterial({ map: tex, alphaTest: 0.5, toneMapped: false })));
-  sprite.center.set(0.5, 0.02);
-  sprite.scale.set(H * 0.4, H, 1);
-  g.add(sprite);
+  const walkUrl = url.replace(/\.png$/, '-walk.png');
+  const base = kit.track(new THREE.TextureLoader().load(walkUrl, () => layout()));
+  base.colorSpace = THREE.SRGBColorSpace;
+  base.anisotropy = 8;
+  const H = rig.H;
+  const piece = (u0, u1, v0, v1, cx, cy, order) => {
+    const t = kit.track(base.clone());
+    t.repeat.set(u1 - u0, v1 - v0); t.offset.set(u0, v0);
+    const sp = new THREE.Sprite(kit.track(new THREE.SpriteMaterial({ map: t, alphaTest: 0.5, toneMapped: false })));
+    sp.center.set(cx, cy); sp.renderOrder = order;
+    sp.userData.u = [u0, u1]; sp.userData.v = [v0, v1];
+    g.add(sp);
+    return sp;
+  };
+  // 텍스처 v 는 아래가 0. 그림 위쪽에서 hip 비율만큼 내려온 곳이 엉덩이.
+  const legs = [];
+  let upper;
+  if (rig.hip) {
+    const vh = 1 - rig.hip;
+    upper = piece(0, 1, vh - 0.03, 1, 0.5, 0, 2);
+    legs.push(piece(rig.legL, rig.split, 0, vh, 0.5, 1, 1));
+    legs.push(piece(rig.split, rig.legR, 0, vh, 0.5, 1, 1));
+  } else {
+    upper = piece(0, 1, 0, 1, 0.5, 0, 2);
+  }
+  let aspect = 0.4;
+  function layout() { const img = base.image; if (img && img.width) aspect = img.width / img.height; }
   // 발밑 그림자
   const sh = document.createElement('canvas'); sh.width = sh.height = 64;
   const c = sh.getContext('2d'); const gr = c.createRadialGradient(32, 32, 0, 32, 32, 32);
-  gr.addColorStop(0, 'rgba(40,30,20,.38)'); gr.addColorStop(1, 'rgba(40,30,20,0)'); c.fillStyle = gr; c.fillRect(0, 0, 64, 64);
-  const shadowTex = kit.track(new THREE.CanvasTexture(sh));
-  const blob = new THREE.Mesh(kit.track(new THREE.PlaneGeometry(1.3, 1.3)), kit.track(new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false })));
+  gr.addColorStop(0, 'rgba(40,30,20,.4)'); gr.addColorStop(1, 'rgba(40,30,20,0)'); c.fillStyle = gr; c.fillRect(0, 0, 64, 64);
+  const blob = new THREE.Mesh(kit.track(new THREE.PlaneGeometry(1.1, 0.8)), kit.track(new THREE.MeshBasicMaterial({ map: kit.track(new THREE.CanvasTexture(sh)), transparent: true, depthWrite: false })));
   blob.rotation.x = -Math.PI / 2; blob.position.y = 0.03;
   g.add(blob);
-  const lift = FLOAT[id] || 0;
-  let phase = rand0(), walkAmt = 0;
+
+  let phase = rand0(), walkAmt = 0, flip = 1;
   const last = new THREE.Vector3(), now = new THREE.Vector3(), right = new THREE.Vector3();
   const update = (dt, speed, t, cam) => {
     walkAmt += (Math.min(1, speed) - walkAmt) * Math.min(1, dt * 8);
-    phase += dt * (9 * walkAmt + 1.5);
-    const hop = Math.abs(Math.sin(phase)) * 0.12 * walkAmt;
-    const breathe = Math.sin(t * 2 + phase) * 0.012;
-    sprite.position.y = 0.04 + lift + hop + (lift ? Math.sin(t * 2 + phase) * 0.1 : 0);
-    sprite.material.rotation = Math.sin(phase) * 0.06 * walkAmt;
-    // 진행 방향이 화면 왼쪽이면 그림을 뒤집음
+    phase += dt * (10 * walkAmt + 1.2);
     g.getWorldPosition(now);
+    if (cam) right.setFromMatrixColumn(cam.matrixWorld, 0);
     if (cam && walkAmt > 0.2) {
-      right.setFromMatrixColumn(cam.matrixWorld, 0);
       const side = (now.x - last.x) * right.x + (now.z - last.z) * right.z;
       if (Math.abs(side) > 0.002) flip = side < 0 ? -1 : 1;
     }
     last.copy(now);
-    const w = Math.abs(sprite.scale.x);
-    sprite.scale.set(w * flip, H * (1 + breathe), 1);
-    blob.scale.setScalar(lift ? 0.8 : 1 - hop);
+    const W = H * aspect; // 그림 전체 폭(월드 단위)
+    const swing = Math.sin(phase) * 0.38 * walkAmt;
+    const bob = Math.abs(Math.cos(phase)) * 0.06 * walkAmt;
+    const lift = rig.fly ? 0.9 + Math.sin(t * 2 + phase) * 0.1 : 0;
+    const roll = rig.roll ? Math.sin(phase * 2) * 0.03 * walkAmt : 0;
+    const breathe = Math.sin(t * 2 + phase) * 0.01;
+    // 화면 기준 가로 오프셋을 월드 좌표로
+    const place = (sp, xScreen, y) => sp.position.set(right.x * xScreen * flip, y, right.z * xScreen * flip);
+    if (rig.hip) {
+      const hipY = (1 - rig.hip) * H + 0.02;
+      const uh = upper.userData.v[1] - upper.userData.v[0];
+      upper.scale.set(W * flip, H * uh * (1 + breathe), 1);
+      place(upper, 0, hipY - 0.03 * H + bob);
+      upper.material.rotation = Math.sin(phase) * 0.03 * walkAmt * flip;
+      legs.forEach((leg, i) => {
+        const [u0, u1] = leg.userData.u;
+        leg.scale.set(W * (u1 - u0) * flip, hipY - 0.02, 1);
+        place(leg, ((u0 + u1) / 2 - 0.5) * W, hipY + bob * 0.5);
+        leg.material.rotation = (i ? -swing : swing);
+      });
+    } else {
+      upper.scale.set(W * flip, H * (1 + breathe), 1);
+      place(upper, 0, 0.02 + lift + bob * 0.5);
+      upper.material.rotation = roll * flip;
+    }
+    blob.scale.setScalar(rig.fly ? 0.7 : 1 - bob);
   };
-  return { group: g, update, sprite };
+  return { group: g, update };
 }
