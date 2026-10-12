@@ -1,5 +1,5 @@
-// CARPEDM 캠퍼스의 팀원: 사람 5 + 로봇 5, 그리고 미션컨트롤의 대표.
-// 키는 OpenClaw 에이전트 id 와 같습니다(ceo 는 에이전트가 아니라 고석우 대표 본인).
+// CARPEDM 캠퍼스의 팀원: 사람 5 + 로봇 5, 그리고 미션컨트롤의 고석우 강사.
+// 키는 OpenClaw 에이전트 id 와 같습니다(ceo 는 에이전트가 아니라 고석우 강사 본인).
 // kind: 'human' | 'robot'. 카드 그림은 public/agents/<id>.png 가 있으면 씁니다(img: true).
 // menu: 캠퍼스에서 이 팀원에게 다가가면 말풍선으로 소개하고, 누르면 이동하는 사이트 메뉴.
 
@@ -85,7 +85,7 @@ export const AGENTS = {
     menu: { href: '#programs', label: '강의 프로그램 보기', pitch: '반가워요! 처음 오셨다면 의뢰할 수 있는 강의·컨설팅부터 보세요. 문의는 맨 위 「문의하기」로 언제든 하실 수 있어요.' },
   },
   ceo: {
-    emoji: '☕', name: '고석우 대표', kind: 'human', title: '대표', notAgent: true, img: '/profile/kosukwoo-portrait.webp',
+    emoji: '☕', name: '고석우 강사', kind: 'human', title: '강사', notAgent: true, img: '/profile/kosukwoo-portrait.webp',
     role: '강의·컨설팅·구축',
     greet: '끝까지 와 주셨네요. 커피 한 잔 하면서 기관 이야기 들려주세요.',
     desc: '사회복지 현장에서 일하다 스마트워크·AI 전환을 맡게 됐습니다. 강의로 시작해 컨설팅과 시스템 구축까지 한 흐름으로 이어서 맡습니다.',
@@ -147,7 +147,7 @@ export const CAMPS = [
     no: '06',
     place: '미션컨트롤',
     title: 'AI 에이전트 열을 이렇게 움직입니다',
-    body: '요청은 초원 실장 한 곳으로 받고, 일의 성격에 따라 각 AI 에이전트에게 나눠 보냅니다. 바깥으로 내보내면 안 되는 자료는 이 기기 안에서만 다룹니다. 고석우 대표가 이곳에서 일합니다.',
+    body: '요청은 초원 실장 한 곳으로 받고, 일의 성격에 따라 각 AI 에이전트에게 나눠 보냅니다. 바깥으로 내보내면 안 되는 자료는 이 기기 안에서만 다룹니다. 고석우 강사가 이곳에서 일합니다.',
     link: { href: '#portfolio', label: 'AI 시스템 사례 보기' },
   },
   {
