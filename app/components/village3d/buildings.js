@@ -153,28 +153,49 @@ export function buildBuilding(THREE, kit, key) {
   }
 
   if (key === 'gate') {
-    // 성문: 여장(성가퀴)을 두른 성벽, 문루, 금빛 못을 박은 붉은 문
-    const wall = toon('#C8B28E');
-    [-1, 1].forEach((s) => {
-      add(box(1.0, 1.6, 1.3, wall, { y: 0.8, z: s * 1.15 }));
-      for (let i = 0; i < 3; i++) add(box(0.26, 0.24, 0.26, wall, { x: 0.37, y: 1.72, z: s * (0.65 + i * 0.4) }));
-    });
-    add(box(1.0, 0.5, 1.0, wall, { y: 1.35 }));
-    // 문짝
+    // 성문: 성벽 남쪽 가운데. 문 앞(+Z)이 성 밖입니다. 안쪽으로 열린 붉은 문, 두 겹 지붕의 문루, '融中城' 현판.
+    const wallStone = toon('#BDAE91');
+    const H = 3.4;
+    [-1, 1].forEach((s) => add(box(1.3, H + 0.4, 2.1, wallStone, { x: s * 1.85, y: (H + 0.4) / 2 })));
+    add(box(5.0, 0.9, 2.1, wallStone, { y: H - 0.05 }));
+    // 통로 천장 그늘
+    add(box(2.3, 0.05, 2.1, toon('#4A4034'), { y: H - 0.52, cast: false }));
+    // 안쪽으로 열린 문짝(경첩은 통로 양 끝)
     const doorMat = toon('#7A2A1E');
-    [-0.24, 0.24].forEach((z) => {
-      add(box(0.08, 1.1, 0.46, doorMat, { x: 0.46, y: 0.55, z }));
-      for (let r = 0; r < 3; r++) for (let c = 0; c < 2; c++) add(mesh(new THREE.SphereGeometry(0.025, 6, 4), toon('#D9B04A'), { x: 0.51, y: 0.25 + r * 0.3, z: z - 0.1 + c * 0.2, cast: false }));
+    [-1, 1].forEach((s) => {
+      const hinge = new THREE.Group();
+      hinge.position.set(s * 1.15, 0, -0.7);
+      hinge.rotation.y = s * 1.25;
+      const leaf = box(1.12, 2.7, 0.12, doorMat, { x: -s * 0.56, y: 1.35 });
+      hinge.add(leaf);
+      for (let r = 0; r < 4; r++) for (let c = 0; c < 3; c++) hinge.add(mesh(new THREE.SphereGeometry(0.035, 6, 4), toon('#D9B04A'), { x: -s * (0.22 + c * 0.34), y: 0.45 + r * 0.6, z: 0.08, cast: false }));
+      g.add(hinge);
     });
-    add(box(0.1, 0.18, 0.18, toon('#D9B04A'), { x: 0.52, y: 0.6 }));
     // 문루
-    add(box(0.9, 0.9, 1.3, toon('#E2D2B0'), { y: 1.6 + 0.45 }));
-    for (const sz of [-1, 1]) for (const sx of [-1, 1]) add(cyl(0.06, 0.06, 0.9, red, { x: sx * 0.42, y: 2.05, z: sz * 0.62 }, 6));
-    const roof = curvedRoof(0.85, 1.05, 0.8, 0.35, 0.3, roofMat('#3C3F44', '#2A2C30'));
-    roof.position.y = 2.5;
-    add(roof);
-    add(box(0.75, 0.1, 0.12, toon('#2A2C30'), { y: 3.32 }));
-    height = 3.8;
+    add(box(5.0, 1.3, 2.4, toon('#E2D2B0'), { y: H + 0.4 + 0.65 }));
+    for (let i = 0; i < 5; i++) for (const sz of [-1, 1]) add(cyl(0.08, 0.08, 1.3, red, { x: -2.2 + i * 1.1, y: H + 1.05, z: sz * 1.15 }, 6));
+    add(box(5.2, 0.12, 0.08, red, { y: H + 0.5, z: 1.25 }));
+    const tileA = roofMat('#3C3F44', '#2A2C30');
+    const low = curvedRoof(3.1, 1.75, 0.55, 2.3, 0.32, tileA);
+    low.position.y = H + 1.7;
+    add(low);
+    add(box(4.0, 0.7, 1.6, toon('#E2D2B0'), { y: H + 2.55 }));
+    const top = curvedRoof(2.5, 1.35, 0.95, 1.45, 0.38, tileA);
+    top.position.y = H + 2.9;
+    add(top);
+    add(box(2.9, 0.12, 0.14, toon('#2A2C30'), { y: H + 3.88 }));
+    [-1, 1].forEach((s) => add(mesh(new THREE.ConeGeometry(0.08, 0.36, 6), toon('#2A2C30'), { x: s * 1.45, y: H + 4.02, rz: -s * 0.6 })));
+    // 현판
+    const plaque = document.createElement('canvas');
+    plaque.width = 256; plaque.height = 96;
+    const pg = plaque.getContext('2d');
+    pg.fillStyle = '#1F2A44'; pg.fillRect(0, 0, 256, 96);
+    pg.strokeStyle = '#D9B04A'; pg.lineWidth = 8; pg.strokeRect(6, 6, 244, 84);
+    pg.fillStyle = '#F2D27A'; pg.font = '700 58px Hahmlet, "Noto Serif KR", serif'; pg.textAlign = 'center'; pg.textBaseline = 'middle';
+    pg.fillText('融中城', 128, 50);
+    add(mesh(new THREE.PlaneGeometry(1.5, 0.56), toon('#ffffff', { map: canvasTex(plaque) }), { y: H + 1.05, z: 1.22, cast: false }));
+    lantern(-2.8, 2.6, 1.3); lantern(2.8, 2.6, 1.3);
+    height = H + 4.6;
   }
 
   if (key === 'beacon') {

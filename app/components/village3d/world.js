@@ -1,4 +1,4 @@
-// 융중 마을 3D 장면 전체: 하늘·산·구름 바다·떠 있는 섬·물·나무·깃발·건물·사람.
+// 융중성 3D 장면 전체: 하늘·먼 산·골짜기 지형·강·성벽·성 안 마을·건물·사람.
 
 import {
   N, BUILDINGS, door, PIECES, DECOR, PONDS, STREAMS, STREAM_HALF, PLAZA,
@@ -7,7 +7,10 @@ import {
   createKit, rand, hash3, cloudCanvas, ridgeCanvas, bannerCanvas, radialCanvas, petalCanvas, skyCanvas,
 } from './kit';
 import { buildBuilding } from './buildings';
-import { makePerson, PEOPLE } from './people';
+import { buildTerrain, heightAt, groundY } from './terrain';
+
+export { heightAt, groundY };
+import { makePerson, PEOPLE, TOWNSFOLK } from './people';
 
 export const HALF = N / 2;
 export const toXZ = (x, y) => [x - HALF, y - HALF];
@@ -87,20 +90,23 @@ function groundCanvas() {
   return c;
 }
 
-export function buildWorld(THREE, renderer) {
+export function buildWorld(THREE, renderer, { low = false } = {}) {
   const kit = createKit(THREE, renderer);
   const { track, toon, mesh, canvasTex } = kit;
   const scene = new THREE.Scene();
   scene.background = canvasTex(skyCanvas());
-  scene.fog = new THREE.Fog(0xEEE5CF, 36, 105);
+  scene.fog = new THREE.Fog(0xE9E2CF, 45, 230);
 
   // 빛
   scene.add(new THREE.HemisphereLight(0xFFF6E5, 0x7A6E52, 1.5));
+  scene.add(new THREE.AmbientLight(0xFFF4E0, 0.25));
   const sun = new THREE.DirectionalLight(0xFFE6C0, 2.4);
   sun.position.set(-12, 30, 16);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
-  Object.assign(sun.shadow.camera, { left: -22, right: 22, top: 22, bottom: -22, near: 1, far: 80 });
+  sun.shadow.mapSize.set(low ? 1024 : 2048, low ? 1024 : 2048);
+  Object.assign(sun.shadow.camera, { left: -28, right: 28, top: 34, bottom: -24, near: 1, far: 110 });
+  sun.target.position.set(0, 0, 6);
+  scene.add(sun.target);
   sun.shadow.bias = -0.0006;
   sun.shadow.normalBias = 0.04;
   scene.add(sun);
@@ -108,32 +114,16 @@ export function buildWorld(THREE, renderer) {
   // 땅
   const groundGeo = track(new THREE.PlaneGeometry(N, N));
   groundGeo.rotateX(-Math.PI / 2);
-  const ground = new THREE.Mesh(groundGeo, toon('#ffffff', { map: canvasTex(groundCanvas()) }));
+  const groundMat = toon('#ffffff', { map: canvasTex(groundCanvas()) }).clone();
+  groundMat.polygonOffset = true; groundMat.polygonOffsetFactor = -1; groundMat.polygonOffsetUnits = -1;
+  track(groundMat);
+  const ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.position.y = 0.01;
   ground.receiveShadow = true;
   scene.add(ground);
 
-  // 섬의 흙벽과 바위 뿌리
-  const soil = toon('#7A5A38');
-  const wall = (w, rotY, px, pz) => {
-    const geo = new THREE.PlaneGeometry(w, 2.4, 24, 3);
-    const p = geo.attributes.position;
-    for (let i = 0; i < p.count; i++) if (p.getY(i) < 1.1) p.setZ(i, (hash3(p.getX(i), p.getY(i), rotY) - 0.5) * 0.35);
-    geo.computeVertexNormals();
-    const m = mesh(geo, soil, { x: px, y: -1.2, z: pz, ry: rotY, cast: false });
-    scene.add(m);
-  };
-  wall(N, 0, 0, HALF); wall(N, Math.PI / 2, HALF, 0); wall(N, Math.PI, 0, -HALF); wall(N, -Math.PI / 2, -HALF, 0);
-  const rootGeo = new THREE.ConeGeometry(HALF * 0.98, 12, 8, 6);
-  rootGeo.rotateX(Math.PI); rootGeo.rotateY(Math.PI / 8);
-  {
-    const p = rootGeo.attributes.position;
-    for (let i = 0; i < p.count; i++) {
-      const x0 = p.getX(i), y0 = p.getY(i), z0 = p.getZ(i);
-      if (y0 < 5.9) { const j = 0.85 + hash3(x0, y0, z0) * 0.3; p.setX(i, x0 * j); p.setZ(i, z0 * j); }
-    }
-    rootGeo.computeVertexNormals();
-  }
-  scene.add(mesh(rootGeo, toon('#5E4630'), { y: -8.4, cast: false }));
+  // 성 밖 지형·강·다리·숲·풀·성벽
+  const terrain = buildTerrain(THREE, kit, scene);
 
   // 물
   const waterUniforms = { uTime: { value: 0 } };
@@ -185,17 +175,17 @@ export function buildWorld(THREE, renderer) {
 
   // 수묵 능선 세 겹
   [
-    { dist: 46, color: [52, 64, 57], alpha: 0.9, count: 7, h: 0.5 },
-    { dist: 66, color: [96, 108, 98], alpha: 0.75, count: 8, h: 0.62 },
-    { dist: 92, color: [146, 154, 143], alpha: 0.6, count: 9, h: 0.75 },
+    { dist: 175, color: [82, 94, 88], alpha: 0.75, count: 9, h: 0.55 },
+    { dist: 215, color: [122, 132, 124], alpha: 0.6, count: 10, h: 0.65 },
+    { dist: 260, color: [160, 166, 156], alpha: 0.5, count: 11, h: 0.75 },
   ].forEach((L, li) => {
     for (let i = 0; i < L.count; i++) {
       const m = new THREE.Sprite(track(new THREE.SpriteMaterial({ map: canvasTex(ridgeCanvas(li * 40 + i, L.color, L.alpha, L.h)), transparent: true, depthWrite: false, fog: false, toneMapped: false })));
-      const a = BASE_AZ + Math.PI + ((i + 0.5) / L.count - 0.5) * 2.7;
-      const w = L.dist * 0.95;
+      const a = ((i + 0.5) / L.count) * Math.PI * 2;
+      const w = L.dist * 0.75;
       m.scale.set(w, w * 0.5, 1);
       m.center.set(0.5, 0);
-      m.position.set(Math.cos(a) * L.dist, -9, Math.sin(a) * L.dist);
+      m.position.set(Math.cos(a) * L.dist, 2, Math.sin(a) * L.dist);
       m.renderOrder = -40 - li;
       scene.add(m);
     }
@@ -203,33 +193,20 @@ export function buildWorld(THREE, renderer) {
 
   // 붉은 해
   const sunSprite = new THREE.Sprite(track(new THREE.SpriteMaterial({ map: canvasTex(radialCanvas('rgba(214,96,70,.9)', 'rgba(214,96,70,0)')), fog: false, depthWrite: false, toneMapped: false })));
-  sunSprite.scale.set(26, 26, 1);
-  sunSprite.position.set(Math.cos(BASE_AZ + Math.PI + 0.45) * 110, 34, Math.sin(BASE_AZ + Math.PI + 0.45) * 110);
+  sunSprite.scale.set(40, 40, 1);
+  sunSprite.position.set(-120, 60, -150);
   sunSprite.renderOrder = -50;
   scene.add(sunSprite);
 
   // 구름 바다와 흘러가는 구름
   const cloudTex = [0, 1, 2].map((s) => canvasTex(cloudCanvas(s * 50)));
-  const seaMats = cloudTex.map((t) => track(new THREE.SpriteMaterial({ map: t, transparent: true, depthWrite: false, toneMapped: false })));
-  const seaClouds = [];
-  for (let i = 0; i < 80; i++) {
-    const a = (i / 80) * Math.PI * 2 + rand(i) * 0.3;
-    const rr = HALF * (0.9 + rand(i + 5) * 0.75) * 1.3;
-    const s = new THREE.Sprite(seaMats[i % 3]);
-    const w = 7 + rand(i + 9) * 6;
-    s.scale.set(w, w / 2, 1);
-    s.position.set(Math.cos(a) * rr, -4 - rand(i + 13) * 3, Math.sin(a) * rr);
-    s.userData.base = s.position.y;
-    s.userData.ph = rand(i + 17) * 6;
-    scene.add(s); seaClouds.push(s);
-  }
-  const driftMats = cloudTex.map((t) => track(new THREE.SpriteMaterial({ map: t, transparent: true, opacity: 0.38, depthWrite: false, toneMapped: false })));
+  const driftMats = cloudTex.map((t) => track(new THREE.SpriteMaterial({ map: t, transparent: true, opacity: 0.55, depthWrite: false, toneMapped: false })));
   const drift = [];
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 16; i++) {
     const s = new THREE.Sprite(driftMats[i % 3]);
-    const w = 10 + rand(i + 70) * 8;
+    const w = 22 + rand(i + 70) * 20;
     s.scale.set(w, w / 2, 1);
-    s.position.set(-40 + rand(i + 71) * 80, 17 + rand(i + 72) * 8, -30 + rand(i + 73) * 30);
+    s.position.set(-150 + rand(i + 71) * 300, 34 + rand(i + 72) * 18, -150 + rand(i + 73) * 260);
     s.userData.speed = 0.5 + rand(i + 74) * 0.6;
     scene.add(s); drift.push(s);
   }
@@ -352,11 +329,18 @@ export function buildWorld(THREE, renderer) {
   }
   const visitor = makePerson(THREE, kit, PEOPLE.visitor);
   scene.add(visitor.group);
+  // 성 안 사람들(이름 없는 백성)
+  const folk = TOWNSFOLK.map((spec) => {
+    const f = makePerson(THREE, kit, spec);
+    if (spec.scale) f.group.scale.setScalar(spec.scale);
+    scene.add(f.group);
+    return f;
+  });
 
   const update = (t, dt) => {
     waterUniforms.uTime.value = t;
-    for (const s of drift) { s.position.x += s.userData.speed * dt; if (s.position.x > 45) s.position.x = -45; }
-    for (const s of seaClouds) s.position.y = s.userData.base + Math.sin(t * 0.4 + s.userData.ph) * 0.25;
+    for (const s of drift) { s.position.x += s.userData.speed * dt; if (s.position.x > 160) s.position.x = -160; }
+    terrain.update(t);
     for (let i = 0; i < sway.length; i++) sway[i].rotation.z = Math.sin(t * 0.9 + i) * 0.035;
     for (const f of flags) {
       const p = f.geo.attributes.position;
@@ -391,5 +375,5 @@ export function buildWorld(THREE, renderer) {
     scene.traverse((o) => { o.geometry?.dispose?.(); });
   };
 
-  return { scene, buildings, people, visitor, pickables, update, dispose };
+  return { scene, buildings, people, visitor, folk, pickables, update, dispose };
 }

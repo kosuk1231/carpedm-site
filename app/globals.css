@@ -4072,3 +4072,11 @@ a.program-card:hover .program-card-visual img { transform: scale(1.03); }
 .yv-plain-inner b { font-family: var(--serif); font-size: 24px; }
 .yv-plain-inner div { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 12px; }
 .yv-plain-inner a { padding: 8px 14px; border-radius: 8px; background: #3B2F22; color: #F6EEDC; text-decoration: none; font-size: 14px; }
+.yv3-title {
+  position: absolute; left: 50%; top: 22%; z-index: 5; transform: translateX(-50%); pointer-events: none;
+  display: grid; gap: 4px; text-align: center; color: #F8F1E2; text-shadow: 0 2px 14px rgba(30,20,10,.6);
+  animation: yv3-title 3.6s ease forwards;
+}
+.yv3-title b { font-family: var(--serif); font-size: clamp(40px, 6vw, 72px); font-weight: 700; letter-spacing: .3em; }
+.yv3-title span { font-size: 15px; letter-spacing: .2em; }
+@keyframes yv3-title { 0% { opacity: 0; transform: translate(-50%, 10px); } 18%, 70% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; } }

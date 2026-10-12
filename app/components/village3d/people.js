@@ -16,6 +16,16 @@ export const PEOPLE = {
   visitor:    { modern: true, shirt: '#F5F2EA', pants: '#CDB892', item: 'notebook' },
 };
 
+// 이름 없는 성 안 백성: 농부, 상인, 아이, 창을 든 병사, 물동이를 인 아낙
+export const TOWNSFOLK = [
+  { robe: '#A68B5B', trim: '#5A4630', hat: 'straw', item: 'basket' },
+  { robe: '#5D7A94', trim: '#E8DFCB', hat: 'guan', hatColor: '#2A2420', item: 'scroll' },
+  { robe: '#D98A5A', trim: '#F1E4C8', hat: 'topknot', scale: 0.72 },
+  { robe: '#6B3A2E', trim: '#B48A3A', hat: 'helmet', armor: '#6E6F76', item: 'spear' },
+  { robe: '#8FA38A', trim: '#E8DFCB', hat: 'topknot', item: 'basket' },
+  { robe: '#C9B48A', trim: '#6B4A2E', hat: 'straw', item: 'none' },
+];
+
 const SKIN = '#F0CFA6';
 const HAIR = '#1F1A17';
 
@@ -150,6 +160,11 @@ export function makePerson(THREE, kit, spec) {
     left.add(mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.05, 16), toon('#4A3A2A'), { x: -0.08, z: 0.06, rz: Math.PI / 2, ry: 0.3 }));
     left.add(mesh(new THREE.TorusGeometry(0.18, 0.025, 6, 16), toon('#B48A3A'), { x: -0.11, z: 0.06, ry: Math.PI / 2 + 0.3 }));
     hand.add(mesh(new THREE.TorusGeometry(0.05, 0.015, 6, 12), toon('#C9A24A'), { z: 0.05 }));
+  } else if (item === 'spear') {
+    hand.add(mesh(new THREE.CylinderGeometry(0.02, 0.02, 2.0, 6), toon('#6B4A2E'), { y: 0.55, z: 0.05 }));
+    hand.add(mesh(new THREE.ConeGeometry(0.05, 0.22, 6), toon('#B9BEC4'), { y: 1.65, z: 0.05 }));
+  } else if (item === 'basket') {
+    hand.add(mesh(new THREE.CylinderGeometry(0.14, 0.1, 0.16, 10, 1, true), toon('#A8854A', { side: THREE.DoubleSide }), { y: -0.05, z: 0.08 }));
   } else if (item === 'notebook') {
     hand.add(mesh(new THREE.BoxGeometry(0.16, 0.22, 0.04), toon('#8A6440'), { z: 0.1, rx: -0.2 }));
   }

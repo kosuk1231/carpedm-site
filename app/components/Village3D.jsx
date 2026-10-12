@@ -6,14 +6,16 @@ import VillageCards from './VillageCards';
 import {
   N, SPEED, TALK_R, DOOR_R, BUILDINGS, door, PIECES, START, blocked, findPath,
 } from '../data/villageMap';
+import { rand } from './village3d/kit';
 
-// 융중 마을 3D: 구름 바다 위에 뜬 섬. 건물·사람·나무를 모두 코드로 빚고 툰 음영으로 칠합니다.
-// 방문자는 걸어 다니고, 장수들은 다가오면 몸을 돌려 맞이하며, 사신과 수문장은 제 길을 오갑니다.
-// 카메라: 끌어서 360도 돌리기(Q·E 키도 됨), 휠·두 손가락으로 가까이 보기.
+// 융중성 3D: 남쪽 골짜기 길에서 출발해 다리를 건너고, 성문을 지나 성 안을 거닙니다.
+// 지형·건물·사람은 모두 코드로 빚었습니다. 카메라는 걷는 사람 뒤를 따라가며(끌어서 둘러보기, 휠로 거리 조절),
+// 장수들은 다가오면 몸을 돌려 맞이하고, 백성들은 제 볼일을 보러 오갑니다.
 
-const EL_MIN = 0.32, EL_MAX = 1.15, EL_DEFAULT = 0.62;
-const DIST_MIN = 9, DIST_MAX = 40, DIST_DEFAULT = 24;
+const EL_MIN = 0.1, EL_MAX = 1.2, EL_DEFAULT = 0.34;
+const DIST_MIN = 4.5, DIST_MAX = 42, DIST_DEFAULT = 10.5;
 const HEAD_H = 2.25;
+const SIGN_RANGE = 36, NAME_RANGE = 13;
 
 const angleLerp = (a, b, k) => {
   let d = (b - a) % (Math.PI * 2);
@@ -35,6 +37,7 @@ export default function Village3D({ onFail }) {
   const [open, setOpen] = useState(null);
   const [hint, setHint] = useState(true);
   const [ready, setReady] = useState(false);
+  const [title, setTitle] = useState(null);
   const openRef = useRef(null);
   openRef.current = open;
   const nearRef = useRef(null);
@@ -50,32 +53,72 @@ export default function Village3D({ onFail }) {
     let disposed = false;
     let cleanup = () => {};
     (async () => {
-      let THREE, mod;
+      let THREE, mod, post;
       try {
         THREE = await import('three');
         mod = await import('./village3d/world');
       } catch { onFail?.(); return; }
+      // 성능이 낮을 법한 기기(터치·좁은 화면)는 후처리와 그림자 품질을 낮춥니다.
+      const low = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 800;
+      if (!low) {
+        try {
+          const [ec, rp, bp, sp, op] = await Promise.all([
+            import('three/addons/postprocessing/EffectComposer.js'),
+            import('three/addons/postprocessing/RenderPass.js'),
+            import('three/addons/postprocessing/UnrealBloomPass.js'),
+            import('three/addons/postprocessing/ShaderPass.js'),
+            import('three/addons/postprocessing/OutputPass.js'),
+          ]);
+          post = { ...ec, ...rp, ...bp, ...sp, ...op };
+        } catch { post = null; }
+      }
       if (disposed) return;
-      const { buildWorld, toXZ, BASE_AZ } = mod;
+      const { buildWorld, toXZ, BASE_AZ, groundY } = mod;
       const host = hostRef.current, stage = stageRef.current;
       let renderer;
       try {
         renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
       } catch { onFail?.(); return; }
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, low ? 1.5 : 1.75));
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.08;
       host.appendChild(renderer.domElement);
 
-      const world = buildWorld(THREE, renderer);
-      const cam = new THREE.PerspectiveCamera(32, 1, 0.5, 400);
-      const view = { az: BASE_AZ, el: EL_DEFAULT, dist: DIST_DEFAULT, intro: 0 };
+      const world = buildWorld(THREE, renderer, { low });
+      const cam = new THREE.PerspectiveCamera(42, 1, 0.3, 600);
+      // 카메라 방위 az: 바라보는 곳에서 카메라가 있는 쪽. 처음엔 남쪽(성 밖)에서 성을 바라봅니다.
+      const view = { az: Math.PI / 2, el: EL_DEFAULT, dist: DIST_DEFAULT, intro: 0 };
       const [sx, sz] = toXZ(START.x, START.y);
-      const camTarget = new THREE.Vector3(sx, 0.9, sz);
+      const camTarget = new THREE.Vector3(sx, 1.2, sz);
+      const introFrom = new THREE.Vector3(0, 2, 4);
       const introStart = performance.now();
+      let lastDrag = -1e9;
+      let inside = false;
       setReady(true);
+
+      // 후처리: 은은한 빛 번짐(등불·봉화) + 가장자리 어둡게 + 따뜻한 색감
+      let composer = null;
+      if (post) {
+        composer = new post.EffectComposer(renderer);
+        composer.addPass(new post.RenderPass(world.scene, cam));
+        composer.addPass(new post.UnrealBloomPass(new THREE.Vector2(512, 512), 0.32, 0.6, 0.86));
+        composer.addPass(new post.ShaderPass({
+          uniforms: { tDiffuse: { value: null }, uAmount: { value: 0.55 } },
+          vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+          fragmentShader: `uniform sampler2D tDiffuse; uniform float uAmount; varying vec2 vUv;
+            void main(){
+              vec4 c = texture2D(tDiffuse, vUv);
+              float d = distance(vUv, vec2(0.5));
+              float vig = smoothstep(0.78, 0.28, d);
+              c.rgb *= mix(1.0 - uAmount * 0.6, 1.0, vig);
+              c.rgb = mix(c.rgb, c.rgb * vec3(1.04, 1.0, 0.94), 0.6);
+              gl_FragColor = c;
+            }`,
+        }));
+        composer.addPass(new post.OutputPass());
+      }
 
       // 장수 상태(순찰하는 장수는 길을 미리 구해 둡니다)
       const agents = PIECES.map((p) => {
@@ -87,10 +130,21 @@ export default function Village3D({ onFail }) {
         }
         return st;
       });
+      // 백성들이 오가는 자리(성 안 빈 땅에서 미리 골라 둠)
+      const spots = [];
+      for (let i = 0; spots.length < 36 && i < 2000; i++) {
+        const pt = { x: 2 + rand(i * 2 + 101) * (N - 4), y: 2 + rand(i * 2 + 102) * (N - 4) };
+        if (!blocked(pt.x, pt.y)) spots.push(pt);
+      }
+      const folk = world.folk.map((f, i) => {
+        const sp = spots[(i * 5) % spots.length];
+        return { person: f, x: sp.x, y: sp.y, yaw: rand(i) * 6, path: null, wait: rand(i + 3) * 4 };
+      });
 
       const resize = () => {
         const w = host.clientWidth, h = host.clientHeight;
         renderer.setSize(w, h, false);
+        composer?.setSize(w, h);
         cam.aspect = w / h;
         cam.updateProjectionMatrix();
       };
@@ -134,6 +188,7 @@ export default function Village3D({ onFail }) {
         if (e.target.closest('button, a')) return;
         pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
         drag = { x: e.clientX, y: e.clientY, az: view.az, el: view.el, moved: false };
+        lastDrag = performance.now();
         if (pointers.size === 2) {
           const [a, b] = [...pointers.values()];
           drag.pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), dist: view.dist };
@@ -152,6 +207,7 @@ export default function Village3D({ onFail }) {
         const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
         if (Math.hypot(dx, dy) > 6) drag.moved = true;
         if (drag.moved) {
+          lastDrag = performance.now();
           view.az = drag.az - dx * 0.005;
           view.el = THREE.MathUtils.clamp(drag.el + dy * 0.003, EL_MIN, EL_MAX);
         }
@@ -196,8 +252,9 @@ export default function Village3D({ onFail }) {
       window.addEventListener('keyup', ku);
       window.addEventListener('blur', blur);
 
-      let raf = 0, last = performance.now(), yaw = BASE_AZ;
+      let last = performance.now(), yaw = Math.PI;
       const ease = (t) => 1 - Math.pow(1 - t, 3);
+      const easeIO = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
       const stepAgent = (st, dt) => {
         // 순찰 경로를 따라 한 걸음
         const wp = st.path[0];
@@ -210,8 +267,8 @@ export default function Village3D({ onFail }) {
         return 0.55;
       };
 
-      const loop = (now) => {
-        raf = requestAnimationFrame(loop);
+      const loop = () => {
+        const now = performance.now();
         const dt = Math.min(0.05, (now - last) / 1000);
         last = now;
         if (!visible || document.hidden) return;
@@ -251,7 +308,13 @@ export default function Village3D({ onFail }) {
           yaw = angleLerp(yaw, Math.atan2(dx, dy), Math.min(1, dt * 10));
         }
         const [PX, PZ] = toXZ(pos.current.x, pos.current.y);
-        world.visitor.group.position.set(PX, 0, PZ);
+        const PY = groundY(pos.current.x, pos.current.y);
+        world.visitor.group.position.set(PX, PY, PZ);
+        // 걷는 동안은 카메라가 천천히 등 뒤로 돌아옵니다(최근에 끌어서 돌렸으면 기다림).
+        if (moving && now - lastDrag > 1800 && view.intro >= 1) view.az = angleLerp(view.az, Math.atan2(-Math.cos(yaw), -Math.sin(yaw)), Math.min(1, dt * 1.6));
+        // 성문을 처음 지나면 제목을 띄웁니다.
+        const nowInside = pos.current.y < N - 0.6;
+        if (nowInside !== inside) { inside = nowInside; setTitle(inside ? 'in' : 'out'); setTimeout(() => setTitle(null), 3600); }
         world.visitor.group.rotation.y = yaw;
         world.visitor.update(dt, moving, t);
 
@@ -272,20 +335,43 @@ export default function Village3D({ onFail }) {
           else if (!speed && !st.routeOut) st.yaw = angleLerp(st.yaw, BASE_AZ, Math.min(1, dt * 2));
           const person = world.people[st.id];
           const [ax, az] = toXZ(st.x, st.y);
-          person.group.position.set(ax, 0, az);
+          person.group.position.set(ax, groundY(st.x, st.y), az);
           person.group.rotation.y = st.yaw;
           person.update(dt, speed, t);
         }
+        for (const f of folk) {
+          let speed = 0;
+          if (f.path && f.path.length) speed = stepAgent(f, dt) * 0.9;
+          else if ((f.wait -= dt) <= 0) {
+            const to = spots[Math.floor(Math.random() * spots.length)];
+            f.path = findPath(f, to) || [];
+            f.wait = 2 + Math.random() * 5;
+          }
+          const [fx, fz] = toXZ(f.x, f.y);
+          f.person.group.position.set(fx, 0, fz);
+          f.person.group.rotation.y = f.yaw;
+          f.person.update(dt, speed, t);
+        }
 
         // 카메라: 처음에는 하늘에서 맴돌며 내려옵니다.
-        camTarget.lerp(tmp.set(PX, 0.9, PZ), 1 - Math.pow(0.002, dt));
+        // 카메라: 처음엔 골짜기 하늘에서 성 전체를 보다가, 걷는 사람 뒤로 내려옵니다.
         let el = view.el, dist = view.dist, az = view.az;
         if (view.intro < 1) {
-          view.intro = Math.min(1, (now - introStart) / 4600);
-          const e = ease(view.intro);
-          el = THREE.MathUtils.lerp(1.3, view.el, e);
-          dist = THREE.MathUtils.lerp(95, view.dist, e);
-          az = view.az - (1 - e) * 0.9;
+          view.intro = Math.min(1, (now - introStart) / 6500);
+          const e = easeIO(view.intro);
+          camTarget.copy(introFrom).lerp(tmp.set(PX, PY + 1.2, PZ), e);
+          el = THREE.MathUtils.lerp(0.62, view.el, e);
+          dist = THREE.MathUtils.lerp(78, view.dist, e);
+          az = view.az + (1 - e) * 0.7;
+        } else {
+          camTarget.lerp(tmp.set(PX, PY + 1.2, PZ), 1 - Math.pow(0.002, dt));
+        }
+        // 성벽 가까이에서는 카메라를 높여 벽 너머로 내려다봄
+        if (inside && view.intro >= 1) {
+          // 성문 바로 안쪽은 길이 트여 있으니 예외
+          const nearGate = Math.abs(camTarget.x) < 4 && camTarget.z > 0;
+          const edge = nearGate ? N / 2 - Math.max(Math.abs(camTarget.x), -camTarget.z) : N / 2 - Math.max(Math.abs(camTarget.x), Math.abs(camTarget.z));
+          el = Math.max(el, THREE.MathUtils.lerp(0.95, el, THREE.MathUtils.smoothstep(edge, 2, 7)));
         }
         if (cam.aspect < 1) dist *= Math.min(1.6, 0.75 / cam.aspect);
         cam.position.set(
@@ -295,15 +381,36 @@ export default function Village3D({ onFail }) {
         );
         cam.lookAt(camTarget);
 
+        // 성 안에서는 카메라가 성벽 너머로 빠지지 않게(벽에 가려 사람이 안 보이는 일 방지)
+        if (inside && view.intro >= 1) {
+          const lim = N / 2 - 1.2, limS = N / 2 - 3.6; // 남쪽은 성문 문루 처마 안쪽까지 비켜 섬
+          const cx = THREE.MathUtils.clamp(cam.position.x, -lim, lim), cz = THREE.MathUtils.clamp(cam.position.z, -lim, limS);
+          if (cx !== cam.position.x || cz !== cam.position.z) {
+            cam.position.x = cx; cam.position.z = cz;
+            cam.position.y = Math.max(cam.position.y, 4.2);
+            cam.lookAt(camTarget);
+          }
+        }
+        // 땅 속으로 카메라가 들어가지 않게
+        const camGround = mod.heightAt(cam.position.x, cam.position.z) + 0.6;
+        if (cam.position.y < camGround) { cam.position.y = camGround; cam.lookAt(camTarget); }
+
         world.update(t, dt);
-        renderer.render(world.scene, cam);
+        if (composer) composer.render(); else renderer.render(world.scene, cam);
 
         // 이름표·간판·말풍선
         for (const st of agents) {
           const [ax, az2] = toXZ(st.x, st.y);
-          placeLabel(labelRefs.current[`a-${st.id}`], project(ax, -0.05, az2));
+          const pr = project(ax, groundY(st.x, st.y) - 0.05, az2);
+          if (Math.hypot(ax - PX, az2 - PZ) > NAME_RANGE) pr.hidden = true;
+          placeLabel(labelRefs.current[`a-${st.id}`], pr);
         }
-        for (const b of world.buildings) placeLabel(labelRefs.current[`b-${b.key}`], project(b.X, b.height, b.Z));
+        for (const b of world.buildings) {
+          const pr = project(b.X, b.height, b.Z);
+          if (Math.hypot(b.X - PX, b.Z - PZ) > SIGN_RANGE) pr.hidden = true;
+          if (!inside && b.key !== 'gate') pr.hidden = true; // 성 밖에서는 성문 간판만
+          placeLabel(labelRefs.current[`b-${b.key}`], pr);
+        }
         const cur = nearRef.current;
         if (cur?.kind === 'agent' && bubbleRef.current) {
           const st = agents.find((a) => a.id === cur.id);
@@ -324,10 +431,11 @@ export default function Village3D({ onFail }) {
         }
         if ((cur?.id || null) !== (found?.id || null)) setNear(found);
       };
-      raf = requestAnimationFrame(loop);
+      renderer.setAnimationLoop(loop);
 
       cleanup = () => {
-        cancelAnimationFrame(raf);
+        renderer.setAnimationLoop(null);
+        composer?.dispose?.();
         ro.disconnect(); io.disconnect();
         stage.removeEventListener('pointerdown', onDown);
         window.removeEventListener('pointermove', onMove);
@@ -352,7 +460,7 @@ export default function Village3D({ onFail }) {
     : null;
 
   return (
-    <section className="yv yv3" aria-label="융중 마을 — 3D로 걸어서 둘러보는 포트폴리오">
+    <section className="yv yv3" aria-label="융중성 — 걸어서 둘러보는 포트폴리오">
       <div className="yv-stage yv3-stage" ref={stageRef}>
         <div className="yv3-canvas" ref={hostRef} />
 
@@ -379,16 +487,22 @@ export default function Village3D({ onFail }) {
 
         {!ready && (
           <div className="yv3-loading">
-            <b>융중으로 들어가는 중…</b>
-            <span>구름 위의 마을을 짓고 있습니다</span>
+            <b>융중성으로 가는 길…</b>
+            <span>골짜기와 성을 짓고 있습니다</span>
+          </div>
+        )}
+
+        {title && (
+          <div className={`yv3-title ${title === 'in' ? 'is-in' : ''}`} key={title}>
+            {title === 'in' ? (<><b>融中城</b><span>융중성에 들어섰습니다</span></>) : (<><b>城外</b><span>성 밖 골짜기 길</span></>)}
           </div>
         )}
 
         {ready && hint && (
           <div className="yv-hint">
-            <b>융중 마을에 오신 것을 환영합니다</b>
-            <span className="yv-hint-desk">방향키·WASD로 걷고, 끌어서 둘러보고(Q·E 회전), 휠로 가까이. 장수나 건물 앞에서 Space</span>
-            <span className="yv-hint-touch">바닥을 누르면 걸어가고, 끌면 둘러봅니다</span>
+            <b>성문을 지나 융중성으로 들어가 보세요</b>
+            <span className="yv-hint-desk">W·방향키로 걷고, 끌어서 둘러보고, 휠로 거리 조절. 사람이나 건물 앞에서 Space</span>
+            <span className="yv-hint-touch">가고 싶은 곳을 누르면 걸어가고, 끌면 둘러봅니다</span>
           </div>
         )}
 
