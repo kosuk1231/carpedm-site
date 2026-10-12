@@ -5,6 +5,75 @@
 export const N = 48;           // 캠퍼스 한 변의 칸 수
 export const GATE_X = 24;      // 남쪽 입구(웰컴 사인) 가운데
 export const OUT_LEN = 4;      // 캠퍼스 남쪽 보도 폭(그 너머가 큰길)
+
+// 캠퍼스 땅 모양: 반듯한 사각형이 아니라 실제 도시의 학교 부지처럼 둘레가 굽은 땅.
+// 남쪽(큰길 쪽)만 곧게 열려 있고, 나머지는 굽은 생울타리와 보도로 둘러싸입니다. 아래 점들을 부드러운 곡선으로 잇습니다.
+const CAMPUS_CTRL = [
+  [1.5, 48], [12, 48], [24, 48], [36, 48], [46.5, 48], [47.6, 41], [46.4, 33], [47.4, 25], [45.6, 17], [42.2, 9.5],
+  [37.5, 3.2], [30, 0.8], [21, 1.8], [13, 0.6], [6.5, 2.2], [2.6, 6.5], [1.0, 13], [2.4, 21], [0.9, 29], [2.0, 37], [0.9, 43.5],
+];
+function catmullClosed(pts, steps) {
+  const out = [], n = pts.length;
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n];
+    for (let k = 0; k < steps; k++) {
+      const t = k / steps, t2 = t * t, t3 = t2 * t;
+      const f = (a, b, c, d) => 0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3);
+      out.push({ x: f(p0[0], p1[0], p2[0], p3[0]), y: Math.min(N, f(p0[1], p1[1], p2[1], p3[1])) });
+    }
+  }
+  return out;
+}
+export const CAMPUS = catmullClosed(CAMPUS_CTRL, 10);
+export function inPoly(poly, x, y) {
+  let c = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i], b = poly[j];
+    if ((a.y > y) !== (b.y > y) && x < ((b.x - a.x) * (y - a.y)) / (b.y - a.y) + a.x) c = !c;
+  }
+  return c;
+}
+// 둘레 곡선을 바깥(+)/안(-)으로 d 만큼 옮긴 곡선(도로·보도·울타리 자리)
+export function offsetPoly(poly, d) {
+  const n = poly.length;
+  let area = 0;
+  for (let i = 0; i < n; i++) { const a = poly[i], b = poly[(i + 1) % n]; area += a.x * b.y - b.x * a.y; }
+  const sgn = area > 0 ? -1 : 1;
+  return poly.map((p, i) => {
+    const a = poly[(i - 1 + n) % n], b = poly[(i + 1) % n];
+    const tx = b.x - a.x, ty = b.y - a.y, l = Math.hypot(tx, ty) || 1;
+    return { x: p.x + sgn * (ty / l) * d, y: p.y - sgn * (tx / l) * d };
+  });
+}
+const isFront = (a, b) => a.y > N - 0.4 && b.y > N - 0.4; // 남쪽 큰길에 열린 부분
+// 생울타리(남쪽 제외)까지의 거리
+function hedgeDist(x, y) {
+  let best = Infinity;
+  for (let i = 0; i < CAMPUS.length; i++) {
+    const a = CAMPUS[i], b = CAMPUS[(i + 1) % CAMPUS.length];
+    if (isFront(a, b)) continue;
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const u = Math.max(0, Math.min(1, ((x - a.x) * dx + (y - a.y) * dy) / (dx * dx + dy * dy || 1)));
+    best = Math.min(best, Math.hypot(x - (a.x + u * dx), y - (a.y + u * dy)));
+  }
+  return best;
+}
+export const HEDGE_IN = 0.45;  // 울타리는 둘레에서 이만큼 안쪽
+// 걸을 수 있는 땅 미리 계산(0.25칸 격자): 캠퍼스 안(울타리 앞까지) + 남쪽 보도
+const MR = 4;
+const MW = N * MR + 1, MH = (N + 8) * MR + 1;
+const walkMask = new Uint8Array(MW * MH);
+for (let j = 0; j < MH; j++) for (let i = 0; i < MW; i++) {
+  const x = i / MR, y = j / MR;
+  const side = y > N - 0.5 && y <= N + 4 && x > 0.8 && x < N - 0.8;
+  walkMask[j * MW + i] = side || (inPoly(CAMPUS, x, y) && hedgeDist(x, y) > HEDGE_IN + 0.5) ? 1 : 0;
+}
+const walkable = (x, y) => {
+  const i = Math.round(x * MR), j = Math.round(y * MR);
+  return i >= 0 && j >= 0 && i < MW && j < MH && walkMask[j * MW + i] === 1;
+};
+export const nearHedge = (x, y) => hedgeDist(x, y);
+
 export const SPEED = 4.0;      // 방문자 초당 이동 칸 수(가볍게 뛰는 속도)
 export const TALK_R = 1.5;     // 인물과 대화 가능한 거리
 export const DOOR_R = 1.4;     // 건물 입구 반경
@@ -27,7 +96,7 @@ export const door = (b) => (b.door ? { x: b.x + b.door[0], y: b.y + b.door[1] } 
 export const PIECES = [
   { id: 'main', x: 17.5, y: 13 },
   { id: 'ceo', x: 14.5, y: 6.5 },                                        // 미션컨트롤 앞의 대표
-  { id: 'developer', x: 41.5, y: 7 },
+  { id: 'developer', x: 40.5, y: 11.5 },
   { id: 'critic', x: 28.5, y: 14.5 },
   { id: 'trainer', x: 14.5, y: 33 },
   { id: 'researcher', x: 9, y: 35.5 },
@@ -41,7 +110,7 @@ export const P_R = 0.45;
 
 // 캠퍼스 풍경: 큰길 키오스크(kiosk)·가로등(lamp), 작은 사무 동(pod), 벤치, 나무·대나무·바위, 현수막(banner).
 // 건물·입구·인물·길·물과 겹치지 않게 골라 둔 자리입니다.
-export const DECOR = [
+const DECOR_ALL = [
   ['kiosk', 21.4, 32], ['kiosk', 26.6, 32], ['kiosk', 21.4, 35], ['kiosk', 26.6, 35], ['kiosk', 21.4, 38], ['kiosk', 26.6, 38],
   ['kiosk', 21.4, 41], ['kiosk', 26.6, 41], ['pod', 41.8, 22.6], ['pod', 10.8, 24.5], ['pod', 7.0, 15.7], ['pod', 32.1, 4.8],
   ['pod', 9.6, 3.6], ['pod', 22.2, 14.7], ['pod', 44.9, 44.8], ['pod', 38.3, 32.7], ['pod', 35.2, 19.8], ['pod', 38.6, 19.2],
@@ -58,6 +127,8 @@ export const DECOR = [
   ['banner', 21.6, 30.5], ['banner', 26.4, 30.5], ['banner', 21.6, 21.5], ['banner', 26.4, 21.5], ['lamp', 22.4, 33.5], ['lamp', 25.6, 33.5],
   ['lamp', 22.4, 36.5], ['lamp', 25.6, 36.5], ['lamp', 22.4, 39.5], ['lamp', 25.6, 39.5], ['lamp', 22.4, 42.5], ['lamp', 25.6, 42.5],
 ];
+// 굽은 둘레 밖이나 울타리에 걸리는 풍경은 뺌
+export const DECOR = DECOR_ALL.filter(([, x, y]) => inPoly(CAMPUS, x, y) && hedgeDist(x, y) > 1.3);
 export const DECOR_R = { pine: 0.5, bamboo: 0.55, rock: 0.5, tree: 0.5, bench: 0.6, banner: 0.25, lamp: 0.15, kiosk: 0.9, pod: 1.5 };
 
 // 물: 연못 [중심, 반지름], 개울(꺾은선). 걸어서 건널 수 없습니다.
@@ -80,9 +151,8 @@ export const inWater = (x, y) => {
 export const START = { x: GATE_X, y: N + OUT_LEN - 0.8 }; // 큰길 셔틀 정류장에서 출발
 export const PLAZA = { x: 24, y: 26 };
 
-export const blocked = (x, y) => {
-  if (x < 0.8 || x > N - 0.8 || y < 0.8) return true;
-  if (y > N + OUT_LEN) return true; // 보도 너머는 차도
+const blockedRaw = (x, y) => {
+  if (y > N + OUT_LEN || !walkable(x, y)) return true; // 캠퍼스 밖·울타리·차도
   for (const b of BUILDINGS) if (!b.open && Math.hypot(x - b.x, y - b.y) < B_R) return true;
   for (const [t, dx, dy] of DECOR) if (Math.hypot(x - dx, y - dy) < DECOR_R[t]) return true;
   if (inWater(x, y)) return true;
@@ -112,6 +182,17 @@ function smoothPath(from, path) {
   return out;
 }
 
+// 막힌 곳은 모두 움직이지 않으므로 0.25칸 격자로 한 번 계산해 두고 찾아봄(길찾기가 빨라짐)
+let fullMask = null;
+export const blocked = (x, y) => {
+  if (!fullMask) {
+    fullMask = new Uint8Array(MW * MH);
+    for (let j = 0; j < MH; j++) for (let i = 0; i < MW; i++) fullMask[j * MW + i] = blockedRaw(i / MR, j / MR) ? 1 : 0;
+  }
+  const i = Math.round(x * MR), j = Math.round(y * MR);
+  return i < 0 || j < 0 || i >= MW || j >= MH || fullMask[j * MW + i] === 1;
+};
+
 // 길찾기: 반 칸 격자 위 A*. 건물·장수·나무를 돌아서 갑니다.
 const G = 2; // 한 칸을 몇 조각으로 나눌지
 export function findPath(from, to) {
@@ -131,14 +212,17 @@ export function findPath(from, to) {
   }
   const [si, sj] = cell(from.x, from.y);
   const key = (i, j) => i * 1000 + j;
-  const open = [{ i: si, j: sj, g: 0, f: 0 }];
+  // 우선순위 큐(이진 힙)
+  const heap = [];
+  const push = (n) => { heap.push(n); let k = heap.length - 1; while (k) { const p = (k - 1) >> 1; if (heap[p].f <= heap[k].f) break; [heap[p], heap[k]] = [heap[k], heap[p]]; k = p; } };
+  const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length) { heap[0] = last; let k = 0; for (;;) { const l = 2 * k + 1, r = l + 1; let m = k; if (l < heap.length && heap[l].f < heap[m].f) m = l; if (r < heap.length && heap[r].f < heap[m].f) m = r; if (m === k) break; [heap[m], heap[k]] = [heap[k], heap[m]]; k = m; } } return top; };
+  push({ i: si, j: sj, g: 0, f: 0 });
   const came = new Map(), gs = new Map([[key(si, sj), 0]]);
   const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
   let guard = 0;
-  while (open.length && guard++ < 20000) {
-    let bi = 0;
-    for (let k = 1; k < open.length; k++) if (open[k].f < open[bi].f) bi = k;
-    const c = open.splice(bi, 1)[0];
+  while (heap.length && guard++ < 20000) {
+    const c = pop();
+    if (c.g > (gs.get(key(c.i, c.j)) ?? Infinity)) continue;
     if (c.i === ti && c.j === tj) {
       const path = [];
       let k = key(c.i, c.j);
@@ -155,7 +239,7 @@ export function findPath(from, to) {
       const nk = key(ni, nj);
       if (ng < (gs.get(nk) ?? Infinity)) {
         gs.set(nk, ng); came.set(nk, key(c.i, c.j));
-        open.push({ i: ni, j: nj, g: ng, f: ng + Math.hypot(ti - ni, tj - nj) });
+        push({ i: ni, j: nj, g: ng, f: ng + Math.hypot(ti - ni, tj - nj) });
       }
     }
   }

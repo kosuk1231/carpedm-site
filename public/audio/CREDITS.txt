@@ -1,0 +1,7 @@
+campus-bgm.mp3
+- Title: Apple Cider
+- Artist: Zane Little Music
+- Source: https://opengameart.org/content/apple-cider
+- License: CC0 1.0 (Public Domain Dedication) https://creativecommons.org/publicdomain/zero/1.0/
+  "You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission."
+- Re-encoded to 128 kbps MP3 (tags removed). Verified 2026-10-12.

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AGENTS, CAMPS } from '../data/agents';
 import VillageCards from './VillageCards';
 import {
-  N, SPEED, TALK_R, DOOR_R, BUILDINGS, door, PIECES, START, PLAZA, blocked, findPath,
+  N, SPEED, DOOR_R, BUILDINGS, door, PIECES, START, PLAZA, blocked, findPath,
 } from '../data/villageMap';
 import { rand } from './village3d/kit';
 
@@ -16,6 +16,7 @@ const EL_MIN = 0.1, EL_MAX = 1.2, EL_DEFAULT = 0.34;
 const DIST_MIN = 4.5, DIST_MAX = 60, DIST_DEFAULT = 11;
 const HEAD_H = 2.25;
 const SIGN_RANGE = 50, NAME_RANGE = 14;
+const BUBBLE_R = 3.2; // 팀원 곁 이 거리 안에 들어서면 메뉴 소개 말풍선
 
 const angleLerp = (a, b, k) => {
   let d = (b - a) % (Math.PI * 2);
@@ -50,10 +51,73 @@ export default function Village3D({ onFail }) {
   const nearRef = useRef(null);
   nearRef.current = near;
 
+  // 배경음악: 'Apple Cider' — Zane Little Music (CC0, opengameart.org/content/apple-cider)
+  // 브라우저는 소리 자동 재생을 막으므로, 캠퍼스에서 처음 걷거나 누를 때 작게 시작해 천천히 키웁니다.
+  const audioRef = useRef(null);
+  const [music, setMusic] = useState(true);
+  const musicRef = useRef(true);
+  musicRef.current = music;
+  const fadeRef = useRef(0);
+  const fadeTo = useCallback((target, ms = 1200) => {
+    const a = audioRef.current; if (!a) return;
+    cancelAnimationFrame(fadeRef.current);
+    const from = a.volume, t0 = performance.now();
+    const step = () => {
+      const k = Math.min(1, (performance.now() - t0) / ms);
+      a.volume = from + (target - from) * k;
+      if (k < 1) fadeRef.current = requestAnimationFrame(step);
+      else if (target === 0) a.pause();
+    };
+    step();
+  }, []);
+  const startMusic = useCallback(() => {
+    const a = audioRef.current;
+    if (!a || !musicRef.current || !activeRef.current || !a.paused) return;
+    a.volume = 0;
+    a.play().then(() => fadeTo(0.32, 2500)).catch(() => {});
+  }, [fadeTo]);
+  useEffect(() => {
+    try { if (localStorage.getItem('carpedm-bgm') === 'off') setMusic(false); } catch {}
+    const stage = stageRef.current;
+    const onGesture = () => startMusic();
+    stage?.addEventListener('pointerdown', onGesture);
+    window.addEventListener('keydown', onGesture);
+    // 캠퍼스가 화면에서 벗어나거나 탭을 숨기면 소리를 줄여 멈춤
+    const io = new IntersectionObserver(([e]) => { const a = audioRef.current; if (!a) return; if (!e.isIntersecting && !a.paused) fadeTo(0, 600); }, { threshold: 0 });
+    if (stage) io.observe(stage);
+    const onVis = () => { if (document.hidden && audioRef.current && !audioRef.current.paused) fadeTo(0, 300); };
+    document.addEventListener('visibilitychange', onVis);
+    return () => { stage?.removeEventListener('pointerdown', onGesture); window.removeEventListener('keydown', onGesture); io.disconnect(); document.removeEventListener('visibilitychange', onVis); cancelAnimationFrame(fadeRef.current); };
+  }, [startMusic, fadeTo]);
+  const toggleMusic = () => {
+    const next = !music;
+    setMusic(next); musicRef.current = next;
+    try { localStorage.setItem('carpedm-bgm', next ? 'on' : 'off'); } catch {}
+    const a = audioRef.current; if (!a) return;
+    if (next) { a.volume = 0; a.play().then(() => fadeTo(0.32, 1500)).catch(() => {}); } else fadeTo(0, 500);
+  };
+
+  // 팀원을 누르거나 곁에서 Space: 그 팀원이 맡은 사이트 메뉴로 이동
+  const goMenu = useCallback((id) => {
+    const m = AGENTS[id]?.menu;
+    if (!m) return;
+    keys.current.clear(); target.current = null;
+    if (m.href.startsWith('/')) { window.location.href = m.href; return; }
+    const el = document.querySelector(m.href);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', m.href);
+      // 부드러운 스크롤이 막히면(무거운 3D 화면 등) 바로 이동
+      setTimeout(() => { if (Math.abs(el.getBoundingClientRect().top) > 200 && window.scrollY < 50) el.scrollIntoView({ behavior: 'instant', block: 'start' }); }, 1200);
+    }
+    else window.location.hash = m.href;
+  }, []);
   const interact = useCallback((n) => {
     const t = n || nearRef.current;
-    if (t) { setOpen(t); keys.current.clear(); target.current = null; }
-  }, []);
+    if (!t) return;
+    if (t.kind === 'agent') { goMenu(t.id); return; }
+    setOpen(t); keys.current.clear(); target.current = null;
+  }, [goMenu]);
   const walkTo = useCallback((pt) => { target.current = findPath(pos.current, pt); setHint(false); setOpen(null); }, []);
 
   useEffect(() => {
@@ -426,12 +490,6 @@ export default function Village3D({ onFail }) {
         } else {
           camTarget.lerp(tmp.set(PX, PY + 1.2, PZ), 1 - Math.pow(0.002, dt));
         }
-        // 성벽 가까이에서는 카메라를 높여 벽 너머로 내려다봄
-        if (inside && view.intro >= 1) {
-          // 남쪽은 담장 없이 큰길로 트여 있으니 동·서·북 담장만 봄
-          const edge = N / 2 - Math.max(Math.abs(camTarget.x), -camTarget.z);
-          el = Math.max(el, THREE.MathUtils.lerp(0.95, el, THREE.MathUtils.smoothstep(edge, 2, 7)));
-        }
         el = THREE.MathUtils.lerp(el, 1.1, occLift);
         if (cam.aspect < 1) dist *= Math.min(1.6, 0.75 / cam.aspect);
         cam.position.set(
@@ -441,16 +499,6 @@ export default function Village3D({ onFail }) {
         );
         cam.lookAt(camTarget);
 
-        // 캠퍼스 안에서는 카메라가 담장 너머로 빠지지 않게
-        if (inside && view.intro >= 1) {
-          const lim = N / 2 - 1.2; // 남쪽은 열려 있어 막지 않음
-          const cx = THREE.MathUtils.clamp(cam.position.x, -lim, lim), cz = Math.max(cam.position.z, -lim);
-          if (cx !== cam.position.x || cz !== cam.position.z) {
-            cam.position.x = cx; cam.position.z = cz;
-            cam.position.y = Math.max(cam.position.y, 4.2);
-            cam.lookAt(camTarget);
-          }
-        }
         // 건물이 사람을 가리는지 살펴, 가리면 다음 프레임부터 카메라를 위로 들어 올려 내려다봄
         if (view.intro >= 1) {
           occRay.set(camTarget, occDir.subVectors(cam.position, camTarget).normalize());
@@ -489,7 +537,7 @@ export default function Village3D({ onFail }) {
         let found = null, best = Infinity;
         for (const st of agents) {
           const d = Math.hypot(pos.current.x - st.x, pos.current.y - st.y);
-          if (d < TALK_R && d < best) { best = d; found = { kind: 'agent', id: st.id }; }
+          if (d < BUBBLE_R && d < best) { best = d; found = { kind: 'agent', id: st.id }; }
         }
         for (const b of BUILDINGS) {
           const dr = door(b);
@@ -528,7 +576,7 @@ export default function Village3D({ onFail }) {
 
   const nearLabel = near
     ? near.kind === 'agent'
-      ? `${AGENTS[near.id].emoji} ${AGENTS[near.id].name}에게 말 걸기`
+      ? `${AGENTS[near.id].emoji} ${AGENTS[near.id].menu.label}`
       : `${CAMPS.find((c) => c.key === near.id).place} 들어가기`
     : null;
 
@@ -553,7 +601,11 @@ export default function Village3D({ onFail }) {
           ))}
           {near?.kind === 'agent' && (
             <div className="yv3-pin" ref={bubbleRef}>
-              <div className="yv3-bubble">{AGENTS[near.id].greet}</div>
+              <div className="yv3-bubble yv3-bubble-menu">
+                <b>{AGENTS[near.id].name}</b>
+                <span>{AGENTS[near.id].menu.pitch}</span>
+                <button type="button" onClick={() => goMenu(near.id)}>{AGENTS[near.id].menu.label} →</button>
+              </div>
             </div>
           )}
         </div>
@@ -584,6 +636,11 @@ export default function Village3D({ onFail }) {
             {nearLabel} <kbd>Space</kbd>
           </button>
         )}
+
+        <audio ref={audioRef} src="/audio/campus-bgm.mp3" loop preload="none" />
+        <button type="button" className={`yv3-music ${music ? 'is-on' : ''}`} onClick={toggleMusic} aria-pressed={music} title="배경음악: Apple Cider — Zane Little Music (CC0)">
+          {music ? '♪ 음악 켜짐' : '♪ 음악 꺼짐'}
+        </button>
 
         <nav className="yv-hud" aria-label="마을 빠른 이동">
           {CAMPS.map((c) => {

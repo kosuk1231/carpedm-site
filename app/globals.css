@@ -4059,6 +4059,10 @@ a.program-card:hover .program-card-visual img { transform: scale(1.03); }
   padding: 10px 14px; background: #FFFBF2; border: 1.5px solid #3B2F22; border-radius: 12px; font-size: 13.5px; line-height: 1.55; color: #3B2F22;
   box-shadow: 0 6px 14px rgba(40,25,10,.2);
 }
+.yv3-bubble-menu { display: grid; gap: 6px; max-width: 260px; pointer-events: auto; }
+.yv3-bubble-menu b { font-size: 12.5px; color: #8A6440; }
+.yv3-bubble-menu button { justify-self: start; padding: 5px 11px; border: 0; border-radius: 999px; background: #3B2F22; color: #FFFBF2; font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+.yv3-bubble-menu button:hover { background: #5E4A34; }
 .yv3-bubble::after { content: ''; position: absolute; left: 50%; bottom: -8px; width: 12px; height: 12px; background: #FFFBF2; border-right: 1.5px solid #3B2F22; border-bottom: 1.5px solid #3B2F22; transform: translateX(-50%) rotate(45deg); }
 .yv3-loading {
   position: absolute; inset: 0; z-index: 7; display: grid; place-content: center; gap: 6px; text-align: center;
@@ -4085,3 +4089,12 @@ a.program-card:hover .program-card-visual img { transform: scale(1.03); }
 .yv-portrait-lg { width: 100%; aspect-ratio: 3 / 4; font-size: 84px; object-fit: cover; }
 .yv-portrait-sm { width: 64px; height: 84px; font-size: 34px; object-fit: cover; border-radius: 10px; }
 img.yv-portrait { background: radial-gradient(ellipse at 50% 60%, #F4EAD6, #E8DCC2); object-fit: contain; padding: 6px; }
+
+/* 캠퍼스 배경음악 켜고 끄기 */
+.yv3-music {
+  position: absolute; top: 14px; right: 14px; z-index: 6; padding: 7px 13px; border-radius: 999px;
+  border: 1.5px solid rgba(59,47,34,.5); background: rgba(255,251,242,.88); color: #3B2F22;
+  font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; backdrop-filter: blur(4px);
+}
+.yv3-music:not(.is-on) { color: #8A7A66; text-decoration: line-through; text-decoration-thickness: 1px; }
+.yv3-music:hover { background: #FFFBF2; }

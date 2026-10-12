@@ -1,7 +1,7 @@
 // CARPEDM 캠퍼스 3D 장면 전체: 하늘·먼 산·골짜기 지형·강·담장·캠퍼스 건물·사람과 로봇.
 
 import {
-  N, GATE_X, BUILDINGS, door, PIECES, DECOR, PONDS, STREAMS, STREAM_HALF, PLAZA,
+  N, GATE_X, BUILDINGS, door, PIECES, DECOR, PONDS, STREAMS, STREAM_HALF, PLAZA, CAMPUS,
 } from '../../data/villageMap';
 import {
   createKit, rand, hash3, cloudCanvas, ridgeCanvas, bannerCanvas, radialCanvas, petalCanvas, skyCanvas,
@@ -70,7 +70,6 @@ function groundCanvas() {
   g.beginPath(); g.arc(cx, cy, 2.5 * k, 0, Math.PI * 2); g.fillStyle = '#93B26A'; g.fill();
   g.setLineDash([18, 14]); g.beginPath(); g.arc(cx, cy, 2.85 * k, 0, Math.PI * 2); g.lineWidth = 4; g.strokeStyle = '#E0995A'; g.stroke(); g.setLineDash([]);
   g.save(); g.translate(cx, cy + 1.6 * k); g.fillStyle = 'rgba(244,241,234,.95)'; g.font = `800 ${Math.round(0.55 * k)}px Pretendard, sans-serif`; g.textAlign = 'center'; g.fillText('CARPEDM', 0, 0); g.restore();
-  g.lineWidth = 10; g.strokeStyle = 'rgba(96,128,70,.75)'; g.strokeRect(5, 5, S - 10, S - 10);
   return c;
 }
 
@@ -96,8 +95,12 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
   scene.add(sun);
 
   // 땅
-  const groundGeo = track(new THREE.PlaneGeometry(N, N));
+  // 캠퍼스 땅: 굽은 부지 모양 그대로(격자 좌표 x→X, y→Z), 바닥 그림은 0~N 칸에 맞춰 붙임
+  const shape = new THREE.Shape(CAMPUS.map((p) => new THREE.Vector2(p.x - HALF, -(p.y - HALF))));
+  const groundGeo = track(new THREE.ShapeGeometry(shape, 1));
   groundGeo.rotateX(-Math.PI / 2);
+  { const p = groundGeo.attributes.position, uv = groundGeo.attributes.uv;
+    for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) + HALF) / N, 1 - (p.getZ(i) + HALF) / N); }
   const groundMat = toon('#ffffff', { map: canvasTex(groundCanvas()) }).clone();
   groundMat.polygonOffset = true; groundMat.polygonOffsetFactor = -1; groundMat.polygonOffsetUnits = -1;
   track(groundMat);
