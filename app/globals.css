@@ -4001,7 +4001,7 @@ a.program-card:hover .program-card-visual img { transform: scale(1.03); }
 
 .yv-obj { position: absolute; width: 0; height: 0; }
 .yv-building svg { position: absolute; left: 0; top: 0; filter: drop-shadow(0 14px 10px rgba(60,40,15,.25)); }
-.yv-building-art { position: absolute; left: 0; top: 0; width: 300px; transform: translate(-50%, -78%); filter: drop-shadow(0 14px 10px rgba(60,40,15,.25)); }
+.yv-building-art { position: absolute; left: 0; top: 0; width: 380px; max-width: none; transform: translate(-50%, -59%); pointer-events: none; filter: drop-shadow(0 14px 10px rgba(60,40,15,.25)); }
 .yv-sign {
   position: absolute; transform: translateX(-50%); white-space: nowrap; pointer-events: none;
   padding: 4px 12px; background: #3B2F22; color: #F6EEDC; border-radius: 4px; font-family: var(--serif); font-size: 15px; font-weight: 600;
@@ -4028,11 +4028,9 @@ a.program-card:hover .program-card-visual img { transform: scale(1.03); }
 .yv-bubble::after { content: ''; position: absolute; left: 50%; bottom: -8px; width: 12px; height: 12px; background: #FFFBF2; border-right: 1.5px solid #3B2F22; border-bottom: 1.5px solid #3B2F22; transform: translateX(-50%) rotate(45deg); }
 
 .yv-player-body {
-  position: absolute; left: 0; bottom: 0; width: 44px; height: 84px; transform: translateX(-50%) scaleX(var(--face, 1));
-  border-radius: 22px 22px 10px 10px; background: linear-gradient(#F7F3EA 0 55%, #CDBA92 55%); border: 2px solid #3B2F22;
-  display: grid; place-items: start center; padding-top: 10px; font-size: 13px; font-weight: 800; color: #3B2F22;
+  position: absolute; left: 0; bottom: -6px; height: 132px; width: auto; max-width: none; transform: translateX(-50%) scaleX(var(--face, 1));
+  filter: drop-shadow(0 8px 6px rgba(50,30,10,.3)); pointer-events: none;
 }
-.yv-player-body span { transform: scaleX(var(--face, 1)); }
 .yv-player::after { content: ''; position: absolute; left: -24px; top: -8px; width: 48px; height: 16px; border-radius: 50%; background: rgba(60,40,15,.25); }
 .yv-player.is-moving .yv-player-body { animation: yv-walk .32s ease-in-out infinite; }
 

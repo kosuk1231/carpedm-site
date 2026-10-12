@@ -8,13 +8,13 @@ import { AGENTS, CAMPS } from '../data/agents';
 // 좌표는 바닥 격자(x, y) 단위로 계산하고, 화면에는 아이소메트릭으로 투영합니다.
 // 이동: 방향키/WASD, 또는 바닥을 눌러 그 자리까지 걷기. 장수·건물 앞에서 Space/Enter 또는 버튼으로 상호작용.
 
-const N = 24;            // 마을 한 변의 칸 수
+const N = 28;            // 마을 한 변의 칸 수
 const TW = 96;           // 칸 하나의 화면 가로
 const TH = 48;           // 칸 하나의 화면 세로
-const PAD = 260;         // 위쪽 여백(높은 건물이 잘리지 않도록)
+const PAD = 300;         // 위쪽 여백(높은 건물이 잘리지 않도록)
 const WORLD_W = N * TW;
 const WORLD_H = N * TH + PAD + 120;
-const SPEED = 4.2;       // 초당 이동 칸 수
+const SPEED = 4.6;       // 초당 이동 칸 수
 const TALK_R = 1.5;      // 장수와 대화 가능한 거리
 const DOOR_R = 1.4;      // 건물 입구 반경
 
@@ -25,63 +25,104 @@ const toWorld = (sx, sy) => {
   return { x: (a + b) / 2, y: (b - a) / 2 };
 };
 
-// 건물 위치와 색. key 는 CAMPS 의 key 와 같습니다. art 에 그림 경로를 넣으면 임시 도형 대신 그림을 씁니다.
+// 건물 위치. key 는 CAMPS 의 key 와 같고, 그림은 public/village/<key>.png (배경 투명 디오라마).
 const BUILDINGS = [
-  { key: 'chorye',   x: 5, y: 5,  roof: '#6E5A3A', wall: '#E9DCC0', art: null },
-  { key: 'lecture',  x: 4, y: 15, roof: '#A0743A', wall: '#F0E2C4', art: null },
-  { key: 'workshop', x: 15, y: 4,  roof: '#5D6B70', wall: '#E4DACB', art: null },
-  { key: 'library',  x: 18, y: 13, roof: '#3F6650', wall: '#EFE3C8', art: null },
-  { key: 'gate',     x: 14, y: 19.5,   roof: '#4A4A4F', wall: '#DCCDB0', art: null },
-  { key: 'beacon',   x: 21.5, y: 20.5, roof: '#A23B26', wall: '#E8D6B5', art: null },
+  { key: 'chorye', x: 6, y: 6 },
+  { key: 'workshop', x: 17, y: 4.5 },
+  { key: 'lecture', x: 5, y: 17 },
+  { key: 'library', x: 21, y: 14 },
+  { key: 'gate', x: 14, y: 23 },
+  { key: 'beacon', x: 24, y: 23.5 },
 ];
-const B_R = 1.55; // 건물이 차지하는 반경(충돌)
-const door = (b) => ({ x: b.x + 2.15, y: b.y + 2.15 });
+const B_R = 1.9; // 건물이 차지하는 반경(충돌)
+// 입구는 그림의 오른쪽 앞면, 돌길이 끝나는 자리
+const door = (b) => ({ x: b.x + 2.5, y: b.y + 0.7 });
 
 // 장수 위치. 맡은 일과 맞는 건물 곁에 세웁니다.
 const PIECES = [
-  { id: 'main', x: 9, y: 6.2 },
-  { id: 'trainer', x: 7.8, y: 14.4 },
-  { id: 'researcher', x: 3.4, y: 18.8 },
-  { id: 'developer', x: 18.6, y: 4.2 },
-  { id: 'critic', x: 14.2, y: 8.2 },
-  { id: 'writer', x: 15.4, y: 13.2 },
-  { id: 'editor', x: 21.6, y: 12.6 },
-  { id: 'minutes', x: 17.6, y: 17.0 },
-  { id: 'brief', x: 11.4, y: 21.6 },
-  { id: 'local', x: 17.8, y: 20.2 },
+  { id: 'main', x: 9.5, y: 9 },
+  { id: 'trainer', x: 9, y: 16 },
+  { id: 'researcher', x: 5.5, y: 21 },
+  { id: 'developer', x: 21.5, y: 4 },
+  { id: 'critic', x: 15.5, y: 8.5 },
+  { id: 'writer', x: 18.5, y: 17.5 },
+  { id: 'editor', x: 25, y: 12 },
+  { id: 'minutes', x: 23, y: 18 },
+  { id: 'brief', x: 11.5, y: 25.5 },
+  { id: 'local', x: 18, y: 23 },
 ];
 const P_R = 0.45;
 
 const TREES = [
-  [1.5, 2], [2.5, 9.5], [1.6, 11.5], [2, 21.5], [9.5, 1.5], [11.5, 2.2], [21.5, 1.8], [22.5, 7.5], [22.4, 10], [12.6, 9], [22.6, 16.5], [8, 22.6], [7.5, 1.8], [20.5, 8.6], [6, 11], [11, 6.5], [5.5, 22.5],
+  [1.5, 2], [2.5, 11], [1.6, 13], [2, 25.5], [10, 1.5], [12.5, 2.2], [25.5, 1.8], [26.5, 8], [26.4, 17], [13, 9.5], [9, 26.5], [8, 1.8], [26.5, 26.5], [3, 8], [11.5, 19.5], [18, 26.5], [1.6, 22],
 ];
 const T_R = 0.5;
 
-const START = { x: 12, y: 12.6 };
-const PLAZA = { x: 12, y: 12 };
+const START = { x: 14, y: 14.6 };
+const PLAZA = { x: 14, y: 14 };
+
+const blocked = (x, y) => {
+  if (x < 0.8 || y < 0.8 || x > N - 0.8 || y > N - 0.8) return true;
+  for (const b of BUILDINGS) if (Math.hypot(x - b.x, y - b.y) < B_R) return true;
+  for (const p of PIECES) if (Math.hypot(x - p.x, y - p.y) < P_R) return true;
+  for (const [tx, ty] of TREES) if (Math.hypot(x - tx, y - ty) < T_R) return true;
+  return false;
+};
+
+// 길찾기: 반 칸 격자 위 A*. 건물·장수·나무를 돌아서 갑니다.
+const G = 2; // 한 칸을 몇 조각으로 나눌지
+function findPath(from, to) {
+  const W = N * G;
+  const cell = (x, y) => [Math.round(x * G), Math.round(y * G)];
+  const free = (i, j) => i >= 0 && j >= 0 && i <= W && j <= W && !blocked(i / G, j / G);
+  let [ti, tj] = cell(to.x, to.y);
+  if (!free(ti, tj)) {
+    // 목적지가 막혀 있으면 가장 가까운 빈자리
+    let best = null;
+    for (let r = 1; r < 8 && !best; r++) for (let di = -r; di <= r; di++) for (let dj = -r; dj <= r; dj++) {
+      if (free(ti + di, tj + dj) && (!best || Math.hypot(di, dj) < best.d)) best = { i: ti + di, j: tj + dj, d: Math.hypot(di, dj) };
+    }
+    if (!best) return null;
+    ti = best.i; tj = best.j;
+  }
+  const [si, sj] = cell(from.x, from.y);
+  const key = (i, j) => i * 1000 + j;
+  const open = [{ i: si, j: sj, g: 0, f: 0 }];
+  const came = new Map(), gs = new Map([[key(si, sj), 0]]);
+  const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
+  let guard = 0;
+  while (open.length && guard++ < 20000) {
+    let bi = 0;
+    for (let k = 1; k < open.length; k++) if (open[k].f < open[bi].f) bi = k;
+    const c = open.splice(bi, 1)[0];
+    if (c.i === ti && c.j === tj) {
+      const path = [];
+      let k = key(c.i, c.j);
+      while (came.has(k)) { path.push({ x: Math.floor(k / 1000) / G, y: (k % 1000) / G }); k = came.get(k); }
+      path.reverse();
+      if (path.length) path[path.length - 1] = { x: ti / G, y: tj / G };
+      return path;
+    }
+    for (const [di, dj] of dirs) {
+      const ni = c.i + di, nj = c.j + dj;
+      if (!free(ni, nj)) continue;
+      if (di && dj && (!free(c.i + di, c.j) || !free(c.i, c.j + dj))) continue;
+      const ng = c.g + Math.hypot(di, dj);
+      const nk = key(ni, nj);
+      if (ng < (gs.get(nk) ?? Infinity)) {
+        gs.set(nk, ng); came.set(nk, key(c.i, c.j));
+        open.push({ i: ni, j: nj, g: ng, f: ng + Math.hypot(ti - ni, tj - nj) });
+      }
+    }
+  }
+  return null;
+}
 
 function Building({ b }) {
   const { sx, sy } = toScreen(b.x, b.y);
-  if (b.art) {
-    return (
-      <div className="yv-obj yv-building" style={{ left: sx, top: sy, zIndex: Math.round((b.x + b.y) * 10) }}>
-        <img className="yv-building-art" src={b.art} alt="" />
-      </div>
-    );
-  }
-  // 임시 도형: 3×3칸 바닥 위 벽 + 지붕
-  const W = 3 * TW, D = 3 * TH, WL = 70, R = 84;
-  const g = R + WL; // 바닥 마름모 꼭대기의 y
-  const pts = (arr) => arr.map((p) => p.join(',')).join(' ');
   return (
     <div className="yv-obj yv-building" style={{ left: sx, top: sy, zIndex: Math.round((b.x + b.y) * 10) }}>
-      <svg width={W} height={g + D} viewBox={`0 0 ${W} ${g + D}`} style={{ marginLeft: -W / 2, marginTop: -(g + D / 2) }} aria-hidden="true">
-        <polygon points={pts([[0, g + D / 2], [W / 2, g + D], [W / 2, R + D], [0, R + D / 2]])} fill={b.wall} stroke="#5B4630" strokeWidth="1.5" />
-        <polygon points={pts([[W / 2, g + D], [W, g + D / 2], [W, R + D / 2], [W / 2, R + D]])} fill={b.wall} stroke="#5B4630" strokeWidth="1.5" style={{ filter: 'brightness(.86)' }} />
-        <polygon points={pts([[W / 2 + 0.35 * W / 2, g + D - 0.35 * D / 2], [W / 2 + 0.55 * W / 2, g + D - 0.55 * D / 2], [W / 2 + 0.55 * W / 2, g + D - 0.55 * D / 2 - 48], [W / 2 + 0.35 * W / 2, g + D - 0.35 * D / 2 - 48]])} fill="#4A3524" />
-        <polygon points={pts([[-10, R + D / 2], [W / 2, R + D + 10], [W / 2, R + D / 2 - R]])} fill={b.roof} stroke="#3A2A1A" strokeWidth="1.5" />
-        <polygon points={pts([[W / 2, R + D + 10], [W + 10, R + D / 2], [W / 2, R + D / 2 - R]])} fill={b.roof} stroke="#3A2A1A" strokeWidth="1.5" style={{ filter: 'brightness(.8)' }} />
-      </svg>
+      <img className="yv-building-art" src={`/village/${b.key}.png`} alt="" draggable="false" />
     </div>
   );
 }
@@ -103,14 +144,6 @@ export default function YungjungVillage() {
   openRef.current = open;
   const nearRef = useRef(null);
   nearRef.current = near;
-
-  const blocked = useCallback((x, y) => {
-    if (x < 0.8 || y < 0.8 || x > N - 0.8 || y > N - 0.8) return true;
-    for (const b of BUILDINGS) if (Math.hypot(x - b.x, y - b.y) < B_R) return true;
-    for (const p of PIECES) if (Math.hypot(x - p.x, y - p.y) < P_R) return true;
-    for (const [tx, ty] of TREES) if (Math.hypot(x - tx, y - ty) < T_R) return true;
-    return false;
-  }, []);
 
   const interact = useCallback((n) => {
     const t = n || nearRef.current;
@@ -147,9 +180,11 @@ export default function YungjungVillage() {
         if (k.has('right')) { dx += 1; dy -= 1; }
         if (dx || dy) target.current = null;
         else if (target.current) {
-          const tx = target.current.x - pos.current.x, ty = target.current.y - pos.current.y;
+          // target.current 는 경유점 배열
+          const wp = target.current[0];
+          const tx = wp.x - pos.current.x, ty = wp.y - pos.current.y;
           const d = Math.hypot(tx, ty);
-          if (d < 0.08) target.current = null;
+          if (d < 0.12) { target.current.shift(); if (!target.current.length) target.current = null; }
           else { dx = tx / d; dy = ty / d; }
         }
       }
@@ -186,7 +221,7 @@ export default function YungjungVillage() {
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [blocked, paint]);
+  }, [paint]);
 
   // 화면에 충분히 보일 때만 키보드를 가져옵니다(아래 목록을 읽을 때는 방향키가 평소처럼 스크롤).
   useEffect(() => {
@@ -224,11 +259,11 @@ export default function YungjungVillage() {
     if (e.target.closest('button, a')) return;
     const rect = worldRef.current.getBoundingClientRect();
     const w = toWorld(e.clientX - rect.left, e.clientY - rect.top);
-    target.current = { x: Math.max(1, Math.min(N - 1, w.x)), y: Math.max(1, Math.min(N - 1, w.y)) };
+    target.current = findPath(pos.current, { x: Math.max(1, Math.min(N - 1, w.x)), y: Math.max(1, Math.min(N - 1, w.y)) });
     setHint(false);
   };
 
-  const walkTo = (pt) => { target.current = { ...pt }; setHint(false); setOpen(null); };
+  const walkTo = (pt) => { target.current = findPath(pos.current, pt); setHint(false); setOpen(null); };
 
   const agent = open?.kind === 'agent' ? AGENTS[open.id] : null;
   const camp = open?.kind === 'place' ? CAMPS.find((c) => c.key === open.id) : null;
@@ -294,7 +329,7 @@ export default function YungjungVillage() {
           })}
 
           <div className={`yv-obj yv-player${moving ? ' is-moving' : ''}`} ref={playerRef} aria-hidden="true">
-            <div className="yv-player-body"><span>나</span></div>
+            <img className="yv-player-body" src="/village/visitor.png" alt="" draggable="false" />
           </div>
         </div>
 
