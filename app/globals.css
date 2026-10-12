@@ -4128,3 +4128,34 @@ a.program-card:hover .program-card-visual img { transform: scale(1.03); }
   .yv-sky-cloud, .yv-sea-cloud, .yv-sway, .yv-flag b, .yv-drift-cloud, .yv-birds, .yv-ripple, .yv-pond-ripple ellipse { animation: none; }
   .yv-drift-cloud, .yv-birds { display: none; }
 }
+
+/* ---------- 융중 마을 3D ---------- */
+.yv3-stage { cursor: grab; background: #EEE5CF; }
+.yv3-stage:active { cursor: grabbing; }
+.yv3-canvas { position: absolute; inset: 0; }
+.yv3-canvas canvas { display: block; width: 100% !important; height: 100% !important; }
+.yv3-labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 3; }
+.yv3-pin { position: absolute; left: 0; top: 0; will-change: transform; }
+.yv3-sign {
+  position: absolute; left: 0; top: 0; transform: translate(-50%, -100%); white-space: nowrap;
+  padding: 4px 12px; background: rgba(59,47,34,.92); color: #F6EEDC; border-radius: 4px; font-family: var(--serif); font-size: 15px; font-weight: 600;
+  box-shadow: 0 4px 10px rgba(40,25,10,.3);
+}
+.yv3-name {
+  position: absolute; left: 0; top: 6px; transform: translateX(-50%); white-space: nowrap;
+  padding: 2px 8px; border-radius: 3px; background: rgba(244,233,212,.92); border: 1px solid rgba(90,60,25,.3); font-size: 12px; font-weight: 700; color: #3B2F22;
+}
+.yv3-bubble {
+  position: absolute; left: 0; bottom: 8px; transform: translateX(-50%); width: max-content; max-width: 240px;
+  padding: 10px 14px; background: #FFFBF2; border: 1.5px solid #3B2F22; border-radius: 12px; font-size: 13.5px; line-height: 1.55; color: #3B2F22;
+  box-shadow: 0 6px 14px rgba(40,25,10,.2);
+}
+.yv3-bubble::after { content: ''; position: absolute; left: 50%; bottom: -8px; width: 12px; height: 12px; background: #FFFBF2; border-right: 1.5px solid #3B2F22; border-bottom: 1.5px solid #3B2F22; transform: translateX(-50%) rotate(45deg); }
+.yv3-loading {
+  position: absolute; inset: 0; z-index: 7; display: grid; place-content: center; gap: 6px; text-align: center;
+  background: radial-gradient(ellipse at 50% 45%, #F7F0E0, #E6DAC0); color: #3B2F22;
+}
+.yv3-loading b { font-family: var(--serif); font-size: 22px; }
+.yv3-loading span { font-size: 14px; color: #7A6650; }
+.yv-mode { color: #F4E9D4 !important; border-left: 1px solid rgba(232,217,188,.3) !important; border-radius: 0 !important; }
+@media (max-width: 720px) { .yv3-name { font-size: 11px; } .yv3-sign { font-size: 13px; } }
