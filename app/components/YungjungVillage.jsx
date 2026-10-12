@@ -8,7 +8,7 @@ import { AGENTS, CAMPS } from '../data/agents';
 // 좌표는 바닥 격자(x, y) 단위로 계산하고, 화면에는 아이소메트릭으로 투영합니다.
 // 이동: 방향키/WASD, 또는 바닥을 눌러 그 자리까지 걷기. 장수·건물 앞에서 Space/Enter 또는 버튼으로 상호작용.
 
-const N = 22;            // 마을 한 변의 칸 수
+const N = 24;            // 마을 한 변의 칸 수
 const TW = 96;           // 칸 하나의 화면 가로
 const TH = 48;           // 칸 하나의 화면 세로
 const PAD = 260;         // 위쪽 여백(높은 건물이 잘리지 않도록)
@@ -27,39 +27,38 @@ const toWorld = (sx, sy) => {
 
 // 건물 위치와 색. key 는 CAMPS 의 key 와 같습니다. art 에 그림 경로를 넣으면 임시 도형 대신 그림을 씁니다.
 const BUILDINGS = [
-  { key: 'chorye',   x: 5.5,  y: 5.5,  roof: '#6E5A3A', wall: '#E9DCC0', art: null },
-  { key: 'lecture',  x: 4.5,  y: 14.5, roof: '#A0743A', wall: '#F0E2C4', art: null },
-  { key: 'workshop', x: 14.5, y: 4.5,  roof: '#5D6B70', wall: '#E4DACB', art: null },
-  { key: 'library',  x: 16.5, y: 12.5, roof: '#3F6650', wall: '#EFE3C8', art: null },
-  { key: 'gate',     x: 10.5, y: 18,   roof: '#4A4A4F', wall: '#DCCDB0', art: null },
-  { key: 'beacon',   x: 18.5, y: 18.5, roof: '#A23B26', wall: '#E8D6B5', art: null },
+  { key: 'chorye',   x: 5, y: 5,  roof: '#6E5A3A', wall: '#E9DCC0', art: null },
+  { key: 'lecture',  x: 4, y: 15, roof: '#A0743A', wall: '#F0E2C4', art: null },
+  { key: 'workshop', x: 15, y: 4,  roof: '#5D6B70', wall: '#E4DACB', art: null },
+  { key: 'library',  x: 18, y: 13, roof: '#3F6650', wall: '#EFE3C8', art: null },
+  { key: 'gate',     x: 14, y: 19.5,   roof: '#4A4A4F', wall: '#DCCDB0', art: null },
+  { key: 'beacon',   x: 21.5, y: 20.5, roof: '#A23B26', wall: '#E8D6B5', art: null },
 ];
 const B_R = 1.55; // 건물이 차지하는 반경(충돌)
 const door = (b) => ({ x: b.x + 2.15, y: b.y + 2.15 });
 
 // 장수 위치. 맡은 일과 맞는 건물 곁에 세웁니다.
 const PIECES = [
-  { id: 'main',       x: 9.2,  y: 8.6 },
-  { id: 'trainer',    x: 7.6,  y: 13.4 },
-  { id: 'researcher', x: 7.0,  y: 17.4 },
-  { id: 'developer',  x: 17.6, y: 4.6 },
-  { id: 'critic',     x: 14.2, y: 7.8 },
-  { id: 'writer',     x: 14.0, y: 12.2 },
-  { id: 'editor',     x: 19.8, y: 12.6 },
-  { id: 'minutes',    x: 16.2, y: 16.0 },
-  { id: 'brief',      x: 13.6, y: 18.6 },
-  { id: 'local',      x: 8.2,  y: 19.4 },
+  { id: 'main', x: 9, y: 6.2 },
+  { id: 'trainer', x: 7.8, y: 14.4 },
+  { id: 'researcher', x: 3.4, y: 18.8 },
+  { id: 'developer', x: 18.6, y: 4.2 },
+  { id: 'critic', x: 14.2, y: 8.2 },
+  { id: 'writer', x: 15.4, y: 13.2 },
+  { id: 'editor', x: 21.6, y: 12.6 },
+  { id: 'minutes', x: 17.6, y: 17.0 },
+  { id: 'brief', x: 11.4, y: 21.6 },
+  { id: 'local', x: 17.8, y: 20.2 },
 ];
 const P_R = 0.45;
 
 const TREES = [
-  [1.5, 2], [2.5, 9.5], [1.6, 12], [3, 19.5], [1.8, 20.5], [9.5, 1.5], [11.5, 2.5], [19.5, 1.8], [20.5, 7.5],
-  [20.6, 9.6], [12.5, 9.8], [9.8, 13.6], [20.5, 15.5], [14.5, 20.6], [6.5, 20.8], [3.2, 3.2], [7.5, 2.2], [17.5, 8.8],
+  [1.5, 2], [2.5, 9.5], [1.6, 11.5], [2, 21.5], [9.5, 1.5], [11.5, 2.2], [21.5, 1.8], [22.5, 7.5], [22.4, 10], [12.6, 9], [22.6, 16.5], [8, 22.6], [7.5, 1.8], [20.5, 8.6], [6, 11], [11, 6.5], [5.5, 22.5],
 ];
 const T_R = 0.5;
 
-const START = { x: 11, y: 11.5 };
-const PLAZA = { x: 11, y: 11 };
+const START = { x: 12, y: 12.6 };
+const PLAZA = { x: 12, y: 12 };
 
 function Building({ b }) {
   const { sx, sy } = toScreen(b.x, b.y);
