@@ -85,7 +85,7 @@ export const START = { x: GATE_X, y: N + OUT_LEN - 2 }; // 강 건너 셔틀 정
 export const PLAZA = { x: 24, y: 26 };
 
 // 담장 밖 강물(다리 위는 지날 수 있음)
-export const riverZ = (x) => RIVER_Y + Math.sin(x * 0.18) * 1.2;
+export const riverZ = () => RIVER_Y;
 const inRiver = (x, y) => Math.abs(y - riverZ(x)) < 1.3 && Math.abs(x - GATE_X) > BRIDGE_HALF;
 
 export const blocked = (x, y) => {

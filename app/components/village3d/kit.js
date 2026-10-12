@@ -28,8 +28,9 @@ export function createKit(THREE, renderer) {
     const em = opts.emissive?.isColor ? opts.emissive.getHexString() : (opts.emissive || '');
     const key = `${color}|${em}|${opts.emissiveIntensity ?? ''}|${opts.side || ''}|${opts.map ? opts.map.uuid : ''}`;
     if (!cache.has(key)) {
-      cache.set(key, track(new THREE.MeshToonMaterial({
-        color, gradientMap: ramp,
+      // 카드 그림(클레이 피규어)과 같은 톤: 부드러운 무광 재질
+      cache.set(key, track(new THREE.MeshStandardMaterial({
+        color, roughness: 0.82, metalness: 0,
         emissive: opts.emissive || 0x000000,
         emissiveIntensity: opts.emissiveIntensity ?? 1,
         side: opts.side ?? THREE.FrontSide,
@@ -232,7 +233,7 @@ export function skyCanvas() {
   c.width = 4; c.height = 512;
   const g = c.getContext('2d');
   const gr = g.createLinearGradient(0, 0, 0, 512);
-  gr.addColorStop(0, '#E6DDC8'); gr.addColorStop(0.55, '#F3EBD9'); gr.addColorStop(1, '#EADFC6');
+  gr.addColorStop(0, '#A9CDE6'); gr.addColorStop(0.6, '#DCEBF2'); gr.addColorStop(1, '#F4F1EA');
   g.fillStyle = gr; g.fillRect(0, 0, 4, 512);
   return c;
 }

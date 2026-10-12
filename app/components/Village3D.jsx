@@ -8,7 +8,7 @@ import {
 } from '../data/villageMap';
 import { rand } from './village3d/kit';
 
-// CARPEDM 캠퍼스 3D: 강 건너 셔틀 정류장에서 출발해 보행교를 건너고, 웰컴 게이트를 지나 캠퍼스를 거닙니다.
+// CARPEDM 캠퍼스 3D: 도심 큰길 셔틀 정류장에서 출발해 수로를 보행교를 건너고, 웰컴 게이트를 지나 캠퍼스를 거닙니다.
 // 지형·건물·사람은 모두 코드로 빚었습니다. 카메라는 걷는 사람 뒤를 따라가며(끌어서 둘러보기, 휠로 거리 조절),
 // 팀원(사람·로봇)은 다가오면 몸을 돌려 맞이하고, 캠퍼스 사람들은 제 볼일을 보러 오갑니다.
 
@@ -103,7 +103,7 @@ export default function Village3D({ onFail }) {
       if (post) {
         composer = new post.EffectComposer(renderer);
         composer.addPass(new post.RenderPass(world.scene, cam));
-        composer.addPass(new post.UnrealBloomPass(new THREE.Vector2(512, 512), 0.22, 0.5, 0.94));
+        composer.addPass(new post.UnrealBloomPass(new THREE.Vector2(512, 512), 0.18, 0.4, 0.99));
         composer.addPass(new post.ShaderPass({
           uniforms: { tDiffuse: { value: null }, uAmount: { value: 0.55 } },
           vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
@@ -338,7 +338,7 @@ export default function Village3D({ onFail }) {
           const [ax, az] = toXZ(st.x, st.y);
           person.group.position.set(ax, groundY(st.x, st.y), az);
           person.group.rotation.y = st.yaw;
-          person.update(dt, speed, t);
+          person.update(dt, speed, t, cam);
         }
         for (const f of folk) {
           let speed = 0;
@@ -509,7 +509,7 @@ export default function Village3D({ onFail }) {
 
         {title && (
           <div className={`yv3-title ${title === 'in' ? 'is-in' : ''}`} key={title}>
-            {title === 'in' ? (<><b>CARPEDM</b><span>오늘을 붙잡는 팀, 캠퍼스에 오신 것을 환영합니다</span></>) : (<><b>RIVERSIDE</b><span>강 건너 셔틀 정류장</span></>)}
+            {title === 'in' ? (<><b>CARPEDM</b><span>오늘을 붙잡는 팀, 캠퍼스에 오신 것을 환영합니다</span></>) : (<><b>CITY</b><span>도심 셔틀 정류장</span></>)}
           </div>
         )}
 

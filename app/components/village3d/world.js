@@ -10,7 +10,11 @@ import { buildBuilding } from './buildings';
 import { buildTerrain, heightAt, groundY } from './terrain';
 
 export { heightAt, groundY };
-import { makePerson, PEOPLE, TOWNSFOLK } from './people';
+import { makePerson, makeSpritePerson, PEOPLE, TOWNSFOLK } from './people';
+import { AGENTS } from '../../data/agents';
+
+// 카드 그림(클레이 피규어)을 그대로 세울 팀원. 대표는 사진이라 3D 인형으로 둡니다.
+const AGENT_ART = Object.fromEntries(Object.entries(AGENTS).filter(([id, a]) => !a.notAgent && a.img).map(([id, a]) => [id, a.img]));
 
 export const HALF = N / 2;
 export const toXZ = (x, y) => [x - HALF, y - HALF];
@@ -77,10 +81,10 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
   const { track, toon, mesh, canvasTex } = kit;
   const scene = new THREE.Scene();
   scene.background = canvasTex(skyCanvas());
-  scene.fog = new THREE.Fog(0xE9E2CF, 45, 230);
+  scene.fog = new THREE.Fog(0xE4EEF2, 70, 260);
 
   // 빛
-  scene.add(new THREE.HemisphereLight(0xFFF6E5, 0x7A6E52, 1.5));
+  scene.add(new THREE.HemisphereLight(0xFFF8EC, 0x9A9080, 1.7));
   scene.add(new THREE.AmbientLight(0xFFF4E0, 0.25));
   const sun = new THREE.DirectionalLight(0xFFE6C0, 2.4);
   sun.position.set(-18, 40, 22);
@@ -155,28 +159,10 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
     }
   });
 
-  // 수묵 능선 세 겹
-  [
-    { dist: 175, color: [82, 94, 88], alpha: 0.75, count: 9, h: 0.55 },
-    { dist: 215, color: [122, 132, 124], alpha: 0.6, count: 10, h: 0.65 },
-    { dist: 260, color: [160, 166, 156], alpha: 0.5, count: 11, h: 0.75 },
-  ].forEach((L, li) => {
-    for (let i = 0; i < L.count; i++) {
-      const m = new THREE.Sprite(track(new THREE.SpriteMaterial({ map: canvasTex(ridgeCanvas(li * 40 + i, L.color, L.alpha, L.h)), transparent: true, depthWrite: false, fog: false, toneMapped: false })));
-      const a = ((i + 0.5) / L.count) * Math.PI * 2;
-      const w = L.dist * 0.75;
-      m.scale.set(w, w * 0.5, 1);
-      m.center.set(0.5, 0);
-      m.position.set(Math.cos(a) * L.dist, 2, Math.sin(a) * L.dist);
-      m.renderOrder = -40 - li;
-      scene.add(m);
-    }
-  });
-
-  // 붉은 해
-  const sunSprite = new THREE.Sprite(track(new THREE.SpriteMaterial({ map: canvasTex(radialCanvas('rgba(214,96,70,.9)', 'rgba(214,96,70,0)')), fog: false, depthWrite: false, toneMapped: false })));
-  sunSprite.scale.set(40, 40, 1);
-  sunSprite.position.set(-120, 60, -150);
+  // 은은한 해
+  const sunSprite = new THREE.Sprite(track(new THREE.SpriteMaterial({ map: canvasTex(radialCanvas('rgba(255,236,190,.95)', 'rgba(255,236,190,0)')), fog: false, depthWrite: false, toneMapped: false })));
+  sunSprite.scale.set(60, 60, 1);
+  sunSprite.position.set(-140, 90, -200);
   sunSprite.renderOrder = -50;
   scene.add(sunSprite);
 
@@ -216,7 +202,7 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
   const leafGeo = track(new THREE.PlaneGeometry(0.5, 0.075));
   leafGeo.translate(0.25, 0, 0);
   const leafMats = ['#6E9A55', '#5E8A4B', '#7FA862', '#8AAE5E'].map((c) => toon(c));
-  const podGlass = track(new THREE.MeshToonMaterial({ color: '#9FC6CF', gradientMap: kit.ramp, transparent: true, opacity: 0.6, emissive: '#2A4A52', emissiveIntensity: 0.25 }));
+  const podGlass = track(new THREE.MeshStandardMaterial({ color: '#9FC6CF', roughness: 0.3, transparent: true, opacity: 0.6, emissive: '#2A4A52', emissiveIntensity: 0.25 }));
   const solarMat = toon('#2B4A6B', { emissive: 0x1A3350, emissiveIntensity: 0.3 });
   const warmLamp = toon('#FFE2A8', { emissive: 0xFFB45A, emissiveIntensity: 0.9 });
   const sway = [], flags = [];
@@ -315,7 +301,7 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
       g.add(mesh(new THREE.CylinderGeometry(0.05, 0.06, 3.6, 6), toon('#2E3436'), { y: 1.8 }));
       const geo = track(new THREE.PlaneGeometry(0.8, 1.9, 6, 8));
       geo.translate(0.42, 0, 0);
-      const flag = new THREE.Mesh(geo, track(new THREE.MeshToonMaterial({ map: bannerTex, side: THREE.DoubleSide, gradientMap: kit.ramp })));
+      const flag = new THREE.Mesh(geo, track(new THREE.MeshStandardMaterial({ map: bannerTex, side: THREE.DoubleSide, roughness: 0.85 })));
       flag.position.set(0.02, 2.5, 0); flag.castShadow = true;
       g.add(flag);
       g.rotation.y = BASE_AZ;
@@ -351,7 +337,7 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
   // 사람들
   const people = {};
   for (const p of PIECES) {
-    const person = makePerson(THREE, kit, PEOPLE[p.id]);
+    const person = AGENT_ART[p.id] ? makeSpritePerson(THREE, kit, AGENT_ART[p.id], p.id) : makePerson(THREE, kit, PEOPLE[p.id]);
     const [X, Z] = toXZ(p.x, p.y);
     person.group.position.set(X, 0, Z);
     person.group.rotation.y = BASE_AZ;

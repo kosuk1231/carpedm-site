@@ -394,3 +394,54 @@ function makeRobot(THREE, kit, spec) {
   g.traverse((o) => { if (o.isMesh && o.castShadow !== false) o.castShadow = true; });
   return { group: g, update };
 }
+
+// 카드 그림(클레이 피규어)을 그대로 세운 인물. 그림은 늘 카메라를 바라보고,
+// 걸을 때는 통통 튀듯 들썩이며, 움직이는 방향에 따라 좌우를 뒤집습니다.
+const FLOAT = { researcher: 0.9 }; // 드론은 공중에 뜸
+const HEIGHT = { researcher: 1.5, developer: 1.8, editor: 1.75, minutes: 1.55, local: 2.1 };
+export function makeSpritePerson(THREE, kit, url, id) {
+  const g = new THREE.Group();
+  const tex = kit.track(new THREE.TextureLoader().load(url, (t) => {
+    const img = t.image;
+    if (img && img.width) sprite.scale.set((H * img.width) / img.height * flip, H, 1);
+  }));
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  const H = HEIGHT[id] || 2.2;
+  let flip = 1;
+  const sprite = new THREE.Sprite(kit.track(new THREE.SpriteMaterial({ map: tex, alphaTest: 0.5, toneMapped: false })));
+  sprite.center.set(0.5, 0.02);
+  sprite.scale.set(H * 0.4, H, 1);
+  g.add(sprite);
+  // 발밑 그림자
+  const sh = document.createElement('canvas'); sh.width = sh.height = 64;
+  const c = sh.getContext('2d'); const gr = c.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, 'rgba(40,30,20,.38)'); gr.addColorStop(1, 'rgba(40,30,20,0)'); c.fillStyle = gr; c.fillRect(0, 0, 64, 64);
+  const shadowTex = kit.track(new THREE.CanvasTexture(sh));
+  const blob = new THREE.Mesh(kit.track(new THREE.PlaneGeometry(1.3, 1.3)), kit.track(new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false })));
+  blob.rotation.x = -Math.PI / 2; blob.position.y = 0.03;
+  g.add(blob);
+  const lift = FLOAT[id] || 0;
+  let phase = rand0(), walkAmt = 0;
+  const last = new THREE.Vector3(), now = new THREE.Vector3(), right = new THREE.Vector3();
+  const update = (dt, speed, t, cam) => {
+    walkAmt += (Math.min(1, speed) - walkAmt) * Math.min(1, dt * 8);
+    phase += dt * (9 * walkAmt + 1.5);
+    const hop = Math.abs(Math.sin(phase)) * 0.12 * walkAmt;
+    const breathe = Math.sin(t * 2 + phase) * 0.012;
+    sprite.position.y = 0.04 + lift + hop + (lift ? Math.sin(t * 2 + phase) * 0.1 : 0);
+    sprite.material.rotation = Math.sin(phase) * 0.06 * walkAmt;
+    // 진행 방향이 화면 왼쪽이면 그림을 뒤집음
+    g.getWorldPosition(now);
+    if (cam && walkAmt > 0.2) {
+      right.setFromMatrixColumn(cam.matrixWorld, 0);
+      const side = (now.x - last.x) * right.x + (now.z - last.z) * right.z;
+      if (Math.abs(side) > 0.002) flip = side < 0 ? -1 : 1;
+    }
+    last.copy(now);
+    const w = Math.abs(sprite.scale.x);
+    sprite.scale.set(w * flip, H * (1 + breathe), 1);
+    blob.scale.setScalar(lift ? 0.8 : 1 - hop);
+  };
+  return { group: g, update, sprite };
+}

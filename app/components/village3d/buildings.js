@@ -39,7 +39,7 @@ export function buildBuilding(THREE, kit, key) {
   const darkFrame = toon('#2E3436');
   const wood = toon('#B98A5A');
   const deck = toon('#9C7650');
-  const glass = track(new THREE.MeshToonMaterial({ color: '#9FC6CF', gradientMap: kit.ramp, transparent: true, opacity: 0.55, emissive: '#2A4A52', emissiveIntensity: 0.25 }));
+  const glass = track(new THREE.MeshStandardMaterial({ color: '#9FC6CF', roughness: 0.3, transparent: true, opacity: 0.55, emissive: '#2A4A52', emissiveIntensity: 0.25 }));
   const warm = toon('#FFE2A8', { emissive: 0xFFB45A, emissiveIntensity: 0.9 });
   const accent = toon('#E0995A');
   const teal = toon('#43706A');
