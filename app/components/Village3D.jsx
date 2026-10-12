@@ -8,7 +8,7 @@ import {
 } from '../data/villageMap';
 import { rand } from './village3d/kit';
 
-// CARPEDM 캠퍼스 3D: 도심 큰길 셔틀 정류장에서 출발해 수로를 보행교를 건너고, 웰컴 게이트를 지나 캠퍼스를 거닙니다.
+// CARPEDM 캠퍼스 3D: 도심 큰길 셔틀 정류장에서 내려 보도에서 바로 캠퍼스로 걸어 들어갑니다.
 // 지형·건물·사람은 모두 코드로 빚었습니다. 카메라는 걷는 사람 뒤를 따라가며(끌어서 둘러보기, 휠로 거리 조절),
 // 팀원(사람·로봇)은 다가오면 몸을 돌려 맞이하고, 캠퍼스 사람들은 제 볼일을 보러 오갑니다.
 
@@ -88,7 +88,7 @@ export default function Village3D({ onFail }) {
 
       const world = buildWorld(THREE, renderer, { low });
       const cam = new THREE.PerspectiveCamera(42, 1, 0.3, 600);
-      // 카메라 방위 az: 바라보는 곳에서 카메라가 있는 쪽. 처음엔 남쪽(담장 밖)에서 캠퍼스를 바라봅니다.
+      // 카메라 방위 az: 바라보는 곳에서 카메라가 있는 쪽. 처음엔 남쪽(큰길)에서 캠퍼스를 바라봅니다.
       const view = { az: Math.PI / 2, el: EL_DEFAULT, dist: DIST_DEFAULT, intro: 0 };
       const [sx, sz] = toXZ(START.x, START.y);
       const camTarget = new THREE.Vector3(sx, 1.2, sz);
@@ -315,7 +315,7 @@ export default function Village3D({ onFail }) {
         world.visitor.group.position.set(PX, PY, PZ);
         // 걷는 동안은 카메라가 천천히 등 뒤로 돌아옵니다(최근에 끌어서 돌렸으면 기다림).
         if (moving && now - lastDrag > 1800 && view.intro >= 1) view.az = angleLerp(view.az, Math.atan2(-Math.cos(yaw), -Math.sin(yaw)), Math.min(1, dt * 1.6));
-        // 게이트를 지나면 제목을 띄웁니다.
+        // 캠퍼스에 들어서면 제목을 띄웁니다.
         const nowInside = pos.current.y < N - 0.6;
         if (nowInside !== inside) { inside = nowInside; setTitle(inside ? 'in' : 'out'); setTimeout(() => setTitle(null), 3600); }
         world.visitor.group.rotation.y = yaw;
@@ -385,9 +385,8 @@ export default function Village3D({ onFail }) {
         }
         // 성벽 가까이에서는 카메라를 높여 벽 너머로 내려다봄
         if (inside && view.intro >= 1) {
-          // 게이트 바로 안쪽은 길이 트여 있으니 예외
-          const nearGate = Math.abs(camTarget.x) < 4 && camTarget.z > 0;
-          const edge = nearGate ? N / 2 - Math.max(Math.abs(camTarget.x), -camTarget.z) : N / 2 - Math.max(Math.abs(camTarget.x), Math.abs(camTarget.z));
+          // 남쪽은 담장 없이 큰길로 트여 있으니 동·서·북 담장만 봄
+          const edge = N / 2 - Math.max(Math.abs(camTarget.x), -camTarget.z);
           el = Math.max(el, THREE.MathUtils.lerp(0.95, el, THREE.MathUtils.smoothstep(edge, 2, 7)));
         }
         el = THREE.MathUtils.lerp(el, 1.1, occLift);
@@ -401,8 +400,8 @@ export default function Village3D({ onFail }) {
 
         // 캠퍼스 안에서는 카메라가 담장 너머로 빠지지 않게
         if (inside && view.intro >= 1) {
-          const lim = N / 2 - 1.2, limS = N / 2 - 3.6; // 남쪽은 게이트 캐노피 안쪽까지 비켜 섬
-          const cx = THREE.MathUtils.clamp(cam.position.x, -lim, lim), cz = THREE.MathUtils.clamp(cam.position.z, -lim, limS);
+          const lim = N / 2 - 1.2; // 남쪽은 열려 있어 막지 않음
+          const cx = THREE.MathUtils.clamp(cam.position.x, -lim, lim), cz = Math.max(cam.position.z, -lim);
           if (cx !== cam.position.x || cz !== cam.position.z) {
             cam.position.x = cx; cam.position.z = cz;
             cam.position.y = Math.max(cam.position.y, 4.2);
@@ -433,7 +432,7 @@ export default function Village3D({ onFail }) {
         for (const b of world.buildings) {
           const pr = project(b.X, b.height, b.Z);
           if (Math.hypot(b.X - PX, b.Z - PZ) > SIGN_RANGE) pr.hidden = true;
-          if (!inside && b.key !== 'gate') pr.hidden = true; // 담장 밖에서는 게이트 간판만
+          if (!inside && b.key !== 'gate') pr.hidden = true; // 캠퍼스 밖(보도)에서는 웰컴 사인만
           placeLabel(labelRefs.current[`b-${b.key}`], pr);
         }
         const cur = nearRef.current;
@@ -531,7 +530,7 @@ export default function Village3D({ onFail }) {
 
         {ready && hint && (
           <div className="yv-hint">
-            <b>웰컴 게이트를 지나 CARPEDM 캠퍼스로 들어가 보세요</b>
+            <b>큰길에서 바로 CARPEDM 캠퍼스로 걸어 들어가 보세요</b>
             <span className="yv-hint-desk">W·방향키로 걷고, 끌어서 둘러보고, 휠로 거리 조절. 사람이나 건물 앞에서 Space</span>
             <span className="yv-hint-touch">가고 싶은 곳을 누르면 걸어가고, 끌면 둘러봅니다</span>
           </div>

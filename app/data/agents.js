@@ -61,7 +61,7 @@ export const AGENTS = {
     emoji: '🔒', name: '지킴이', kind: 'robot', title: '환영 로봇', img: '/agents/dir/local-0.webp',
     role: '로컬 전용 처리',
     greet: '반가워요! CARPEDM 캠퍼스에 오신 걸 환영해요. 방문증 여기 있어요.',
-    desc: '정문에서 손님을 가장 먼저 반기는 환영 로봇입니다. 손님 이야기는 반갑게 듣고, 바깥으로 내보내면 안 되는 자료는 이 기기 안에서만 소중히 다룹니다.',
+    desc: '캠퍼스 입구에서 손님을 가장 먼저 반기는 환영 로봇입니다. 손님 이야기는 반갑게 듣고, 바깥으로 내보내면 안 되는 자료는 이 기기 안에서만 소중히 다룹니다.',
   },
   ceo: {
     emoji: '☕', name: '고석우 대표', kind: 'human', title: '대표', notAgent: true, img: '/profile/kosukwoo-portrait.webp',
@@ -71,12 +71,12 @@ export const AGENTS = {
   },
 };
 
-// 캠퍼스 건물. 정문에서 시작해 걷는 순서대로 번호를 붙였습니다. 입구에 서면 이 내용이 열립니다.
+// 캠퍼스 건물. 입구에서 시작해 걷는 순서대로 번호를 붙였습니다. 입구에 서면 이 내용이 열립니다.
 export const CAMPS = [
   {
     key: 'gate',
     no: '01',
-    place: '웰컴 게이트',
+    place: '웰컴 입구',
     title: 'CARPEDM 캠퍼스에 오신 것을 환영합니다',
     body: '사회복지 현장의 스마트워크·AI 전환을 강의하고, 컨설팅하고, 직접 만들어 온 팀입니다. 광장에서 길이 갈라집니다. 서쪽 아카데미, 북쪽 컨설팅룸과 미션컨트롤, 북동쪽 빌드랩, 동쪽 아카이브, 남동쪽 컨택 라운지로 이어집니다.',
     agents: ['local', 'brief'],

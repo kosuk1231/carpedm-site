@@ -398,7 +398,7 @@ function makeRobot(THREE, kit, spec) {
 // 다섯 방향 그림(턴어라운드 시트)으로 걷는 클레이 인물.
 // public/agents/dir/<id>-0..4.webp = 정면, 45도 앞, 옆, 45도 뒤, 뒤. 옆을 볼 때 그림 속 인물은 화면 오른쪽을 향합니다.
 // 인물이 향한 방향과 카메라 방향의 각도로 그림을 고르고, 왼쪽을 향하면 좌우를 뒤집어 8방향을 냅니다.
-// 걷기: 정면·뒤에서는 두 다리를 번갈아 들고, 옆·대각선에서는 다리 부분을 두 겹으로 겹쳐 가위처럼 벌립니다.
+// 걷기: 정면·뒤에서는 두 다리를 번갈아 들고, 옆·대각선에서는 다리 부분 한 장을 엉덩이에서 살짝 흔듭니다.
 export const SHEET_ASPECT = {"brief": [0.3786, 0.3929, 0.3833, 0.4024, 0.3714], "ceo": [0.3881, 0.4048, 0.3881, 0.3976, 0.3786], "critic": [0.419, 0.4333, 0.3881, 0.4071, 0.4048], "developer": [0.6714, 0.631, 0.4095, 0.6048, 0.669], "editor": [0.781, 0.7476, 0.4905, 0.7262, 0.7571], "elder": [0.3905, 0.4167, 0.369, 0.4286, 0.3952], "local": [0.6214, 0.6048, 0.5167, 0.6238, 0.6119], "main": [0.4714, 0.4452, 0.4143, 0.4333, 0.4548], "minutes": [0.7976, 0.869, 0.7429, 0.869, 0.8048], "researcher": [1.419, 1.3619, 1.0143, 1.3619, 1.45], "rider": [0.4119, 0.4381, 0.4262, 0.4, 0.4], "staff": [0.3833, 0.3976, 0.3833, 0.3929, 0.369], "student": [0.4619, 0.4286, 0.419, 0.4333, 0.4571], "trainer": [0.369, 0.3905, 0.3714, 0.3619, 0.3667], "visitor": [0.3952, 0.4048, 0.3857, 0.4119, 0.3857], "writer": [0.469, 0.4357, 0.4119, 0.4357, 0.4452]};
 const KIND = {
   developer: { hip: 0.80, H: 1.55 },
@@ -480,17 +480,18 @@ export function makeDirPerson(THREE, kit, id, { scale = 1 } = {}) {
           sp.scale.set(W * 0.5, hipY, 1);
           place(sp, s * W * 0.25, Math.max(0, k * swing) * 0.12 * H * 0.35 + bob * 0.4);
         }
+        legB.visible = true;
       } else {
-        // 옆·대각선: 다리 부분 두 장을 엉덩이에서 가위처럼 벌림
-        crop(legA, view, 0, 1, 0, hv); crop(legB, view, 0, 1, 0, hv);
-        for (const [sp, k] of [[legA, 1], [legB, -1]]) {
-          sp.center.set(0.5, 1);
-          sp.scale.set(W * flip, hipY, 1);
-          place(sp, 0, hipY + bob * 0.5);
-          sp.material.rotation = k * swing * 0.32;
-        }
+        // 옆·대각선: 그림 속 다리 부분에 이미 두 다리가 있으므로 한 장만 쓰고 엉덩이에서 살짝 흔듦
+        // (두 장을 겹쳐 벌리면 다리가 네 개로 보임)
+        crop(legA, view, 0, 1, 0, hv);
+        legA.center.set(0.5, 1);
+        legA.scale.set(W * flip, hipY * (1 - Math.abs(swing) * 0.04), 1);
+        place(legA, 0, hipY + bob * 0.5);
+        legA.material.rotation = swing * 0.1 * flip;
+        legB.visible = false;
       }
-      legA.visible = legB.visible = true;
+      legA.visible = true;
     } else {
       crop(upper, view, 0, 1, 0, 1);
       upper.center.set(0.5, 0);

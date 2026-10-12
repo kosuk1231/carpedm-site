@@ -1,4 +1,4 @@
-// CARPEDM 캠퍼스 건물 일곱 채. 모두 코드로 짓고, 입구가 +X 쪽을 봅니다(정문만 +Z, 담장 밖을 봄).
+// CARPEDM 캠퍼스 건물 일곱 채. 모두 코드로 짓고, 입구가 +X 쪽을 봅니다(웰컴 사인만 +Z, 큰길 쪽을 봄).
 // 반환: { group, height(간판 높이), update?(t, dt) }
 
 import { boardCanvas, rand } from './kit';
@@ -85,24 +85,19 @@ export function buildBuilding(THREE, kit, key) {
   };
 
   if (key === 'gate') {
-    // 웰컴 게이트: 담장 남쪽 가운데. 두 기둥 위에 떠 있는 캐노피, CARPEDM 간판, 개찰구, 방문증 키오스크.
-    const H = 3.6;
-    [-1, 1].forEach((s) => {
-      add(box(1.2, H, 1.6, concrete, { x: s * 2.0, y: H / 2 }));
-      add(slats(1.5, H - 0.6, s * 2.0 + s * 0.62, H / 2, 0, 0, 0.2));
-    });
-    add(box(6.4, 0.32, 2.6, toon('#F2EEE6'), { y: H + 0.16 }));
-    add(box(6.5, 0.06, 2.7, darkFrame, { y: H }));
-    add(mesh(new THREE.PlaneGeometry(3.6, 0.9), toon('#ffffff', { map: canvasTex(signCanvas('CARPEDM', 'SEIZE THE DAY · 오늘을 붙잡는 팀')) }), { y: H + 0.85, z: 1.15, cast: false }));
-    add(box(3.8, 1.1, 0.12, darkFrame, { y: H + 0.85, z: 1.08 }));
-    // 개찰구
-    for (const x of [-1.05, 1.05]) add(box(0.14, 0.9, 1.0, toon('#C9CDD0'), { x, y: 0.45 }), box(0.15, 0.05, 1.0, teal, { x, y: 0.93 }));
-    // 방문증 키오스크
-    add(box(0.5, 1.3, 0.35, toon('#F2EEE6'), { x: 2.0, y: 0.65, z: 1.25 }));
-    add(mesh(new THREE.PlaneGeometry(0.38, 0.5), toon('#ffffff', { map: canvasTex(screenCanvas(3)) }), { x: 2.0, y: 1.0, z: 1.43, cast: false }));
-    // 바닥 조명
-    for (const s of [-1, 1]) add(box(0.08, 0.05, 2.4, warm, { x: s * 1.3, y: 0.03, cast: false }));
-    height = H + 2.0;
+    // 웰컴 사인: 보도와 캠퍼스 경계. 문·지붕·개찰구 없이 길 양옆에 낮은 사인과 키오스크만 둠.
+    // 낮은 사인 벽(길 서쪽): CARPEDM 간판이 큰길 쪽(+Z)을 봄
+    add(box(3.6, 1.5, 0.5, concrete, { x: -3.8, y: 0.75 }));
+    add(box(3.7, 0.08, 0.6, darkFrame, { x: -3.8, y: 1.54 }));
+    add(mesh(new THREE.PlaneGeometry(3.2, 0.8), toon('#ffffff', { map: canvasTex(signCanvas('CARPEDM', 'SEIZE THE DAY · 오늘을 붙잡는 팀')) }), { x: -3.8, y: 0.85, z: 0.26, cast: false }));
+    add(box(3.6, 0.05, 0.08, warm, { x: -3.8, y: 0.06, z: 0.3, cast: false }));
+    // 방문증 키오스크(길 동쪽)
+    add(box(0.5, 1.3, 0.35, toon('#F2EEE6'), { x: 3.4, y: 0.65 }));
+    add(mesh(new THREE.PlaneGeometry(0.38, 0.5), toon('#ffffff', { map: canvasTex(screenCanvas(3)) }), { x: 3.4, y: 1.0, z: 0.18, cast: false }));
+    // 화분과 길 안내 바닥 조명
+    for (const x of [-6.0, 5.0, 6.2]) planter(x, 0, 0.1, 0.35);
+    for (const s of [-1, 1]) for (const z of [-1.6, 0, 1.6]) add(box(0.3, 0.04, 0.3, warm, { x: s * 2.1, y: 0.02, z, cast: false }));
+    height = 2.4;
   }
 
   if (key === 'academy') {

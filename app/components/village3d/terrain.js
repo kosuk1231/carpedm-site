@@ -1,26 +1,18 @@
-// CARPEDM 캠퍼스 둘레의 도심: 평평한 시가지, 캠퍼스 남쪽을 흐르는 도심 수로(천)와 보행교,
-// 큰길과 순환도로, 파스텔 톤 빌딩 블록, 가로수, 오가는 차와 셔틀. 그리고 캠퍼스 담장과 모서리 조명탑, 셔틀 정류장.
+// CARPEDM 캠퍼스 둘레의 도심: 평평한 시가지, 캠퍼스 남쪽 보도에 바로 붙은 큰길과 순환도로,
+// 파스텔 톤 빌딩 블록, 가로수, 오가는 차와 셔틀. 그리고 동·서·북 담장(남쪽은 열려 있음)과 모서리 조명탑, 셔틀 정류장.
 
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { N, GATE_X, OUT_LEN, RIVER_Y, BRIDGE_HALF } from '../../data/villageMap';
+import { N, GATE_X, OUT_LEN } from '../../data/villageMap';
 import { rand } from './kit';
 
 const HALF = N / 2;
-export const riverWorldZ = () => RIVER_Y - HALF;
-const CANAL_HALF = 2.4;   // 물길 반폭
-
-// 3D 좌표(X, Z)의 땅 높이: 도심은 평지, 수로만 낮게 파여 있음
-export function heightAt(X, Z) {
-  return Math.abs(Z - riverWorldZ()) < CANAL_HALF ? -1.25 : 0;
+// 3D 좌표(X, Z)의 땅 높이: 도심은 평지
+export function heightAt() {
+  return 0;
 }
 
-// 걷는 사람의 발 높이(다리 위는 아치)
-export function groundY(x, y) {
-  const X = x - HALF;
-  if (y > N + 0.5 && Math.abs(X - (GATE_X - HALF)) < BRIDGE_HALF + 0.3) {
-    const Z = y - HALF, dz = Z - riverWorldZ();
-    if (Math.abs(dz) < 2.6) return 0.55 * Math.cos((dz / 2.6) * Math.PI * 0.5);
-  }
+// 걷는 사람의 발 높이
+export function groundY() {
   return 0;
 }
 
@@ -48,7 +40,7 @@ function laneCanvas() {
 export function buildTerrain(THREE, kit, scene) {
   const { track, toon, mesh, canvasTex } = kit;
   const updates = [];
-  const X0 = GATE_X - HALF, Zr = riverWorldZ();
+  const X0 = GATE_X - HALF;
   const clay = (color, extra = {}) => track(new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra }));
 
   // 바닥: 연한 보도블록 색의 넓은 평지
@@ -57,13 +49,12 @@ export function buildTerrain(THREE, kit, scene) {
     m.rotation.x = -Math.PI / 2; m.position.set(x, y, z); m.receiveShadow = true;
     scene.add(m); return m;
   };
-  // 수로 자리를 비우고 남·북 두 판으로 깔기
-  const paving = clay('#E2DCD0');
-  const zN = Zr - CANAL_HALF - 0.4, zS = Zr + CANAL_HALF + 0.4;
-  flat(600, 300 + zN, 0, (zN - 300) / 2, paving, -0.02);
-  flat(600, 300 - zS, 0, (zS + 300) / 2, paving, -0.02);
-  // 캠퍼스 둘레 잔디 띠
-  flat(N + 8, N + 8, 0, 0, clay('#A9C48A'), -0.01);
+  flat(600, 600, 0, 0, clay('#E2DCD0'), -0.02);
+  // 캠퍼스 둘레 잔디 띠(남쪽은 보도까지)
+  flat(N + 8, N + 4, 0, -2, clay('#A9C48A'), -0.01);
+  // 캠퍼스 남쪽 보도: 큰길에서 바로 캠퍼스로 이어짐
+  flat(N + 8, OUT_LEN, 0, HALF + OUT_LEN / 2, clay('#EAE5DA'), -0.005);
+  flat(6, OUT_LEN + 3, X0, HALF + OUT_LEN / 2 - 1.5, clay('#F2EEE6'), -0.003); // 입구 앞 밝은 포장
 
   // 도로: 아스팔트 + 차선
   const lane = canvasTex(laneCanvas(), { repeat: true });
@@ -76,7 +67,7 @@ export function buildTerrain(THREE, kit, scene) {
   const ROAD = 7;
   const roadEW = (z, x0, x1) => flat(x1 - x0, ROAD, (x0 + x1) / 2, z, roadMat(x1 - x0), 0.005);
   const roadNS = (x, z0, z1) => { const m = flat(ROAD, z1 - z0, x, (z0 + z1) / 2, roadMat(z1 - z0)); m.material.map.rotation = Math.PI / 2; m.material.map.center.set(0.5, 0.5); m.material.map.repeat.set((z1 - z0) / 8, 1); m.position.y = 0.004; return m; };
-  const STREET_Z = Zr + 10.5;           // 정류장 앞 큰길(동서)
+  const STREET_Z = HALF + OUT_LEN + ROAD / 2; // 캠퍼스 보도 바로 앞 큰길(동서)
   const RING = HALF + 7.5;              // 순환도로 중심선
   roadEW(STREET_Z, -260, 260);
   roadEW(-RING, -260, 260);
@@ -87,50 +78,7 @@ export function buildTerrain(THREE, kit, scene) {
   // 횡단보도(정류장 앞)
   for (let i = 0; i < 6; i++) flat(0.5, ROAD - 0.6, X0 - 1.5 + i * 0.6, STREET_Z, clay('#F4F1EA'), 0.012);
 
-  // 도심 수로(천): 돌 옹벽 + 흐르는 물 + 양쪽 산책 잔디
-  const waterUniforms = { uTime: { value: 0 } };
-  const riverMat = track(new THREE.ShaderMaterial({
-    uniforms: waterUniforms,
-    transparent: true,
-    vertexShader: `varying vec3 vW; void main(){ vec4 w = modelMatrix * vec4(position,1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
-    fragmentShader: `uniform float uTime; varying vec3 vW;
-      void main(){
-        vec3 deep = vec3(0.42,0.66,0.72); vec3 light = vec3(0.90,0.97,0.98);
-        float flow = sin(vW.x*0.9 - uTime*1.6 + sin(vW.z*2.1)*0.8) * sin(vW.z*3.3 + uTime*0.7);
-        float line = smoothstep(0.82, 0.97, flow);
-        gl_FragColor = vec4(mix(deep, light, line*0.8), 0.95);
-      }`,
-  }));
-  flat(600, CANAL_HALF * 2, 0, Zr, riverMat, -0.78);
-  flat(600, CANAL_HALF * 2, 0, Zr, clay('#7A8C8A'), -1.25);
-  for (const s of [-1, 1]) {
-    const wall = new THREE.Mesh(track(new THREE.BoxGeometry(600, 1.3, 0.4)), clay('#CFC6B6'));
-    wall.position.set(0, -0.62, Zr + s * (CANAL_HALF + 0.2)); wall.receiveShadow = true; scene.add(wall);
-    flat(600, 3.2, 0, Zr + s * (CANAL_HALF + 2.0), clay('#A9C48A'), 0.006);
-  }
-  updates.push((t) => { waterUniforms.uTime.value = t; });
-
-  // 보행교: 흰 아치 상판, 유리 난간, 손잡이 조명
-  const bridgeGlass = track(new THREE.MeshStandardMaterial({ color: '#BFE0E4', roughness: 0.3, transparent: true, opacity: 0.45 }));
-  const bridge = new THREE.Group();
-  // (X0, Zr 는 위에서 정의)
-  bridge.position.set(X0, 0, Zr);
-  const plank = toon('#ECE8DF'), rail = toon('#2E3436');
-  for (let i = -12; i <= 12; i++) {
-    const dz = (i / 12) * 2.6;
-    const y = 0.55 * Math.cos((dz / 2.6) * Math.PI * 0.5);
-    bridge.add(mesh(new THREE.BoxGeometry(2.8, 0.1, 0.22), plank, { y: y - 0.02, z: dz, rx: -Math.sin((dz / 2.6) * Math.PI * 0.5) * 0.35 }));
-    if (i % 3 === 0) for (const s of [-1, 1]) bridge.add(mesh(new THREE.BoxGeometry(0.04, 0.6, 0.04), rail, { x: s * 1.35, y: y + 0.3, z: dz }));
-    if (i % 2 === 0) for (const s of [-1, 1]) bridge.add(mesh(new THREE.BoxGeometry(0.02, 0.5, 0.22), bridgeGlass, { x: s * 1.35, y: y + 0.28, z: dz, cast: false }));
-  }
-  for (const s of [-1, 1]) {
-    const pts = [];
-    for (let i = -12; i <= 12; i++) { const dz = (i / 12) * 2.6; pts.push(new THREE.Vector3(s * 1.35, 0.55 * Math.cos((dz / 2.6) * Math.PI * 0.5) + 0.6, dz)); }
-    bridge.add(mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.04, 6), toon('#FFE2A8', { emissive: 0xFFB45A, emissiveIntensity: 0.6 })));
-  }
-  for (const s of [-1, 1]) for (const z of [-2.2, 2.2]) bridge.add(mesh(new THREE.CylinderGeometry(0.12, 0.14, 1.6, 8), toon('#CFC8BA'), { x: s * 1.2, y: -0.5, z }));
-  scene.add(bridge);
-
+  const glass = track(new THREE.MeshStandardMaterial({ color: '#BFE0E4', roughness: 0.3, transparent: true, opacity: 0.45 }));
 
   // 빌딩 블록: 파스텔 톤 상자 빌딩을 하나로 합쳐 그림(그리기 호출 1번)
   const winTex = canvasTex(windowsCanvas(), { repeat: true });
@@ -148,7 +96,6 @@ export function buildTerrain(THREE, kit, scene) {
         const w = 5 + rand(k) * 6, d = 5 + rand(k + 1) * 6;
         const x = gx + (j ? 4 : -3) + (rand(k + 2) - 0.5) * 3, z = gz + (rand(k + 3) - 0.5) * 6;
         if (inCampusZone(x, z) || onRoad(x, z, w, d)) continue;
-        if (Math.abs(z - Zr) < CANAL_HALF + 4 + d / 2) continue;
         const near = Math.hypot(x, z - 10);
         const h = 3 + rand(k + 4) * (near < 60 ? 9 : 26) + (near > 90 ? rand(k + 5) * 18 : 0);
         const g = new THREE.BoxGeometry(w, h, d);
@@ -186,8 +133,8 @@ export function buildTerrain(THREE, kit, scene) {
   const spots = [];
   for (let x = -120; x <= 120; x += 6) { spots.push([x, STREET_Z - ROAD / 2 - 1.2]); spots.push([x, STREET_Z + ROAD / 2 + 1.2]); spots.push([x, -RING - ROAD / 2 - 1.2]); }
   for (let z = -RING; z <= STREET_Z; z += 6) for (const s of [-1, 1]) { spots.push([s * (RING + ROAD / 2 + 1.2), z]); spots.push([s * (RING - ROAD / 2 - 1.2), z]); }
-  for (let x = -120; x <= 120; x += 7) for (const s of [-1, 1]) spots.push([x + 3, Zr + s * (CANAL_HALF + 2.0)]);
-  const keep = spots.filter(([x, z]) => !(Math.abs(x - X0) < 6 && z > Zr - 6 && z < STREET_Z + 6));
+  // 캠퍼스 앞 보도는 비워 둠(걸어 들어오는 길)
+  const keep = spots.filter(([x, z]) => !(Math.abs(x) < HALF + 3 && z > HALF - 1 && z < STREET_Z));
   const trunks = new THREE.InstancedMesh(trunkGeo, clay('#8A6448'), keep.length);
   const crowns = new THREE.InstancedMesh(crownGeo, clay('#8DBA6E'), keep.length);
   const mtx = new THREE.Matrix4(), q4 = new THREE.Quaternion(), sc = new THREE.Vector3(), ps = new THREE.Vector3();
@@ -220,7 +167,7 @@ export function buildTerrain(THREE, kit, scene) {
     }
   });
 
-  // 캠퍼스 담장: 낮은 석재 담 + 위쪽 생울타리, 남쪽 가운데는 정문 자리로 비움
+  // 캠퍼스 담장: 낮은 석재 담 + 위쪽 생울타리. 남쪽은 담 없이 보도로 열어 둠
   const WALL_H = 1.1, WALL_T = 0.9;
   const stoneTex = (() => {
     const c = document.createElement('canvas');
@@ -239,25 +186,23 @@ export function buildTerrain(THREE, kit, scene) {
     scene.add(mesh(new THREE.BoxGeometry(len, WALL_H, WALL_T), toon('#ffffff', { map: t }), { x: (x0 + x1) / 2, y: WALL_H / 2, z: (z0 + z1) / 2, ry }));
     scene.add(mesh(new THREE.BoxGeometry(len, 0.7, WALL_T * 0.8), hedge, { x: (x0 + x1) / 2, y: WALL_H + 0.3, z: (z0 + z1) / 2, ry }));
   };
-  const H = HALF, GAP = 3.1;
+  const H = HALF;
   wallSeg(-H, -H, H, -H);
   wallSeg(-H, -H, -H, H);
   wallSeg(H, -H, H, H);
-  wallSeg(-H, H, -GAP, H);
-  wallSeg(GAP, H, H, H);
   // 모서리 조명탑(밤처럼 은은한 빛)
   for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
     scene.add(mesh(new THREE.BoxGeometry(1.4, 3.6, 1.4), toon('#E6E1D6'), { x: sx * H, y: 1.8, z: sz * H }));
     scene.add(mesh(new THREE.BoxGeometry(1.5, 0.3, 1.5), toon('#FFE2A8', { emissive: 0xFFB45A, emissiveIntensity: 0.7 }), { x: sx * H, y: 3.3, z: sz * H, cast: false }));
     scene.add(mesh(new THREE.BoxGeometry(1.6, 0.12, 1.6), toon('#2E3436'), { x: sx * H, y: 3.66, z: sz * H }));
   }
-  // 셔틀 정류장(출발점 옆): 지붕, 벤치, 노선 표지판
+  // 셔틀 정류장(출발점 옆, 보도 끝 차도 쪽): 지붕, 벤치, 노선 표지판. 뒤판은 캠퍼스 쪽
   const stop = new THREE.Group();
-  const SZ = HALF + OUT_LEN - 2;
-  stop.position.set(X0 + 2.8, 0, SZ);
+  stop.position.set(X0 + 6.2, 0, HALF + OUT_LEN - 0.9);
+  stop.rotation.y = Math.PI / 2;
   stop.add(mesh(new THREE.BoxGeometry(1.6, 0.08, 2.4), toon('#2E3436'), { y: 2.3 }));
   for (const z of [-1.1, 1.1]) stop.add(mesh(new THREE.BoxGeometry(0.08, 2.3, 0.08), toon('#2E3436'), { x: 0.7, y: 1.15, z }));
-  stop.add(mesh(new THREE.BoxGeometry(0.04, 1.6, 2.2), bridgeGlass, { x: 0.72, y: 1.2, cast: false }));
+  stop.add(mesh(new THREE.BoxGeometry(0.04, 1.6, 2.2), glass, { x: 0.72, y: 1.2, cast: false }));
   stop.add(mesh(new THREE.BoxGeometry(0.4, 0.06, 1.8), toon('#B98A5A'), { x: 0.4, y: 0.45 }));
   stop.add(mesh(new THREE.BoxGeometry(0.06, 0.7, 0.5), toon('#43706A'), { x: -0.5, y: 2.75, z: -1.0 }));
   scene.add(stop);

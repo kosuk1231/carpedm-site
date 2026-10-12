@@ -1,21 +1,17 @@
 // CARPEDM 캠퍼스의 배치와 이동 규칙.
-// 좌표는 바닥 격자(x, y) 칸 단위입니다. 캠퍼스 안은 0~N, 정문은 남쪽 담장(y = N) 가운데,
-// 담장 밖으로는 골짜기 길이 남쪽(y > N)으로 이어지고, 도중에 강을 보행교로 건넙니다.
+// 좌표는 바닥 격자(x, y) 칸 단위입니다. 캠퍼스 안은 0~N. 남쪽(y = N)은 담장 없이 열려 있어
+// 큰길 보도(y = N ~ N + OUT_LEN)에서 바로 걸어 들어옵니다.
 
 export const N = 48;           // 캠퍼스 한 변의 칸 수
-export const GATE_X = 24;      // 정문 가운데
-export const GATE_HALF = 1.15; // 정문 통로 반폭
-export const OUT_LEN = 16;     // 담장 밖 길 길이
-export const ROAD_MIN = GATE_X - 5.5, ROAD_MAX = GATE_X + 5.5; // 담장 밖 골짜기 길의 좌우 끝
-export const RIVER_Y = N + 7.5;  // 담장 밖 강(가운데 줄)
-export const BRIDGE_HALF = 1.25;
+export const GATE_X = 24;      // 남쪽 입구(웰컴 사인) 가운데
+export const OUT_LEN = 4;      // 캠퍼스 남쪽 보도 폭(그 너머가 큰길)
 export const SPEED = 5.6;      // 초당 이동 칸 수
 export const TALK_R = 1.5;     // 인물과 대화 가능한 거리
 export const DOOR_R = 1.4;     // 건물 입구 반경
 
 // 건물 위치. key 는 CAMPS 의 key 와 같습니다. 건물은 입구가 +x 쪽(화면 오른쪽 앞)을 보도록 짓습니다.
 export const BUILDINGS = [
-  { key: 'gate', x: GATE_X, y: N, door: [0, 1.8], onWall: true },
+  { key: 'gate', x: GATE_X, y: N, door: [0, 0.6], open: true }, // 웰컴 사인: 막지 않는 열린 입구
   { key: 'mission', x: 10, y: 9 },
   { key: 'lab', x: 37, y: 9 },
   { key: 'consult', x: 24, y: 10 },
@@ -24,7 +20,7 @@ export const BUILDINGS = [
   { key: 'lounge', x: 41, y: 41 },
 ];
 export const B_R = 1.9; // 건물이 차지하는 반경(충돌)
-// 입구 앞 자리. 정문은 담장 밖 쪽 앞입니다.
+// 입구 앞 자리. 웰컴 사인은 보도와 캠퍼스 경계입니다.
 export const door = (b) => (b.door ? { x: b.x + b.door[0], y: b.y + b.door[1] } : { x: b.x + 2.5, y: b.y + 0.7 });
 
 // 팀원 위치. 맡은 일과 맞는 건물 곁에 세웁니다.
@@ -38,8 +34,8 @@ export const PIECES = [
   { id: 'writer', x: 35, y: 31 },
   { id: 'editor', x: 43.5, y: 25 },
   { id: 'minutes', x: 30, y: 8.5 },
-  { id: 'brief', x: GATE_X - 1.6, y: N - 3, patrol: [GATE_X - 1.4, 29] },   // 정문 안쪽과 광장 사이 큰길을 오가며 손님을 맞습니다
-  { id: 'local', x: GATE_X + 2.3, y: N + 1.4, patrol: [GATE_X + 2.6, N + 4.6] }, // 경비 로봇: 정문 밖을 지킵니다
+  { id: 'brief', x: GATE_X - 1.6, y: N - 3, patrol: [GATE_X - 1.4, 29] },   // 입구와 광장 사이 큰길을 오가며 손님을 맞습니다
+  { id: 'local', x: GATE_X + 2.6, y: N + 1.4, patrol: [GATE_X + 2.6, N - 2.5] }, // 환영 로봇: 입구에서 손님을 맞습니다
 ];
 export const P_R = 0.45;
 
@@ -81,23 +77,13 @@ export const inWater = (x, y) => {
   return false;
 };
 
-export const START = { x: GATE_X, y: N + OUT_LEN - 2 }; // 강 건너 셔틀 정류장에서 출발
+export const START = { x: GATE_X, y: N + OUT_LEN - 0.8 }; // 큰길 셔틀 정류장에서 출발
 export const PLAZA = { x: 24, y: 26 };
-
-// 담장 밖 강물(다리 위는 지날 수 있음)
-export const riverZ = () => RIVER_Y;
-const inRiver = (x, y) => Math.abs(y - riverZ(x)) < 1.3 && Math.abs(x - GATE_X) > BRIDGE_HALF;
 
 export const blocked = (x, y) => {
   if (x < 0.8 || x > N - 0.8 || y < 0.8) return true;
-  if (y > N - 0.8) {
-    // 담장: 정문 통로로만 지날 수 있음
-    if (y < N + 0.8) return Math.abs(x - GATE_X) > GATE_HALF;
-    // 담장 밖 골짜기 길
-    if (x < ROAD_MIN || x > ROAD_MAX || y > N + OUT_LEN) return true;
-    if (inRiver(x, y)) return true;
-  }
-  for (const b of BUILDINGS) if (!b.onWall && Math.hypot(x - b.x, y - b.y) < B_R) return true;
+  if (y > N + OUT_LEN) return true; // 보도 너머는 차도
+  for (const b of BUILDINGS) if (!b.open && Math.hypot(x - b.x, y - b.y) < B_R) return true;
   for (const p of PIECES) if (!p.patrol && Math.hypot(x - p.x, y - p.y) < P_R) return true;
   for (const [t, dx, dy] of DECOR) if (Math.hypot(x - dx, y - dy) < DECOR_R[t]) return true;
   if (inWater(x, y)) return true;
