@@ -1,4 +1,4 @@
-// 융중 마을의 배치와 이동 규칙. 2.5D 화면과 3D 화면이 같은 지도를 씁니다.
+// 융중 마을의 배치와 이동 규칙.
 // 좌표는 바닥 격자(x, y) 칸 단위입니다.
 
 export const N = 28;           // 마을 한 변의 칸 수
@@ -6,7 +6,7 @@ export const SPEED = 4.6;      // 초당 이동 칸 수
 export const TALK_R = 1.5;     // 장수와 대화 가능한 거리
 export const DOOR_R = 1.4;     // 건물 입구 반경
 
-// 건물 위치. key 는 CAMPS 의 key 와 같고, 그림은 public/village/<key>.png (배경 투명 디오라마).
+// 건물 위치. key 는 CAMPS 의 key 와 같습니다. 건물은 입구가 +x 쪽(화면 오른쪽 앞)을 보도록 짓습니다.
 export const BUILDINGS = [
   { key: 'chorye', x: 6, y: 6 },
   { key: 'workshop', x: 17, y: 4.5 },
@@ -16,7 +16,7 @@ export const BUILDINGS = [
   { key: 'beacon', x: 24, y: 23.5 },
 ];
 export const B_R = 1.9; // 건물이 차지하는 반경(충돌)
-// 입구는 그림의 오른쪽 앞면, 돌길이 끝나는 자리
+// 입구 앞 자리
 export const door = (b) => ({ x: b.x + 2.5, y: b.y + 0.7 });
 
 // 장수 위치. 맡은 일과 맞는 건물 곁에 세웁니다.
@@ -29,8 +29,8 @@ export const PIECES = [
   { id: 'writer', x: 18.5, y: 17.5 },
   { id: 'editor', x: 25, y: 12 },
   { id: 'minutes', x: 23, y: 18 },
-  { id: 'brief', x: 11.5, y: 25.5 },
-  { id: 'local', x: 18, y: 23 },
+  { id: 'brief', x: 11.5, y: 25.5, patrol: [12.2, 17.4] },   // 사신: 성문과 광장 사이를 오갑니다
+  { id: 'local', x: 18, y: 23, patrol: [19.6, 20.4] },       // 수문장: 성문 앞을 순찰합니다
 ];
 export const P_R = 0.45;
 
@@ -69,7 +69,7 @@ export const PLAZA = { x: 14, y: 14 };
 export const blocked = (x, y) => {
   if (x < 0.8 || y < 0.8 || x > N - 0.8 || y > N - 0.8) return true;
   for (const b of BUILDINGS) if (Math.hypot(x - b.x, y - b.y) < B_R) return true;
-  for (const p of PIECES) if (Math.hypot(x - p.x, y - p.y) < P_R) return true;
+  for (const p of PIECES) if (!p.patrol && Math.hypot(x - p.x, y - p.y) < P_R) return true;
   for (const [t, dx, dy] of DECOR) if (Math.hypot(x - dx, y - dy) < DECOR_R[t]) return true;
   if (inWater(x, y)) return true;
   return false;

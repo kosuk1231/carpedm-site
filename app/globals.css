@@ -3994,42 +3994,10 @@ a.program-card:hover .program-card-visual img { transform: scale(1.03); }
   background: radial-gradient(ellipse at 50% 40%, #E9DCC3, #CDB68E 75%);
   touch-action: none; user-select: none; -webkit-user-select: none;
 }
-.yv-world { position: absolute; left: 0; top: 0; will-change: transform; transition: none; }
-.yv-ground { position: absolute; left: 0; top: 0; }
-.yv-road { fill: none; stroke: #EADBBE; stroke-width: 38; stroke-linecap: round; opacity: .9; }
-.yv-plaza { fill: #EADBBE; stroke: #B79A6C; stroke-width: 2; stroke-dasharray: 8 7; }
-
-.yv-obj { position: absolute; width: 0; height: 0; }
-.yv-building svg { position: absolute; left: 0; top: 0; filter: drop-shadow(0 14px 10px rgba(60,40,15,.25)); }
-.yv-building-art { position: absolute; left: 0; top: 0; width: 380px; max-width: none; transform: translate(-50%, -59%); pointer-events: none; filter: drop-shadow(0 14px 10px rgba(60,40,15,.25)); }
-.yv-sign {
-  position: absolute; transform: translateX(-50%); white-space: nowrap; pointer-events: none;
-  padding: 4px 12px; background: #3B2F22; color: #F6EEDC; border-radius: 4px; font-family: var(--serif); font-size: 15px; font-weight: 600;
-  box-shadow: 0 4px 10px rgba(40,25,10,.3);
-}
 
 
-.yv-agent button { position: absolute; left: 0; bottom: 0; transform: translateX(-50%); padding: 0; border: 0; background: none; cursor: pointer; }
-.yv-agent img { display: block; height: 150px; width: auto; filter: drop-shadow(0 8px 6px rgba(50,30,10,.3)); transition: transform .2s ease; animation: yv-idle 3.2s ease-in-out infinite; transform-origin: 50% 100%; }
-.yv-agent:nth-child(odd) img { animation-delay: -1.3s; }
-.yv-agent button:hover img, .yv-agent.is-near img { transform: translateY(-6px) scale(1.04); animation: none; }
-.yv-name {
-  position: absolute; left: 0; top: 6px; transform: translateX(-50%); white-space: nowrap; pointer-events: none;
-  padding: 2px 8px; border-radius: 3px; background: rgba(244,233,212,.92); border: 1px solid rgba(90,60,25,.3); font-size: 12px; font-weight: 700; color: #3B2F22;
-}
-.yv-bubble {
-  position: absolute; left: 0; bottom: 172px; transform: translateX(-50%); width: max-content; max-width: 240px; z-index: 2;
-  padding: 10px 14px; background: #FFFBF2; border: 1.5px solid #3B2F22; border-radius: 12px; font-size: 13.5px; line-height: 1.55; color: #3B2F22;
-  box-shadow: 0 6px 14px rgba(40,25,10,.2); animation: yv-pop .18s ease-out;
-}
-.yv-bubble::after { content: ''; position: absolute; left: 50%; bottom: -8px; width: 12px; height: 12px; background: #FFFBF2; border-right: 1.5px solid #3B2F22; border-bottom: 1.5px solid #3B2F22; transform: translateX(-50%) rotate(45deg); }
 
-.yv-player-body {
-  position: absolute; left: 0; bottom: -6px; height: 132px; width: auto; max-width: none; transform: translateX(-50%) scaleX(var(--face, 1));
-  filter: drop-shadow(0 8px 6px rgba(50,30,10,.3)); pointer-events: none;
-}
-.yv-player::after { content: ''; position: absolute; left: -24px; top: -8px; width: 48px; height: 16px; border-radius: 50%; background: rgba(60,40,15,.25); }
-.yv-player.is-moving .yv-player-body { animation: yv-walk .32s ease-in-out infinite; }
+
 
 .yv-hint {
   position: absolute; left: 50%; top: 20px; transform: translateX(-50%); z-index: 5; pointer-events: none;
@@ -4065,68 +4033,9 @@ a.program-card:hover .program-card-visual img { transform: scale(1.03); }
 .yv-crew button { display: flex; flex-direction: column; align-items: center; padding: 6px 8px; border: 1px solid rgba(90,60,25,.2); border-radius: 6px; background: rgba(255,255,255,.4); font: inherit; font-size: 12.5px; cursor: pointer; }
 .yv-crew img { height: 84px; width: auto; }
 
-@keyframes yv-idle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-@keyframes yv-walk { 0%, 100% { margin-bottom: 0; } 50% { margin-bottom: 5px; } }
 @keyframes yv-pop { from { opacity: 0; transform: translateX(-50%) translateY(6px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-@media (prefers-reduced-motion: reduce) { .yv-agent img, .yv-player.is-moving .yv-player-body { animation: none; } }
 @media (max-width: 720px) {
-  .yv-agent img { height: 120px; }
-  .yv-bubble { bottom: 140px; max-width: 200px; font-size: 12.5px; }
   .yv-hud button { padding: 6px 9px; font-size: 12px; }
-}
-
-/* ---------- 융중 마을 풍경 ---------- */
-.yv-stage { background: linear-gradient(#F1E8D4 0%, #E9DEC4 45%, #DCCBA6 100%); }
-.yv-sky { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-.yv-sun { position: absolute; right: 16%; top: 9%; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, #D9644A 0 55%, rgba(217,100,74,.25) 56%, transparent 70%); opacity: .55; }
-.yv-far { position: absolute; left: 0; right: 0; bottom: 18%; width: 100%; height: 40%; }
-.yv-sky-cloud { position: absolute; opacity: .8; animation: yv-bob 14s ease-in-out infinite; }
-
-.yv-road-edge { fill: none; stroke: #B49C72; stroke-width: 46; stroke-linecap: round; opacity: .55; }
-.yv-road { fill: none; stroke: #E6D6B0; stroke-width: 36; stroke-linecap: round; }
-.yv-stream-bank { fill: none; stroke: #6F8B6B; stroke-width: 54; stroke-linecap: round; stroke-linejoin: round; opacity: .8; }
-.yv-stream { fill: none; stroke: #8DB3AE; stroke-width: 40; stroke-linecap: round; stroke-linejoin: round; }
-.yv-ripple { fill: none; stroke: #D8ECE6; stroke-width: 2.5; stroke-dasharray: 18 26; stroke-linecap: round; animation: yv-flow 3.5s linear infinite; }
-.yv-pond-bank { fill: #6F8B6B; opacity: .85; }
-.yv-pond { fill: #8DB3AE; stroke: #4F6E62; stroke-width: 2; }
-.yv-pond-ripple ellipse { fill: none; stroke: #D8ECE6; stroke-width: 2; opacity: .8; animation: yv-ripple 4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-.yv-pond-ripple ellipse + ellipse { animation-delay: -2s; }
-.yv-plaza { fill: #E3D4AF; stroke: #8E7651; stroke-width: 3; }
-.yv-plaza-ring { fill: none; stroke: #A48C62; stroke-width: 2; stroke-dasharray: 10 7; }
-.yv-plaza-core { fill: #C7B188; stroke: #6E5A3A; stroke-width: 2; }
-
-.yv-cloudsea { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; }
-.yv-sea-cloud { position: absolute; animation: yv-bob 9s ease-in-out infinite; filter: drop-shadow(0 6px 8px rgba(90,70,40,.15)); }
-
-.yv-flora { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
-.yv-sway { transform-origin: 50% 100%; animation: yv-sway 5s ease-in-out infinite; }
-.yv-decor-bamboo:nth-child(3n) .yv-sway { animation-delay: -2.2s; }
-
-.yv-flag { position: absolute; left: 0; top: 0; pointer-events: none; }
-.yv-flag i { position: absolute; left: -2px; top: -150px; width: 4px; height: 152px; background: #4A3524; border-radius: 2px; }
-.yv-flag i::before { content: ''; position: absolute; left: -3px; top: -8px; width: 10px; height: 10px; border-radius: 50%; background: #C9A24A; }
-.yv-flag b {
-  position: absolute; left: 2px; top: -146px; width: 46px; height: 74px; display: grid; place-items: center;
-  background: linear-gradient(90deg, #A23B26, #C04A30); border: 2px solid #6E2416; border-left: 0;
-  clip-path: polygon(0 0, 100% 0, 100% 86%, 82% 100%, 64% 86%, 46% 100%, 28% 86%, 0 100%);
-  transform-origin: 0 50%; animation: yv-wave 2.6s ease-in-out infinite;
-}
-.yv-flag span { font-family: var(--serif); font-size: 24px; font-weight: 700; color: #F6E8CF; margin-top: -8px; }
-
-.yv-drift { position: absolute; inset: 0; z-index: 4; pointer-events: none; overflow: hidden; }
-.yv-drift-cloud { position: absolute; left: -360px; animation: yv-drift 140s linear infinite; }
-.yv-birds { position: absolute; top: 16%; left: -100px; animation: yv-fly 38s linear infinite; }
-
-@keyframes yv-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-@keyframes yv-flow { to { stroke-dashoffset: -88; } }
-@keyframes yv-ripple { 0%, 100% { transform: scale(.85); opacity: .2; } 50% { transform: scale(1.1); opacity: .8; } }
-@keyframes yv-sway { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
-@keyframes yv-wave { 0%, 100% { transform: skewY(0deg) scaleX(1); } 50% { transform: skewY(-5deg) scaleX(.94); } }
-@keyframes yv-drift { from { transform: translateX(0); } to { transform: translateX(calc(100vw + 720px)); } }
-@keyframes yv-fly { from { transform: translate(0, 0); } 50% { transform: translate(55vw, -30px); } to { transform: translate(calc(100vw + 200px), 10px); } }
-@media (prefers-reduced-motion: reduce) {
-  .yv-sky-cloud, .yv-sea-cloud, .yv-sway, .yv-flag b, .yv-drift-cloud, .yv-birds, .yv-ripple, .yv-pond-ripple ellipse { animation: none; }
-  .yv-drift-cloud, .yv-birds { display: none; }
 }
 
 /* ---------- 융중 마을 3D ---------- */
@@ -4157,5 +4066,9 @@ a.program-card:hover .program-card-visual img { transform: scale(1.03); }
 }
 .yv3-loading b { font-family: var(--serif); font-size: 22px; }
 .yv3-loading span { font-size: 14px; color: #7A6650; }
-.yv-mode { color: #F4E9D4 !important; border-left: 1px solid rgba(232,217,188,.3) !important; border-radius: 0 !important; }
 @media (max-width: 720px) { .yv3-name { font-size: 11px; } .yv3-sign { font-size: 13px; } }
+.yv-plain { display: grid; place-items: center; background: radial-gradient(ellipse at 50% 45%, #F7F0E0, #E6DAC0); cursor: default; }
+.yv-plain-inner { max-width: 520px; padding: 24px; text-align: center; color: #3B2F22; }
+.yv-plain-inner b { font-family: var(--serif); font-size: 24px; }
+.yv-plain-inner div { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 12px; }
+.yv-plain-inner a { padding: 8px 14px; border-radius: 8px; background: #3B2F22; color: #F6EEDC; text-decoration: none; font-size: 14px; }
