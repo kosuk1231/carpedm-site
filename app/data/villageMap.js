@@ -132,7 +132,7 @@ export const inWater = (x, y) => PONDS.some(([[cx, cy], r]) => Math.hypot(x - cx
 
 // 캠퍼스 풍경: 산책로 가로수(tree)·가로등(lamp)·벤치, 숲(tree·pine·bamboo·rock), 작은 사무 동(pod), 입구 현수막(banner), 광장 커피 카트(kiosk).
 // 산책로·샛길·건물·연못을 피해 자리를 정합니다(매번 같은 배치).
-export const DECOR_R = { pine: 0.5, bamboo: 0.55, rock: 0.5, tree: 0.5, bench: 0.6, banner: 0.25, lamp: 0.15, kiosk: 0.9, pod: 1.5 };
+export const DECOR_R = { street: 0.2, pine: 0.5, bamboo: 0.55, rock: 0.5, tree: 0.5, bench: 0.6, banner: 0.25, lamp: 0.15, kiosk: 0.9, pod: 1.5 };
 const rnd = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 export const DECOR = (() => {
   const out = [];
@@ -150,8 +150,8 @@ export const DECOR = (() => {
     const l = Math.hypot(b.x - a.x, b.y - a.y); if (!l) continue;
     const nx = -(b.y - a.y) / l, ny = (b.x - a.x) / l;
     const before = acc; acc += l;
-    if (Math.floor(acc / 4.2) !== Math.floor(before / 4.2) && b.y < NY - 4) {
-      for (const s of [-1, 1]) { const x = b.x + nx * s * 2.7, y = b.y + ny * s * 2.7; if (free(x, y, 0.5, 0.6)) out.push(['tree', x, y]); }
+    if (Math.floor(acc / 5.5) !== Math.floor(before / 5.5) && b.y < NY - 4) {
+      for (const s of [-1, 1]) { const x = b.x + nx * s * 2.2, y = b.y + ny * s * 2.2; if (free(x, y, 0.2, 0.6)) out.push(['street', x, y]); }
     }
     if (Math.floor(acc / 8.4 + 0.5) !== Math.floor(before / 8.4 + 0.5) && b.y < NY - 2) {
       side = -side; const x = b.x + nx * side * 1.75, y = b.y + ny * side * 1.75; if (free(x, y, 0.15, 0.3)) out.push(['lamp', x, y]);
@@ -172,7 +172,7 @@ export const DECOR = (() => {
     const t = kinds[i % kinds.length];
     const x = 2 + rnd(i * 2 + 1) * (NX - 4), y = 2 + rnd(i * 2 + 2) * (NY - 6);
     if (Math.hypot(x - QUAD.x, (y - QUAD.y) * QUAD.rx / QUAD.ry) < QUAD.rx + 0.8) continue;
-    if (lineDist(PROMENADE, x, y) < PROM_HALF + DECOR_R[t] + (t === 'pod' ? 3 : 1.6)) continue;
+    if (lineDist(PROMENADE, x, y) < PROM_HALF + DECOR_R[t] + (t === 'pod' ? 3 : 4.5)) continue;
     if (free(x, y, DECOR_R[t], t === 'pod' ? 2.5 : 1.0)) out.push([t, x, y]);
   }
   return out;

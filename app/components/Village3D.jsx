@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AGENTS, CAMPS } from '../data/agents';
 import VillageCards from './VillageCards';
 import {
-  NX, NY, SPEED, DOOR_R, BUILDINGS, door, PIECES, START, PLAZA, blocked, findPath,
+  NX, NY, OUT_LEN, SPEED, DOOR_R, BUILDINGS, door, PIECES, START, PLAZA, QUAD, PONDS, CAMPUS, PROMENADE, PROM_HALF, BRANCHES, blocked, findPath,
 } from '../data/villageMap';
 import { rand } from './village3d/kit';
 
@@ -37,6 +37,7 @@ export default function Village3D({ onFail }) {
   const hostRef = useRef(null);
   const labelRefs = useRef({});
   const bubbleRef = useRef(null);
+  const miniRef = useRef(null);
   const pos = useRef({ ...START });
   const keys = useRef(new Set());
   const target = useRef(null);
@@ -98,20 +99,19 @@ export default function Village3D({ onFail }) {
   };
 
   // 팀원을 누르거나 곁에서 Space: 그 팀원이 맡은 사이트 메뉴로 이동
-  const goMenu = useCallback((id) => {
-    const m = AGENTS[id]?.menu;
-    if (!m) return;
+  const goHref = useCallback((href) => {
     keys.current.clear(); target.current = null;
-    if (m.href.startsWith('/')) { window.location.href = m.href; return; }
-    const el = document.querySelector(m.href);
+    if (href.startsWith('/')) { window.location.href = href; return; }
+    const el = document.querySelector(href);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      history.replaceState(null, '', m.href);
+      history.replaceState(null, '', href);
       // 부드러운 스크롤이 막히면(무거운 3D 화면 등) 바로 이동
       setTimeout(() => { if (Math.abs(el.getBoundingClientRect().top) > 200 && window.scrollY < 50) el.scrollIntoView({ behavior: 'instant', block: 'start' }); }, 1200);
     }
-    else window.location.hash = m.href;
+    else window.location.hash = href;
   }, []);
+  const goMenu = useCallback((id) => { const m = AGENTS[id]?.menu; if (m) goHref(m.href); }, [goHref]);
   const interact = useCallback((n) => {
     const t = n || nearRef.current;
     if (!t) return;
@@ -173,13 +173,14 @@ export default function Village3D({ onFail }) {
       // 후처리: 은은한 빛 번짐(등불·봉화) + 가장자리 어둡게 + 따뜻한 색감
       let composer = null;
       if (post) {
-        composer = new post.EffectComposer(renderer);
+        // 후처리를 거쳐도 가장자리 계단 현상이 없게 다중 샘플(MSAA) 렌더 타깃을 씀(나뭇잎·난간이 떨려 보이지 않게)
+        composer = new post.EffectComposer(renderer, new THREE.WebGLRenderTarget(host.clientWidth || 1024, host.clientHeight || 640, { samples: 4, type: THREE.HalfFloatType }));
         composer.addPass(new post.RenderPass(world.scene, cam));
         // 앰비언트 오클루전: 발밑·건물 모서리·나무 아래에 부드러운 접지 그늘
         if (post.GTAOPass) {
           const ao = new post.GTAOPass(world.scene, cam, host.clientWidth || 1024, host.clientHeight || 640);
-          ao.updateGtaoMaterial({ radius: 0.6, distanceExponent: 1.5, thickness: 1.2, scale: 1.0, samples: 12 });
-          ao.blendIntensity = 0.85;
+          ao.updateGtaoMaterial({ radius: 0.6, distanceExponent: 1.5, thickness: 1.2, scale: 1.0, samples: 16 });
+          ao.blendIntensity = 0.6;
           composer.addPass(ao);
         }
         composer.addPass(new post.UnrealBloomPass(new THREE.Vector2(512, 512), 0.18, 0.4, 0.99));
@@ -219,6 +220,59 @@ export default function Village3D({ onFail }) {
         const sp = spots[(i * 5) % spots.length];
         return { person: f, x: sp.x, y: sp.y, yaw: rand(i) * 6, path: null, wait: rand(i + 3) * 4, v: 0, maxV: (f.flying ? 2.2 : 1.35) + rand(i + 60) * 0.5 };
       });
+
+      // 미니맵: 캠퍼스 모양·산책로·건물 번호를 한 번 그려 두고, 사람 위치만 매번 덧그림
+      const mini = miniRef.current;
+      const MINI_W = 132, MINI_H = Math.round(MINI_W * (NY + OUT_LEN) / NX), msc = MINI_W / NX;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      let miniBg = null, miniT = 0;
+      if (mini) {
+        mini.width = MINI_W * dpr; mini.height = MINI_H * dpr;
+        mini.style.width = `${MINI_W}px`; mini.style.height = `${MINI_H}px`;
+        miniBg = document.createElement('canvas'); miniBg.width = mini.width; miniBg.height = mini.height;
+        const g = miniBg.getContext('2d'); g.scale(dpr, dpr);
+        g.fillStyle = '#E8E2D4'; g.fillRect(0, NY * msc, MINI_W, OUT_LEN * msc); // 남쪽 보도
+        g.beginPath(); CAMPUS.forEach((p, i) => (i ? g.lineTo(p.x * msc, p.y * msc) : g.moveTo(p.x * msc, p.y * msc))); g.closePath();
+        g.fillStyle = '#BFD09A'; g.fill(); g.lineWidth = 2; g.strokeStyle = '#5E8A4B'; g.stroke();
+        g.beginPath(); g.ellipse(QUAD.x * msc, QUAD.y * msc, QUAD.rx * msc, QUAD.ry * msc, 0, 0, Math.PI * 2); g.fillStyle = '#9DBE72'; g.fill();
+        for (const [[cx, cy], r] of PONDS) { g.beginPath(); g.arc(cx * msc, cy * msc, r * msc, 0, Math.PI * 2); g.fillStyle = '#8FC3C8'; g.fill(); }
+        g.lineCap = 'round'; g.lineJoin = 'round';
+        const ln = (pts, w, c) => { g.beginPath(); pts.forEach((p, i) => (i ? g.lineTo(p.x * msc, p.y * msc) : g.moveTo(p.x * msc, p.y * msc))); g.lineWidth = w; g.strokeStyle = c; g.stroke(); };
+        for (const br of BRANCHES) ln(br, 1.6, '#F4F0E6');
+        ln(PROMENADE, PROM_HALF * 2 * msc, '#F7F3EA');
+        g.beginPath(); g.arc(PLAZA.x * msc, PLAZA.y * msc, 3.3 * msc, 0, Math.PI * 2); g.fillStyle = '#F7F3EA'; g.fill();
+        g.font = '700 9px Pretendard, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+        for (const b of BUILDINGS) {
+          const c = CAMPS.find((x) => x.key === b.key);
+          const bx = b.x * msc, by = Math.min(b.y, NY - 1.2) * msc;
+          g.fillStyle = '#3B2F22'; g.beginPath(); g.roundRect(bx - 7, by - 6, 14, 12, 3); g.fill();
+          g.fillStyle = '#FFFBF2'; g.fillText(c.no, bx, by + 0.5);
+        }
+      }
+      const drawMini = (folkList, agentList, vx, vy, vyaw, az) => {
+        if (!mini || !miniBg) return;
+        const g = mini.getContext('2d');
+        g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, mini.width, mini.height); g.drawImage(miniBg, 0, 0);
+        g.setTransform(dpr, 0, 0, dpr, 0, 0);
+        g.fillStyle = 'rgba(80,80,80,.55)';
+        for (const f of folkList) { g.beginPath(); g.arc(f.x * msc, f.y * msc, 1.5, 0, Math.PI * 2); g.fill(); }
+        for (const a of agentList) { g.beginPath(); g.arc(a.x * msc, a.y * msc, 2.3, 0, Math.PI * 2); g.fillStyle = '#E0995A'; g.fill(); g.lineWidth = 1; g.strokeStyle = '#FFFBF2'; g.stroke(); }
+        // 내가 보는 쪽(옅은 부채꼴)과 내 위치(화살표)
+        const px = vx * msc, py = vy * msc;
+        const look = Math.atan2(-Math.sin(az), -Math.cos(az)); // 화면에서 바라보는 방향(격자 x,y)
+        g.beginPath(); g.moveTo(px, py); g.arc(px, py, 22, look - 0.5, look + 0.5); g.closePath(); g.fillStyle = 'rgba(224,153,90,.22)'; g.fill();
+        g.save(); g.translate(px, py); g.rotate(-vyaw + Math.PI);
+        g.beginPath(); g.moveTo(0, -6); g.lineTo(4.5, 5); g.lineTo(0, 2.5); g.lineTo(-4.5, 5); g.closePath();
+        g.fillStyle = '#C8402E'; g.fill(); g.lineWidth = 1.2; g.strokeStyle = '#FFFBF2'; g.stroke(); g.restore();
+      };
+      // 미니맵을 누르면 그곳으로 걸어감
+      const onMini = (e) => {
+        const r = mini.getBoundingClientRect();
+        const x = (e.clientX - r.left) / msc, y = (e.clientY - r.top) / msc;
+        target.current = findPath(pos.current, { x: THREE.MathUtils.clamp(x, 1, NX - 1), y: THREE.MathUtils.clamp(y, 1, NY + OUT_LEN - 0.5) });
+        setHint(false); view.intro = 1;
+      };
+      mini?.addEventListener('click', onMini);
 
       const resize = () => {
         const w = host.clientWidth, h = host.clientHeight;
@@ -319,8 +373,16 @@ export default function Village3D({ onFail }) {
       const keyMap = { ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', KeyQ: 'rotl', KeyE: 'rotr' };
       const kd = (e) => {
         if (e.key === 'Escape') { setOpen(null); return; }
-        if (!activeRef.current || openRef.current) return;
         const tag = (e.target && e.target.tagName) || '';
+        // 건물 안내 카드가 열려 있으면 Space·Enter 로 그 메뉴로 바로 이동(누르고 있던 키의 반복 입력은 무시)
+        if (openRef.current?.kind === 'place' && (e.code === 'Space' || e.code === 'Enter') && !e.repeat && tag !== 'BUTTON' && tag !== 'A') {
+          e.preventDefault();
+          const camp = CAMPS.find((c) => c.key === openRef.current.id);
+          setOpen(null);
+          if (camp) goHref(camp.link.href);
+          return;
+        }
+        if (!activeRef.current || openRef.current) return;
         if (tag === 'INPUT' || tag === 'TEXTAREA') return;
         if (keyMap[e.code]) { keys.current.add(keyMap[e.code]); setHint(false); view.intro = 1; e.preventDefault(); }
         else if ((e.code === 'Space' || e.code === 'Enter') && nearRef.current && tag !== 'BUTTON' && tag !== 'A') { e.preventDefault(); interact(); }
@@ -332,7 +394,7 @@ export default function Village3D({ onFail }) {
       window.addEventListener('blur', blur);
 
       let last = performance.now(), yaw = Math.PI, visV = 0;
-      const occRay = new THREE.Raycaster(); const occDir = new THREE.Vector3(); let occLift = 0;
+      const occRay = new THREE.Raycaster(); const occDir = new THREE.Vector3(); let occLift = 0, occHold = 0;
       const ease = (t) => 1 - Math.pow(1 - t, 3);
       const easeIO = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
       // 걷는 사람 한 걸음: 출발할 땐 서서히 빨라지고, 도착할 땐 천천히 멈추며, 크게 돌 땐 속도를 줄이고 몸을 먼저 돌림.
@@ -503,15 +565,18 @@ export default function Village3D({ onFail }) {
         if (view.intro >= 1) {
           occRay.set(camTarget, occDir.subVectors(cam.position, camTarget).normalize());
           occRay.far = camTarget.distanceTo(cam.position);
-          const hit = occRay.intersectObjects(world.occluders, true).length > 0;
-          occLift = THREE.MathUtils.clamp(occLift + (hit ? dt * 2.5 : -dt * 0.8), 0, 1);
+          // 가려지면 들어 올리고, 한 번 들면 잠시 그대로 둠(들었다 내렸다 반복하며 화면이 떨리지 않게)
+          if (occRay.intersectObjects(world.occluders, true).length > 0) occHold = 1.6;
+          else occHold -= dt;
+          const want = occHold > 0 ? 1 : 0;
+          occLift += (want - occLift) * Math.min(1, dt * (want ? 1.8 : 0.6));
         }
         // 땅 속으로 카메라가 들어가지 않게
         const camGround = mod.heightAt(cam.position.x, cam.position.z) + 0.6;
         if (cam.position.y < camGround) { cam.position.y = camGround; cam.lookAt(camTarget); }
 
-        world.focus(camTarget.x, camTarget.z);
         world.update(t, dt);
+        if ((miniT -= dt) <= 0) { miniT = 0.08; drawMini(folk, agents, pos.current.x, pos.current.y, yaw, view.az); }
         if (composer) composer.render(); else renderer.render(world.scene, cam);
 
         // 이름표·간판·말풍선
@@ -557,6 +622,7 @@ export default function Village3D({ onFail }) {
 
       cleanup = () => {
         renderer.setAnimationLoop(null);
+        mini?.removeEventListener('click', onMini);
         composer?.dispose?.();
         ro.disconnect(); io.disconnect();
         stage.removeEventListener('pointerdown', onDown);
@@ -573,7 +639,7 @@ export default function Village3D({ onFail }) {
       };
     })();
     return () => { disposed = true; cleanup(); };
-  }, [interact, onFail]);
+  }, [interact, goHref, onFail]);
 
   const nearLabel = near
     ? near.kind === 'agent'
@@ -642,6 +708,8 @@ export default function Village3D({ onFail }) {
         <button type="button" className={`yv3-music ${music ? 'is-on' : ''}`} onClick={toggleMusic} aria-pressed={music} title="배경음악: Apple Cider — Zane Little Music (CC0)">
           {music ? '♪ 음악 켜짐' : '♪ 음악 꺼짐'}
         </button>
+
+        <canvas ref={miniRef} className="yv3-mini" aria-label="캠퍼스 미니맵 — 누르면 그곳으로 걸어갑니다" role="img" />
 
         <nav className="yv-hud" aria-label="마을 빠른 이동">
           {CAMPS.map((c) => {

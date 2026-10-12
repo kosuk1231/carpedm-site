@@ -81,11 +81,12 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
   scene.add(new THREE.HemisphereLight(0xFFF8EC, 0x9A9080, 1.7));
   scene.add(new THREE.AmbientLight(0xFFF4E0, 0.25));
   const sun = new THREE.DirectionalLight(0xFFE6C0, 2.4);
-  sun.position.set(-18, 40, 22);
+  sun.position.set(-27, 60, 35);
   sun.castShadow = true;
   sun.shadow.mapSize.set(low ? 2048 : 4096, low ? 2048 : 4096);
-  Object.assign(sun.shadow.camera, { left: -40, right: 40, top: 46, bottom: -34, near: 1, far: 140 });
-  sun.target.position.set(0, 0, 6);
+  // 그림자는 캠퍼스 전체를 한 번에 덮고 움직이지 않음(해가 따라 움직이면 그림자가 미끄러지며 떨려 보임)
+  Object.assign(sun.shadow.camera, { left: -48, right: 48, top: 62, bottom: -62, near: 1, far: 200 });
+  sun.target.position.set(0, 0, 2);
   scene.add(sun.target);
   sun.shadow.bias = -0.0006;
   sun.shadow.normalBias = 0.04;
@@ -209,7 +210,6 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
     const [X, Z] = toXZ(x, y);
     const g = new THREE.Group();
     g.position.set(X, 0, Z);
-    if (type === 'pine' || type === 'tree') occluders.push(g);
     if (type === 'pine') {
       const trunk = new THREE.Mesh(trunkGeo, pineTrunk);
       trunk.position.y = 0.8; trunk.rotation.z = (rand(i) - 0.5) * 0.25; trunk.castShadow = true;
@@ -259,6 +259,14 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
         }));
       }
       g.scale.setScalar(0.85 + rand(i + 1) * 0.3);
+    } else if (type === 'street') {
+      // 산책로 가로수: 키 큰 줄기 위 작은 둥근 수관. 아래로 시야가 트여 양쪽 건물이 보임
+      g.add(mesh(new THREE.CylinderGeometry(0.07, 0.11, 2.3, 7), pineTrunk, { y: 1.15 }));
+      for (let k = 0; k < 3; k++) {
+        g.add(mesh(new THREE.IcosahedronGeometry(0.42 + rand(i * 5 + k) * 0.16, 1), leafMats[(i + k) % leafMats.length], {
+          x: (rand(i + k * 3) - 0.5) * 0.5, y: 2.55 + rand(i * 2 + k) * 0.35, z: (rand(i + k * 7) - 0.5) * 0.5,
+        }));
+      }
     } else if (type === 'pod') {
       occluders.push(g);
       // 작은 사무 동: 목재 외벽 + 통유리 한 면 + 평지붕 태양광(또는 옥상 텃밭)
@@ -382,12 +390,5 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
     scene.traverse((o) => { o.geometry?.dispose?.(); });
   };
 
-  // 그림자 범위가 걷는 곳을 따라오게(캠퍼스가 길어서 한 번에 다 덮지 않음). 4칸 단위로 옮겨 그림자 떨림을 줄임
-  const focus = (X, Z) => {
-    const fx = Math.round(X / 4) * 4, fz = Math.round(Z / 4) * 4;
-    sun.target.position.set(fx, 0, fz);
-    sun.position.set(fx - 18, 40, fz + 22);
-  };
-
-  return { scene, buildings, people, visitor, folk, pickables, occluders, update, dispose, focus };
+  return { scene, buildings, people, visitor, folk, pickables, occluders, update, dispose };
 }

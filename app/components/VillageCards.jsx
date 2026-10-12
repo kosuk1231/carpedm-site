@@ -21,6 +21,7 @@ export default function VillageCards({ open, setOpen }) {
                 {camp.link.href.startsWith('/')
                   ? <Link className="ym-link" href={camp.link.href}>{camp.link.label} <b aria-hidden="true">→</b></Link>
                   : <a className="ym-link" href={camp.link.href} onClick={() => setOpen(null)}>{camp.link.label} <b aria-hidden="true">→</b></a>}
+                <span className="ym-key-hint"><kbd>Space</kbd> 또는 <kbd>Enter</kbd>로 바로 이동 · <kbd>Esc</kbd> 닫기</span>
               </div>
             </div>
           </div>

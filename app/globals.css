@@ -4098,3 +4098,14 @@ img.yv-portrait { background: radial-gradient(ellipse at 50% 60%, #F4EAD6, #E8DC
 }
 .yv3-music:not(.is-on) { color: #8A7A66; text-decoration: line-through; text-decoration-thickness: 1px; }
 .yv3-music:hover { background: #FFFBF2; }
+
+.ym-key-hint { font-size: 12px; color: #8A7A66; align-self: center; }
+.ym-key-hint kbd { font: inherit; font-weight: 700; padding: 1px 6px; border: 1px solid rgba(59,47,34,.35); border-radius: 5px; background: #FFFBF2; color: #3B2F22; }
+
+/* 캠퍼스 미니맵(오른쪽 아래) */
+.yv3-mini {
+  position: absolute; right: 14px; bottom: 14px; z-index: 6; cursor: pointer;
+  border-radius: 12px; border: 2px solid rgba(255,251,242,.95); background: #E2DCD0;
+  box-shadow: 0 6px 18px rgba(40,25,10,.28);
+}
+@media (max-width: 900px) { .yv3-mini { bottom: auto; top: 54px; transform: scale(.72); transform-origin: top right; } }
