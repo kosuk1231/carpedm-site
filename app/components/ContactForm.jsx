@@ -61,7 +61,7 @@ export default function ContactForm({ programs }) {
       `관심 프로그램: ${programTitle || '미정'}`,
       `기관명: ${form.org}`,
       `담당자: ${form.name}`,
-      `연락처: ${form.phone}`,
+      `연락처: ${form.phone || '미기재(이메일 회신)'}`,
       `이메일: ${form.email}`,
       `희망 일정: ${form.schedule || '미정'}`,
       `예상 인원: ${form.headcount}`,
@@ -178,13 +178,12 @@ export default function ContactForm({ programs }) {
         </label>
 
         <label className="cf-field">
-          <span>연락처 <i>*</i></span>
+          <span>연락처 <small>(선택)</small></span>
           <input
             type="tel"
-            required
             inputMode="tel"
             maxLength={20}
-            placeholder="010-0000-0000"
+            placeholder="전화로 받고 싶으시면 적어 주세요"
             value={form.phone}
             onChange={(e) => set('phone', e.target.value)}
           />
@@ -243,7 +242,7 @@ export default function ContactForm({ programs }) {
             required
             rows={5}
             maxLength={2000}
-            placeholder="교육 대상(직급·직무), 기대하는 변화, 예산 범위나 내부 결재 일정이 있다면 함께 적어 주세요."
+            placeholder="한두 줄이면 충분합니다. 예: 직원들이 AI를 처음 써 보는데 어디서부터 시작하면 좋을지 모르겠어요."
             value={form.message}
             onChange={(e) => set('message', e.target.value)}
           />

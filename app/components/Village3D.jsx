@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AGENTS, CAMPS } from '../data/agents';
 import VillageCards from './VillageCards';
+import CampusIntro from './CampusIntro';
 import {
   NX, NY, OUT_LEN, SPEED, DOOR_R, BUILDINGS, door, PIECES, START, PLAZA, QUAD, PONDS, CAMPUS, PROMENADE, PROM_HALF, BRANCHES, blocked, findPath,
 } from '../data/villageMap';
@@ -32,7 +33,7 @@ const turnToward = (a, b, maxStep) => {
   return a + Math.max(-maxStep, Math.min(maxStep, d * Math.min(1, maxStep * 3)));
 };
 
-export default function Village3D({ onFail }) {
+export default function Village3D({ onFail, autoStart = false }) {
   const stageRef = useRef(null);
   const hostRef = useRef(null);
   const labelRefs = useRef({});
@@ -51,12 +52,20 @@ export default function Village3D({ onFail }) {
   openRef.current = open;
   const nearRef = useRef(null);
   nearRef.current = near;
+  // 둘러보기 시작 전에는 3D가 배경일 뿐: 스크롤·휠·키보드를 가로채지 않음. '3D 캠퍼스 둘러보기'를 눌러야 조작이 켜짐
+  const [engaged, setEngaged] = useState(autoStart);
+  const engagedRef = useRef(autoStart);
+  engagedRef.current = engaged;
+  const narrow = typeof window !== 'undefined' && (window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 900);
+  const [miniOpen, setMiniOpen] = useState(!narrow);
+  // 조작 안내는 둘러보기를 시작하고 잠깐만 보여 줌
+  useEffect(() => { if (!engaged) return undefined; setHint(true); const id = setTimeout(() => setHint(false), 9000); return () => clearTimeout(id); }, [engaged]);
 
   // 배경음악: 'Apple Cider' — Zane Little Music (CC0, opengameart.org/content/apple-cider)
   // 브라우저는 소리 자동 재생을 막으므로, 캠퍼스에서 처음 걷거나 누를 때 작게 시작해 천천히 키웁니다.
   const audioRef = useRef(null);
-  const [music, setMusic] = useState(true);
-  const musicRef = useRef(true);
+  const [music, setMusic] = useState(false); // 기본은 꺼짐(사무실 PC에서 갑자기 소리 나지 않게)
+  const musicRef = useRef(false);
   musicRef.current = music;
   const fadeRef = useRef(0);
   const fadeTo = useCallback((target, ms = 1200) => {
@@ -73,12 +82,12 @@ export default function Village3D({ onFail }) {
   }, []);
   const startMusic = useCallback(() => {
     const a = audioRef.current;
-    if (!a || !musicRef.current || !activeRef.current || !a.paused) return;
+    if (!a || !musicRef.current || !activeRef.current || !engagedRef.current || !a.paused) return;
     a.volume = 0;
     a.play().then(() => fadeTo(0.32, 2500)).catch(() => {});
   }, [fadeTo]);
   useEffect(() => {
-    try { if (localStorage.getItem('carpedm-bgm') === 'off') setMusic(false); } catch {}
+    try { if (localStorage.getItem('carpedm-bgm') === 'on') { setMusic(true); musicRef.current = true; } } catch {}
     const stage = stageRef.current;
     const onGesture = () => startMusic();
     stage?.addEventListener('pointerdown', onGesture);
@@ -118,7 +127,8 @@ export default function Village3D({ onFail }) {
     if (t.kind === 'agent') { goMenu(t.id); return; }
     setOpen(t); keys.current.clear(); target.current = null;
   }, [goMenu]);
-  const walkTo = useCallback((pt) => { target.current = findPath(pos.current, pt); setHint(false); setOpen(null); }, []);
+  // 아래 공간 메뉴: 안내 카드를 바로 열고, 카드를 닫으면 그곳을 향해 걸어가 있음
+  const goPlace = useCallback((b) => { target.current = findPath(pos.current, door(b)); setHint(false); setOpen({ kind: 'place', id: b.key }); }, []);
 
   useEffect(() => {
     let disposed = false;
@@ -268,7 +278,7 @@ export default function Village3D({ onFail }) {
       // 미니맵을 누르면 그곳으로 걸어감
       const onMini = (e) => {
         const r = mini.getBoundingClientRect();
-        const x = (e.clientX - r.left) / msc, y = (e.clientY - r.top) / msc;
+        const x = ((e.clientX - r.left) / r.width) * NX, y = ((e.clientY - r.top) / r.height) * (NY + OUT_LEN); // 화면에서 줄어든 크기 반영
         target.current = findPath(pos.current, { x: THREE.MathUtils.clamp(x, 1, NX - 1), y: THREE.MathUtils.clamp(y, 1, NY + OUT_LEN - 0.5) });
         setHint(false); view.intro = 1;
       };
@@ -318,7 +328,7 @@ export default function Village3D({ onFail }) {
       let drag = null;
       const pointers = new Map();
       const onDown = (e) => {
-        if (e.target.closest('button, a')) return;
+        if (!engagedRef.current || e.target.closest('button, a')) return;
         pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
         drag = { x: e.clientX, y: e.clientY, az: view.az, el: view.el, moved: false };
         lastDrag = performance.now();
@@ -350,7 +360,7 @@ export default function Village3D({ onFail }) {
         pointers.delete(e.pointerId);
         if (pointers.size) return;
         drag = null;
-        if (wasDrag || e.target.closest('button, a')) return;
+        if (wasDrag || !engagedRef.current || e.target.closest('button, a')) return;
         const hit = pickAt(e.clientX, e.clientY);
         if (!hit) return;
         setHint(false);
@@ -359,7 +369,8 @@ export default function Village3D({ onFail }) {
         target.current = findPath(pos.current, { x: THREE.MathUtils.clamp(hit.x, 1, NX - 1), y: THREE.MathUtils.clamp(hit.y, 1, NY + 3) });
       };
       const onWheel = (e) => {
-        if (!activeRef.current) return;
+        // 둘러보는 중이거나 Ctrl/⌘ 를 누를 때만 휠로 거리 조절. 그 밖에는 페이지가 그대로 스크롤됨
+        if (!activeRef.current || !(engagedRef.current || e.ctrlKey || e.metaKey)) return;
         e.preventDefault();
         view.dist = THREE.MathUtils.clamp(view.dist * (1 + Math.sign(e.deltaY) * 0.08), DIST_MIN, DIST_MAX);
         view.intro = 1;
@@ -382,7 +393,7 @@ export default function Village3D({ onFail }) {
           if (camp) goHref(camp.link.href);
           return;
         }
-        if (!activeRef.current || openRef.current) return;
+        if (!activeRef.current || !engagedRef.current || openRef.current) return;
         if (tag === 'INPUT' || tag === 'TEXTAREA') return;
         if (keyMap[e.code]) { keys.current.add(keyMap[e.code]); setHint(false); view.intro = 1; e.preventDefault(); }
         else if ((e.code === 'Space' || e.code === 'Enter') && nearRef.current && tag !== 'BUTTON' && tag !== 'A') { e.preventDefault(); interact(); }
@@ -394,6 +405,7 @@ export default function Village3D({ onFail }) {
       window.addEventListener('blur', blur);
 
       let last = performance.now(), yaw = Math.PI, visV = 0;
+      const perf = { on: true, n: 0, t0: 0 };
       const occRay = new THREE.Raycaster(); const occDir = new THREE.Vector3(); let occLift = 0, occHold = 0;
       const ease = (t) => 1 - Math.pow(1 - t, 3);
       const easeIO = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -577,6 +589,15 @@ export default function Village3D({ onFail }) {
 
         world.update(t, dt);
         if ((miniT -= dt) <= 0) { miniT = 0.08; drawMini(folk, agents, pos.current.x, pos.current.y, yaw, view.az); }
+        // 처음 2초 동안 초당 30장이 안 나오면(내장 그래픽 업무용 PC 등) 후처리를 끄고 해상도를 낮춤
+        if (perf.on) {
+          perf.n++;
+          if (!perf.t0) perf.t0 = now;
+          else if (now - perf.t0 > 2000) {
+            perf.on = false;
+            if (perf.n / ((now - perf.t0) / 1000) < 30) { composer?.dispose?.(); composer = null; renderer.setPixelRatio(1); resize(); }
+          }
+        }
         if (composer) composer.render(); else renderer.render(world.scene, cam);
 
         // 이름표·간판·말풍선
@@ -596,7 +617,11 @@ export default function Village3D({ onFail }) {
         if (cur?.kind === 'agent' && bubbleRef.current) {
           const st = agents.find((a) => a.id === cur.id);
           const [ax, az2] = toXZ(st.x, st.y);
-          placeLabel(bubbleRef.current, project(ax, HEAD_H, az2));
+          // 말풍선이 화면 밖으로 나가지 않게 가로 위치를 안쪽으로 당김
+          const pb = project(ax, HEAD_H, az2);
+          const half = (bubbleRef.current.firstChild?.offsetWidth || 240) / 2;
+          pb.x = Math.max(half + 8, Math.min(host.clientWidth - half - 8, pb.x));
+          placeLabel(bubbleRef.current, pb);
         }
 
         // 가까운 대상
@@ -649,7 +674,7 @@ export default function Village3D({ onFail }) {
 
   return (
     <section className="yv yv3" aria-label="CARPEDM 캠퍼스 — 걸어서 둘러보는 포트폴리오">
-      <div className="yv-stage yv3-stage" ref={stageRef}>
+      <div className={`yv-stage yv3-stage ${engaged ? 'is-engaged' : ''}`} ref={stageRef}>
         <div className="yv3-canvas" ref={hostRef} />
 
         <div className="yv3-labels" aria-hidden="true">
@@ -666,7 +691,7 @@ export default function Village3D({ onFail }) {
               <span className="yv3-name">{AGENTS[p.id].emoji} {AGENTS[p.id].name}</span>
             </div>
           ))}
-          {near?.kind === 'agent' && (
+          {engaged && near?.kind === 'agent' && (
             <div className="yv3-pin" ref={bubbleRef}>
               <div className="yv3-bubble yv3-bubble-menu">
                 <b>{AGENTS[near.id].name}</b>
@@ -677,51 +702,68 @@ export default function Village3D({ onFail }) {
           )}
         </div>
 
-        {!ready && (
+        {!ready && engaged && (
           <div className="yv3-loading">
-            <b>CARPEDM 캠퍼스로 가는 길…</b>
-            <span>캠퍼스를 짓고 있습니다</span>
+            <b>사회복지 현장 AI·스마트워크 강의·컨설팅</b>
+            <span>CARPEDM 캠퍼스를 불러오는 중입니다</span>
           </div>
         )}
 
         {title && (
           <div className={`yv3-title ${title === 'in' ? 'is-in' : ''}`} key={title}>
-            {title === 'in' ? (<><b>CARPEDM</b><span>오늘을 붙잡는 팀, 캠퍼스에 오신 것을 환영합니다</span></>) : (<><b>CITY</b><span>도심 셔틀 정류장</span></>)}
+            {title === 'in' ? (<><b>CARPEDM</b><span>사회복지 현장 AI·스마트워크 강의·컨설팅</span></>) : (<><b>CITY</b><span>도심 셔틀 정류장</span></>)}
           </div>
         )}
 
-        {ready && hint && (
+        <a className="yv-skipbar" href="#overview">3D 건너뛰고 내용 보기 ↓</a>
+
+        {!engaged && <CampusIntro onStart={() => { setEngaged(true); engagedRef.current = true; setTimeout(startMusic, 0); }} loading={!ready} />}
+
+        {engaged && ready && hint && !nearLabel && (
           <div className="yv-hint">
-            <b>큰길에서 바로 CARPEDM 캠퍼스로 걸어 들어가 보세요</b>
-            <span className="yv-hint-desk">W·방향키로 걷고, 끌어서 둘러보고, 휠로 거리 조절. 사람이나 건물 앞에서 Space</span>
-            <span className="yv-hint-touch">가고 싶은 곳을 누르면 걸어가고, 끌면 둘러봅니다</span>
+            <span className="yv-hint-desk">방향키로 걷고, 끌어서 둘러보고, 휠로 거리 조절 · 사람이나 건물 앞에서 Space</span>
+            <span className="yv-hint-touch">가고 싶은 곳을 누르면 걸어가고, 옆으로 끌면 둘러봅니다</span>
           </div>
         )}
 
-        {nearLabel && !open && (
+        {engaged && (
+          <button type="button" className="yv3-exit" onClick={() => { setEngaged(false); keys.current.clear(); target.current = null; if (audioRef.current && !audioRef.current.paused) fadeTo(0, 400); }}>
+            ✕ 둘러보기 끝내기
+          </button>
+        )}
+
+        {engaged && nearLabel && near?.kind !== 'agent' && !open && (
           <button type="button" className="yv-act" onClick={() => interact()}>
             {nearLabel} <kbd>Space</kbd>
           </button>
         )}
 
         <audio ref={audioRef} src="/audio/campus-bgm.mp3" loop preload="none" />
-        <button type="button" className={`yv3-music ${music ? 'is-on' : ''}`} onClick={toggleMusic} aria-pressed={music} title="배경음악: Apple Cider — Zane Little Music (CC0)">
-          {music ? '♪ 음악 켜짐' : '♪ 음악 꺼짐'}
-        </button>
+        {engaged && (
+          <button type="button" className={`yv3-music ${music ? 'is-on' : ''}`} onClick={toggleMusic} aria-pressed={music} title="배경음악: Apple Cider — Zane Little Music (CC0)">
+            {music ? '♪ 음악 켜짐' : '♪ 음악 꺼짐'}
+          </button>
+        )}
 
-        <canvas ref={miniRef} className="yv3-mini" aria-label="캠퍼스 미니맵 — 누르면 그곳으로 걸어갑니다" role="img" />
+        <canvas ref={miniRef} className={`yv3-mini ${engaged && miniOpen ? '' : 'is-hidden'}`} aria-label="캠퍼스 미니맵 — 누르면 그곳으로 걸어갑니다" role="img" />
+        {engaged && narrow && (
+          <button type="button" className="yv3-mini-toggle" onClick={() => setMiniOpen((v) => !v)} aria-pressed={miniOpen}>
+            {miniOpen ? '지도 접기' : '🗺 지도'}
+          </button>
+        )}
 
-        <nav className="yv-hud" aria-label="마을 빠른 이동">
-          {CAMPS.map((c) => {
-            const b = BUILDINGS.find((x) => x.key === c.key);
-            return (
-              <button type="button" key={c.key} onClick={() => walkTo(door(b))} title={`${c.place}(으)로 걸어가기`}>
-                <b>{c.no}</b>{c.place}
-              </button>
-            );
-          })}
-          <a className="yv-skip" href="#overview">목록으로 보기 ↓</a>
-        </nav>
+        {engaged && (
+          <nav className="yv-hud" aria-label="캠퍼스 공간 바로 보기">
+            {CAMPS.map((c) => {
+              const b = BUILDINGS.find((x) => x.key === c.key);
+              return (
+                <button type="button" key={c.key} onClick={() => goPlace(b)} title={`${c.place} 안내 바로 보기`}>
+                  <b>{c.no}</b>{c.what}<small> · {c.place}</small>
+                </button>
+              );
+            })}
+          </nav>
+        )}
       </div>
 
       <VillageCards open={open} setOpen={setOpen} />

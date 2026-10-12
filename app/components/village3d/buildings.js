@@ -89,7 +89,7 @@ export function buildBuilding(THREE, kit, key) {
     // 낮은 사인 벽(길 서쪽): CARPEDM 간판이 큰길 쪽(+Z)을 봄
     add(box(3.6, 1.5, 0.5, concrete, { x: -3.8, y: 0.75 }));
     add(box(3.7, 0.08, 0.6, darkFrame, { x: -3.8, y: 1.54 }));
-    add(mesh(new THREE.PlaneGeometry(3.2, 0.8), toon('#ffffff', { map: canvasTex(signCanvas('CARPEDM', 'SEIZE THE DAY · 오늘을 붙잡는 팀')) }), { x: -3.8, y: 0.85, z: 0.26, cast: false }));
+    add(mesh(new THREE.PlaneGeometry(3.2, 0.8), toon('#ffffff', { map: canvasTex(signCanvas('CARPEDM', '사회복지 현장 AI·스마트워크 강의·컨설팅')) }), { x: -3.8, y: 0.85, z: 0.26, cast: false }));
     add(box(3.6, 0.05, 0.08, warm, { x: -3.8, y: 0.06, z: 0.3, cast: false }));
     // 방문증 키오스크(길 동쪽)
     add(box(0.5, 1.3, 0.35, toon('#F2EEE6'), { x: 3.4, y: 0.65 }));

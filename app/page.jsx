@@ -2,17 +2,18 @@ import Link from 'next/link';
 import { PROGRAMS } from './data/programs';
 import SpeakerKit from './components/SpeakerKit';
 import YungjungVillage from './components/YungjungVillage';
+import NavMore from './components/NavMore';
 import { NOTES } from './data/notes';
 
 
 // 스펙트럼 매트릭스: 4영역 × 3단계. 빈 칸 없이 실제 사례로만 채웁니다.
-const SPECTRUM_LEVELS = ['입문', '실무 심화', '구축·운영'];
+const SPECTRUM_LEVELS = ['입문 · 기반형', '실무 심화 · 운영형', '구축·운영 · 확장형'];
 const SPECTRUM = [
   {
     domain: '홍보 · 영상',
     en: 'MEDIA',
     cells: [
-      { title: '숏폼·카드뉴스 첫 제작', detail: '스마트폰 촬영 + Canva·Vrew·CapCut. 장비 없이 30초 영상 1개 완성' },
+      { title: '숏폼·카드뉴스 첫 제작', detail: '스마트폰 촬영 + Canva·Vrew·CapCut. 별도 촬영 장비 없이, 스마트폰으로 30초 영상 1개 완성' },
       { title: '기관 홍보 콘텐츠 워크플로', detail: '사업 소개 영상, 행사 스케치, AI 음악·나레이션. 담당자 혼자 이어가는 월간 제작 루틴' },
       { title: '캠페인·참여 플랫폼 구축', detail: 'QR 사진 제출·개인정보 동의·서명 수집을 한 페이지로. 결과는 시트·드라이브에 자동 정리' },
     ],
@@ -114,7 +115,7 @@ const CATEGORIES = [
     title: 'OpenClaw AI 시스템',
     image: '/illust/kraft-12.webp',
     imageAlt: '약속을 정한다 — 디지털 매너와 사용 규칙',
-    line: 'Mac mini를 상시 AI 허브로 만들고, 역할이 다른 AI 에이전트와 Obsidian 지식베이스를 하나의 업무 시스템으로 연결했습니다.',
+    line: '기관에서 AI를 안전하게 쓰는 구조를 직접 운영해 본 사례입니다. 자료가 밖으로 새지 않게 권한을 나누고, 역할이 다른 AI들이 하나의 업무 흐름으로 일하게 만들었습니다.',
     meta: ['4-Agent AI 운영체계', '평일 08:30 자동 브리핑', '로컬 AI · 멀티에이전트'],
     problem: 'ChatGPT·Claude·로컬 AI를 각각 사용하면 같은 맥락을 반복해서 설명해야 하고, 결과도 여러 서비스와 파일에 흩어집니다. 매일 쌓이는 회의·프로젝트·메모를 AI가 활용하려면 개인정보와 원본 파일을 무분별하게 수정하지 않으면서 지속적으로 읽을 수 있는 구조도 필요했습니다.',
     solve: 'Mac mini M4를 상시 AI 허브로 두고 OpenClaw가 역할별 에이전트를 연결하도록 구성했습니다. main이 작업을 조율하고 developer는 GPT-5.6 Sol, critic은 Claude Opus 5, local은 Ollama의 gemma4-agent를 사용합니다. Obsidian Vault를 공통 지식베이스로 연결하고 Docker 읽기 전용 샌드박스로 원본 보호 원칙을 유지합니다.',
@@ -178,7 +179,7 @@ const LIVE_TOOLS = [
 
 const FIELD_LOG = [
   { type: 'PROJECT', year: '2026.09', scale: '1,500명', place: '2026 서울사회복지사 등반대회', title: '1,500명 행사 운영 시스템', detail: '사전접수 1,470명 · 현장 접수 · 인증 · 스태프 운영' },
-  { type: 'LECTURE', year: '2026.07 · 11', scale: '온라인 2회', place: '휴먼임팩트 협동조합', title: 'AI 숨은 고수를 만나다 : 한계를 넘은 사람들', detail: '실시간 온라인(Zoom) AI 강의 시리즈' },
+  { type: 'LECTURE', year: '2026.07 · 11', scale: '온라인 · 7월 진행, 11월 예정', place: '휴먼임팩트 협동조합', title: 'AI 숨은 고수를 만나다 : 한계를 넘은 사람들', detail: '실시간 온라인(Zoom) AI 강의 시리즈' },
   { type: 'LECTURE', year: '2026', scale: '보수교육', place: '강원도사회복지사협회 보수교육', title: 'AI 도구 활용을 넘어 도구 생성', detail: 'Google Apps Script 업무 자동화' },
   { type: 'LECTURE', year: '2026', scale: '실습', place: '고양시덕양행신 대학생 봉사단', title: 'AI로 만드는 기관 홍보 영상·숏폼', detail: '실습형 콘텐츠 제작 교육' },
   { type: 'LECTURE', year: '2026', scale: '현장 교육', place: '4·16재단', title: '스마트워크 · 생성형 AI 활용', detail: '현장 실무 중심 교육' },
@@ -224,7 +225,7 @@ const BIZ = [
 ];
 
 const LECTURES = [
-  { year: '2026', host: '휴먼임팩트 협동조합', topic: 'AI 숨은 고수를 만나다 : 한계를 넘은 사람들 — 실시간 온라인(Zoom)', count: '2회 (7월·11월)' },
+  { year: '2026', host: '휴먼임팩트 협동조합', topic: 'AI 숨은 고수를 만나다 : 한계를 넘은 사람들 — 실시간 온라인(Zoom)', count: '7월 진행 · 11월 예정' },
   { year: '2026', host: '강원도사회복지사협회 보수교육', topic: 'AI 도구 활용을 넘어 도구 생성 — 구글 앱스 스크립트 자동화', count: '1회' },
   { year: '2026', host: '고양시덕양행신 대학생 봉사단', topic: 'AI로 만드는 기관 홍보 영상·숏폼 (실습)', count: '1회' },
   { year: '2026', host: '4·16재단', topic: '스마트워크 · 생성형 AI 활용', count: '1회' },
@@ -679,6 +680,7 @@ export default function Home() {
           <a href="#notes">실무 노트</a>
           <a href="#speaker">강사 소개</a>
         </div>
+        <NavMore items={[['#programs', '의뢰 가능한 프로그램'], ['#portfolio', '만든 것'], ['#tools', '바로 써보기'], ['#fieldlog', '현장 기록'], ['#notes', '실무 노트'], ['#speaker', '강사 소개'], ['#faq', '자주 묻는 것']]} />
         <Link className="navlink" href="/contact">
           <span>문의하기</span><b aria-hidden="true">↗</b>
         </Link>
@@ -770,7 +772,7 @@ export default function Home() {
             <h2 className="h2">어느 단계에서 시작해도<br />다음 단계로 이어집니다.</h2>
           </div>
           <div className="spectrum-intro">
-            <p>신입 직원 입문 교육과 관리자 컨설팅, 시스템 구축을 같은 사람이 맡습니다. 15칸 모두 현장에서 실제로 해 본 것들입니다 — 우리 기관이 지금 어느 칸에 있는지 찍어 보세요.</p>
+            <p>신입 직원 입문 교육과 관리자 컨설팅, 시스템 구축을 같은 사람이 맡습니다. 모두 현장에서 실제로 해 본 것들입니다 — 5개 분야와 3개 수준에서 우리 기관에 맞는 과정을 살펴보세요.</p>
             <figure className="kraft-visual">
               <img src="/illust/kraft-03.webp" alt="디지털 3단계 — 기반형, 운영형, 확장형" loading="lazy" />
             </figure>
@@ -1143,7 +1145,7 @@ export default function Home() {
       <section className="cta cta-link" id="contact">
         <div>
           <span className="cta-kicker">CONTACT</span>
-          <h2>강의·컨설팅·구축,<br />일정과 인원만 알려 주세요.</h2>
+          <h2>강의·컨설팅·구축,<br />주제가 정해지지 않아도 괜찮습니다.</h2>
           <p>문의폼에 남기시면 접수 확인 메일이 바로 가고, 영업일 기준 2일 안에 맞는 구성으로 회신드립니다. 결재용 강사 프로필 PDF는 <a href="#speaker-kit">강사 소개</a>에서 바로 받을 수 있습니다.</p>
         </div>
         <Link href="/contact">

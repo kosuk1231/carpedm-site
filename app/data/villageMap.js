@@ -110,7 +110,7 @@ export const BRANCHES = BUILDINGS.filter((b) => !b.open).map((b) => {
 
 // 팀원 위치. 맡은 일과 맞는 건물 곁에 세웁니다.
 export const PIECES = [
-  { id: 'local', x: GATE_X + 3.2, y: NY - 0.5, patrol: [GATE_X + 3.2, NY - 4] },   // 환영 로봇: 입구에서 손님을 맞습니다
+  { id: 'local', x: GATE_X + 2.2, y: NY + 1.2, patrol: [GATE_X + 3.2, NY - 4] },   // 환영 로봇: 출발점 바로 옆 보도에서 손님을 맞습니다
   { id: 'brief', x: GATE_X - 2.6, y: NY - 4, patrol: [PLAZA.x - 2.5, PLAZA.y + 3] }, // 입구와 쉼터 광장 사이 산책로를 오갑니다
   { id: 'trainer', x: 18.5, y: 76.5 },
   { id: 'researcher', x: 11, y: 78.5 },

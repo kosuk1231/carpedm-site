@@ -6,11 +6,11 @@ import { PROFILE_PDF } from '../data/speaker-kit';
 
 export const metadata = {
   title: '강의·컨설팅 문의',
-  description: '사회복지 현장의 스마트워크 · 생성형 AI · 업무 자동화 · 행사 디지털 운영 강의와 컨설팅 문의. 일정과 인원만 알려 주시면 맞는 구성으로 회신드립니다.',
+  description: '사회복지 현장의 스마트워크 · 생성형 AI · 업무 자동화 · 행사 디지털 운영 강의와 컨설팅 문의. 교육 주제가 정해지지 않아도 기관의 상황을 한두 줄 남겨 주시면 맞는 구성을 제안드립니다.',
   alternates: { canonical: 'https://www.carpedm.kr/contact' },
   openGraph: {
     title: '강의·컨설팅 문의 — CARPEDM',
-    description: '일정과 인원만 알려 주시면 맞는 구성으로 제안드립니다.',
+    description: '교육 주제가 정해지지 않아도 괜찮습니다. 기관의 상황을 한두 줄 남겨 주세요.',
     url: 'https://www.carpedm.kr/contact',
   },
 };
@@ -52,8 +52,8 @@ export default function ContactPage() {
       <header className="contact-hero">
         <Link href="/" className="pd-back">← 홈으로</Link>
         <p className="pd-kicker"><span>CONTACT</span>강의 · 컨설팅 · 시스템 구축</p>
-        <h1>일정과 인원만 알려 주시면<br />맞는 구성으로 제안드립니다.</h1>
-        <p className="pd-lede">기대하는 변화를 한두 줄만 적어 주셔도 됩니다. 접수되면 확인 메일이 바로 가고, 내용을 보고 영업일 기준 2일 안에 회신드립니다.</p>
+        <h1>교육 주제가 정해지지 않아도<br />괜찮습니다.</h1>
+        <p className="pd-lede">기관의 상황과 고민을 한두 줄 남겨 주세요. 기관명·성함·이메일만 있으면 됩니다. 접수되면 확인 메일이 바로 가고, 영업일 기준 2일 안에 맞는 구성을 제안드립니다.</p>
       </header>
 
       <section className="contact-grid contact-grid-page">

@@ -3990,9 +3990,9 @@ a.program-card:hover .program-card-visual img { transform: scale(1.03); }
 /* 마을 무대 */
 .yv { position: relative; width: 100vw; margin-left: calc(50% - 50vw); }
 .yv-stage {
-  position: relative; height: calc(100svh - 76px); min-height: 520px; overflow: hidden; cursor: pointer;
+  position: relative; height: min(72svh, 780px); min-height: 460px; overflow: hidden; cursor: default;
   background: radial-gradient(ellipse at 50% 40%, #E9DCC3, #CDB68E 75%);
-  touch-action: none; user-select: none; -webkit-user-select: none;
+  touch-action: pan-y; user-select: none; -webkit-user-select: none; /* 둘러보기 전에는 세로 스크롤을 막지 않음 */
 }
 
 
@@ -4000,7 +4000,7 @@ a.program-card:hover .program-card-visual img { transform: scale(1.03); }
 
 
 .yv-hint {
-  position: absolute; left: 50%; top: 20px; transform: translateX(-50%); z-index: 5; pointer-events: none;
+  position: absolute; left: 50%; top: auto; bottom: 76px; transform: translateX(-50%); z-index: 5; pointer-events: none;
   display: grid; gap: 2px; text-align: center; padding: 12px 22px; border-radius: 10px; background: rgba(59,47,34,.9); color: #F4E9D4; font-size: 13.5px;
 }
 .yv-hint b { font-family: var(--serif); font-size: 16px; }
@@ -4039,8 +4039,9 @@ a.program-card:hover .program-card-visual img { transform: scale(1.03); }
 }
 
 /* ---------- 융중 마을 3D ---------- */
-.yv3-stage { cursor: grab; background: #EEE5CF; }
-.yv3-stage:active { cursor: grabbing; }
+.yv3-stage { background: #EEE5CF url(/campus/poster.webp) center / cover no-repeat; }
+.yv3-stage.is-engaged { cursor: grab; touch-action: none; }
+.yv3-stage.is-engaged:active { cursor: grabbing; }
 .yv3-canvas { position: absolute; inset: 0; }
 .yv3-canvas canvas { display: block; width: 100% !important; height: 100% !important; }
 .yv3-labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 3; }
@@ -4109,3 +4110,74 @@ img.yv-portrait { background: radial-gradient(ellipse at 50% 60%, #F4EAD6, #E8DC
   box-shadow: 0 6px 18px rgba(40,25,10,.28);
 }
 @media (max-width: 900px) { .yv3-mini { bottom: auto; top: 54px; transform: scale(.72); transform-origin: top right; } }
+
+/* ---------- 캠퍼스 첫 화면 안내(무엇을 하는 곳인지 먼저) ---------- */
+.yv-poster { background: #EEE5CF url(/campus/poster.webp) center / cover no-repeat; }
+.yv-intro {
+  position: absolute; inset: 0; z-index: 8; display: flex; align-items: center; padding: 72px 5vw 24px; pointer-events: none;
+  background: linear-gradient(90deg, rgba(247,240,224,.94) 0%, rgba(247,240,224,.78) 34%, rgba(247,240,224,0) 62%);
+}
+.yv-intro-card { pointer-events: auto; max-width: 560px; display: grid; gap: 12px; color: #2E2418; }
+.yv-intro-kicker { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: .18em; color: #8A6440; }
+.yv-intro-card h2 { margin: 0; font-family: var(--serif); font-size: clamp(26px, 3vw, 40px); word-break: keep-all; line-height: 1.22; letter-spacing: -.01em; }
+.yv-intro-card p { margin: 0; font-size: 16px; line-height: 1.6; color: #4A3C2C; word-break: keep-all; }
+.yv-intro-card small { font-size: 13.5px; font-weight: 700; color: #5E4A34; }
+.yv-intro-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.yv-intro-primary, .yv-intro-secondary {
+  display: inline-flex; align-items: center; padding: 12px 18px; border-radius: 999px; font-size: 15px; font-weight: 800; text-decoration: none;
+}
+.yv-intro-primary { background: #2F4A3A; color: #FFF8EA; }
+.yv-intro-primary:hover { background: #24392C; }
+.yv-intro-secondary { background: #FFFBF2; color: #2E2418; border: 1.5px solid rgba(46,36,24,.35); }
+.yv-intro-secondary:hover { background: #fff; }
+.yv-intro-3d {
+  justify-self: start; display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; border: 1.5px dashed rgba(46,36,24,.45);
+  background: rgba(255,251,242,.7); color: #2E2418; font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer;
+}
+.yv-intro-3d b { color: #A23B26; }
+.yv-intro-3d:hover { background: #FFFBF2; }
+.yv-intro-note { font-size: 12.5px; color: #6B5A46; line-height: 1.5; }
+.yv-skipbar {
+  position: absolute; left: 14px; top: 14px; z-index: 9; padding: 8px 14px; border-radius: 999px; background: rgba(46,36,24,.88); color: #FFF6E6;
+  font-size: 13px; font-weight: 700; text-decoration: none; box-shadow: 0 4px 12px rgba(40,25,10,.25);
+}
+.yv-skipbar:hover { background: #2E2418; }
+.yv3-exit {
+  position: absolute; top: 14px; right: 14px; z-index: 7; padding: 7px 13px; border-radius: 999px; border: 0;
+  background: rgba(46,36,24,.88); color: #FFF6E6; font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer;
+}
+.yv3-music { top: 54px !important; }
+.yv3-mini.is-hidden { display: none; }
+.yv3-mini-toggle {
+  position: absolute; right: 12px; bottom: 74px; z-index: 7; padding: 7px 12px; border-radius: 999px; border: 1.5px solid rgba(59,47,34,.4);
+  background: rgba(255,251,242,.92); color: #3B2F22; font: inherit; font-size: 12.5px; font-weight: 700;
+}
+.yv-hud small { font-size: 11.5px; opacity: .6; }
+@media (min-width: 901px) { .yv3 .yv-hud { max-width: calc(100vw - 330px); } }
+@media (max-width: 1400px) and (min-width: 901px) { .yv3 .yv-hud small { display: none; } }
+@media (max-width: 900px) {
+  .yv-stage { height: 62svh; min-height: 440px; }
+  .yv-intro { align-items: flex-end; padding: 60px 14px 16px; background: linear-gradient(0deg, rgba(247,240,224,.96) 0%, rgba(247,240,224,.9) 55%, rgba(247,240,224,.2) 85%, rgba(247,240,224,0) 100%); }
+  .yv-intro-card { max-width: none; gap: 9px; }
+  .yv-intro-card p { font-size: 14.5px; }
+  .yv-intro-primary, .yv-intro-secondary { padding: 11px 15px; font-size: 14px; }
+  .yv-intro-note { display: none; }
+  .yv-hint { display: none; }          /* 휴대폰은 누르면 걷는 게 직관적이라 조작 안내를 띄우지 않음 */
+  .yv3-music { display: none; }        /* 휴대폰은 음악 버튼을 숨김(기본 꺼짐) */
+  .yv3-bubble-menu { max-width: 220px; font-size: 12.5px; }
+  .yv-hud small { display: none; }
+  .yv3-mini { bottom: 112px !important; top: auto !important; right: 12px !important; transform: scale(.72) !important; transform-origin: bottom right !important; }
+}
+/* 상단 고정 메뉴에 섹션 제목이 가리지 않게 */
+section[id], header[id] { scroll-margin-top: 88px; }
+
+/* 좁은 화면 메뉴 */
+.navmore { display: none; position: relative; margin-left: auto; margin-right: 8px; }
+.navmore-btn { padding: 8px 14px; border-radius: 999px; border: 1.5px solid rgba(46,36,24,.3); background: #FFFBF2; color: #2E2418; font: inherit; font-size: 14px; font-weight: 700; }
+.navmore-list {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 50; display: grid; min-width: 210px; padding: 8px; border-radius: 12px;
+  background: #FFFBF2; box-shadow: 0 12px 30px rgba(40,25,10,.22); border: 1px solid rgba(46,36,24,.12);
+}
+.navmore-list a { padding: 11px 12px; border-radius: 8px; color: #2E2418; font-size: 15px; font-weight: 600; text-decoration: none; }
+.navmore-list a:hover { background: rgba(67,112,106,.1); }
+@media (max-width: 900px) { .navmore { display: block; } }

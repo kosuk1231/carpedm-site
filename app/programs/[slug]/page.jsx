@@ -267,7 +267,7 @@ export default async function ProgramPage({ params }) {
       <section className="pd-cta">
         <div>
           <span className="cta-kicker">INQUIRY</span>
-          <h2>일정과 인원만 알려 주시면<br />맞는 구성으로 제안드립니다.</h2>
+          <h2>교육 주제가 정해지지 않아도<br />맞는 구성을 제안드립니다.</h2>
           <p>문의폼에서 이 프로그램이 미리 선택됩니다. 내부 결재용으로 강사 프로필 PDF와 공문용 소개문도 바로 받으실 수 있습니다.</p>
         </div>
         <div className="pd-cta-actions">

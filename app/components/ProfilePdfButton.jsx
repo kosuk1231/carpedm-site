@@ -226,7 +226,7 @@ async function generateProfilePdf(filename) {
   ctx.font = '500 19px system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif';
   ctx.fillStyle = ink;
   drawBulletList(ctx, [
-    '2014.03~현재  서울특별시사회복지사협회 과장',
+    '2014.03~현재  서울특별시사회복지사협회 근무(현 과장)',
     '열매똑똑 스마트워크 사업 총괄 실무 - 3년 63개소 지원',
     '우모가·모담·pdf.carpedm.kr 등 현장형 실무 도구 개발·운영',
     'Google Workspace·Microsoft 365·AI 라이선스 도입 지원',
@@ -235,7 +235,7 @@ async function generateProfilePdf(filename) {
   ], 96, 854, 470, 27, ink, olive, 8);
 
   drawBulletList(ctx, [
-    '휴먼임팩트 협동조합 - 실시간 온라인 AI 강의 (7월·11월, 2회)',
+    '휴먼임팩트 협동조합 - 실시간 온라인 AI 강의 (7월 진행 · 11월 예정)',
     '강원도사회복지사협회 보수교육 - Apps Script 자동화',
     '4·16재단 - 스마트워크·생성형 AI 활용',
     '한국타이어나눔재단 후원 지역아동센터 - 스마트워크·생성형 AI 활용 (3회)',

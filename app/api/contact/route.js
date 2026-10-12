@@ -88,8 +88,8 @@ export async function POST(req) {
     page: clean(body.page, 300),
   };
 
-  if (!data.org || !data.name || !data.phone || !data.email || !data.message) {
-    return NextResponse.json({ ok: false, error: '필수 항목(기관명·담당자·연락처·이메일·문의 내용)을 모두 입력해 주세요.' }, { status: 400 });
+  if (!data.org || !data.name || !data.email || !data.message) {
+    return NextResponse.json({ ok: false, error: '필수 항목(기관명·담당자·이메일·문의 내용)을 모두 입력해 주세요.' }, { status: 400 });
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
     return NextResponse.json({ ok: false, error: '이메일 형식을 확인해 주세요.' }, { status: 400 });
