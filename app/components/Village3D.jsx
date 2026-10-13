@@ -146,10 +146,11 @@ export default function Village3D({ onFail, autoStart = false }) {
     let disposed = false;
     let cleanup = () => {};
     (async () => {
-      let THREE, mod, post;
+      let THREE, mod, post, merge;
       try {
         THREE = await import('three');
         mod = await import('./village3d/world');
+        merge = await Promise.all([import('./village3d/merge'), import('three/addons/utils/BufferGeometryUtils.js')]).catch(() => null);
       } catch { onFail?.(); return; }
       // 성능이 낮을 법한 기기(터치·좁은 화면)는 후처리와 그림자 품질을 낮춥니다.
       const low = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 800;
@@ -182,6 +183,8 @@ export default function Village3D({ onFail, autoStart = false }) {
       host.appendChild(renderer.domElement);
 
       const world = buildWorld(THREE, renderer, { low });
+      // 가만히 있는 물체를 재질별로 묶어 그리기 명령을 줄임(윈도우 크롬에서 끊김의 주원인)
+      if (merge) { try { merge[0].mergeStatic(THREE, merge[1].mergeGeometries, world); } catch {} }
       const cam = new THREE.PerspectiveCamera(42, 1, 0.3, 600);
       // 카메라 방위 az: 바라보는 곳에서 카메라가 있는 쪽. 처음엔 남쪽(큰길)에서 캠퍼스를 바라봅니다.
       const view = { az: Math.PI / 2, el: EL_DEFAULT, dist: DIST_DEFAULT, intro: 0 };
