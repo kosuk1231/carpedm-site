@@ -29,6 +29,11 @@ export function mergeStatic(THREE, mergeGeometries, world, { cell = 24 } = {}) {
 
   // 묶음 기준(앵커): 스스로 움직이는 부모, 사람 몸 전체(코드가 옮김), 건물(누르기·가림 판정 단위). 없으면 장면을 칸으로 나눔.
   const anchors = new Set([...animated, ...persons.map((p) => p.group), ...world.buildings.map((b) => b.group)]);
+  // 그림 없이 색만 다른 일반 재질은 색을 꼭짓점에 구워 하나의 재질로 합침(색이 달라도 한 번에 그림)
+  const plain = (mat) => mat.type === 'MeshStandardMaterial' && !mat.map && !mat.vertexColors && !mat.alphaMap && !mat.normalMap && !mat.emissiveMap;
+  const matKey = (mat) => (plain(mat)
+    ? `vc|${mat.roughness}|${mat.metalness}|${mat.emissive.getHexString()}|${mat.emissiveIntensity}|${mat.side}|${mat.flatShading}`
+    : mat.uuid);
   const buckets = new Map();
   const tmp = new THREE.Vector3();
   for (const m of objs) {
@@ -45,11 +50,21 @@ export function mergeStatic(THREE, mergeGeometries, world, { cell = 24 } = {}) {
     if (owner) area = owner.uuid;
     else { m.getWorldPosition(tmp); area = `${Math.floor(tmp.x / cell)},${Math.floor(tmp.z / cell)}`; }
     const attrs = Object.keys(m.geometry.attributes).sort().join('|');
-    const key = `${area}|${m.material.uuid}|${m.castShadow}|${m.receiveShadow}|${m.renderOrder}|${attrs}`;
-    if (!buckets.has(key)) buckets.set(key, { owner, mat: m.material, cast: m.castShadow, receive: m.receiveShadow, order: m.renderOrder, items: [] });
+    const key = `${area}|${matKey(m.material)}|${m.castShadow}|${m.receiveShadow}|${m.renderOrder}|${attrs}`;
+    if (!buckets.has(key)) buckets.set(key, { owner, mat: m.material, vc: plain(m.material), cast: m.castShadow, receive: m.receiveShadow, order: m.renderOrder, items: [] });
     buckets.get(key).items.push(m);
   }
 
+  const vcMats = new Map(), made = [];
+  const vcMaterial = (mat) => {
+    const k = matKey(mat);
+    if (!vcMats.has(k)) {
+      const v = mat.clone();
+      v.color.set(0xffffff); v.vertexColors = true;
+      vcMats.set(k, v); made.push(v);
+    }
+    return vcMats.get(k);
+  };
   let removed = 0, added = 0;
   const inv = new THREE.Matrix4(), rel = new THREE.Matrix4();
   for (const bk of buckets.values()) {
@@ -62,12 +77,17 @@ export function mergeStatic(THREE, mergeGeometries, world, { cell = 24 } = {}) {
       g.morphAttributes = {};
       g.clearGroups();
       g.applyMatrix4(rel.multiplyMatrices(inv, m.matrixWorld));
+      if (bk.vc) {
+        const n = g.attributes.position.count, c = new Float32Array(n * 3), col = m.material.color;
+        for (let i = 0; i < n; i++) { c[i * 3] = col.r; c[i * 3 + 1] = col.g; c[i * 3 + 2] = col.b; }
+        g.setAttribute('color', new THREE.BufferAttribute(c, 3));
+      }
       return g;
     });
     const merged = mergeGeometries(geos, false);
     geos.forEach((g) => g.dispose());
     if (!merged) continue;
-    const mm = new THREE.Mesh(merged, bk.mat);
+    const mm = new THREE.Mesh(merged, bk.vc ? vcMaterial(bk.mat) : bk.mat);
     mm.castShadow = bk.cast; mm.receiveShadow = bk.receive; mm.renderOrder = bk.order;
     const pick = bk.items[0].userData.pick;
     if (pick) mm.userData.pick = pick;
@@ -75,5 +95,5 @@ export function mergeStatic(THREE, mergeGeometries, world, { cell = 24 } = {}) {
     for (const m of bk.items) m.parent.remove(m);
     removed += bk.items.length; added++;
   }
-  return { removed, added, animated: animated.size };
+  return { removed, added, animated: animated.size, dispose: () => made.forEach((m) => m.dispose()) };
 }

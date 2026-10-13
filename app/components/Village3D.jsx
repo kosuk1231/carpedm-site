@@ -184,7 +184,8 @@ export default function Village3D({ onFail, autoStart = false }) {
 
       const world = buildWorld(THREE, renderer, { low });
       // 가만히 있는 물체를 재질별로 묶어 그리기 명령을 줄임(윈도우 크롬에서 끊김의 주원인)
-      if (merge) { try { merge[0].mergeStatic(THREE, merge[1].mergeGeometries, world); } catch {} }
+      let merged = null;
+      if (merge) { try { merged = merge[0].mergeStatic(THREE, merge[1].mergeGeometries, world); } catch {} }
       const cam = new THREE.PerspectiveCamera(42, 1, 0.3, 600);
       // 카메라 방위 az: 바라보는 곳에서 카메라가 있는 쪽. 처음엔 남쪽(큰길)에서 캠퍼스를 바라봅니다.
       const view = { az: Math.PI / 2, el: EL_DEFAULT, dist: DIST_DEFAULT, intro: 0 };
@@ -311,8 +312,14 @@ export default function Village3D({ onFail, autoStart = false }) {
         sh.mapSize.set(size, size);
         sh.map?.dispose(); sh.map = null; // 다음 프레임에 새 크기로 다시 만듦
       };
+      // 사람은 발밑 그림자가 따로 있어, 가벼운 단계에서는 그림자 맵에서 빼도 티가 덜 남
+      const personCasters = [];
+      for (const p of [world.visitor, ...Object.values(world.people), ...world.folk]) p.group.traverse((o) => { if (o.isMesh && o.castShadow) personCasters.push(o); });
       const applyLevel = (n) => {
         level = n;
+        for (const o of personCasters) o.castShadow = n < 1;
+        renderer.shadowMap.autoUpdate = n < 2; // 가장 가벼운 단계: 그림자는 두 장에 한 번만 다시 그림
+        renderer.shadowMap.needsUpdate = true;
         renderer.setPixelRatio(n >= 1 ? 1 : maxDpr);
         setShadow(n >= 2 ? 1024 : 2048);
         resize();
@@ -472,7 +479,8 @@ export default function Village3D({ onFail, autoStart = false }) {
 
       const loop = () => {
         const now = performance.now();
-        const dt = Math.min(0.05, (now - last) / 1000);
+        // 느린 PC에서도 걷는 속도가 줄지 않게, 한 장면 사이 시간을 0.1초까지는 그대로 반영
+        const dt = Math.min(0.1, (now - last) / 1000);
         last = now;
         if (!visible || document.hidden) return;
         const t = now / 1000;
@@ -626,6 +634,7 @@ export default function Village3D({ onFail, autoStart = false }) {
             perf.t0 = 0;
           }
         }
+        if (level >= 2) renderer.shadowMap.needsUpdate = (perf.frame = (perf.frame || 0) + 1) % 2 === 0;
         if (composer && level === 0) composer.render(); else renderer.render(world.scene, cam);
 
         // 이름표·간판·말풍선
@@ -689,6 +698,7 @@ export default function Village3D({ onFail, autoStart = false }) {
         window.removeEventListener('keydown', kd);
         window.removeEventListener('keyup', ku);
         window.removeEventListener('blur', blur);
+        merged?.dispose();
         world.dispose();
         renderer.dispose();
         renderer.domElement.remove();
