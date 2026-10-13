@@ -99,6 +99,18 @@ export default function Village3D({ onFail, autoStart = false }) {
     document.addEventListener('visibilitychange', onVis);
     return () => { stage?.removeEventListener('pointerdown', onGesture); window.removeEventListener('keydown', onGesture); io.disconnect(); document.removeEventListener('visibilitychange', onVis); cancelAnimationFrame(fadeRef.current); };
   }, [startMusic, fadeTo]);
+  // 가볍게 보기: 느린 PC에서 직접 화질을 낮춤(다음 방문에도 기억)
+  const [lite, setLite] = useState(false);
+  const liteRef = useRef(false);
+  const qualityRef = useRef(null);
+  useEffect(() => { try { if (localStorage.getItem('carpedm-lite') === 'on') { setLite(true); liteRef.current = true; qualityRef.current?.(true); } } catch {} }, []);
+  const toggleLite = () => {
+    const next = !lite;
+    setLite(next); liteRef.current = next;
+    try { localStorage.setItem('carpedm-lite', next ? 'on' : 'off'); } catch {}
+    qualityRef.current?.(next);
+  };
+
   const toggleMusic = () => {
     const next = !music;
     setMusic(next); musicRef.current = next;
@@ -143,15 +155,14 @@ export default function Village3D({ onFail, autoStart = false }) {
       const low = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 800;
       if (!low) {
         try {
-          const [ec, rp, bp, sp, op, ao] = await Promise.all([
+          const [ec, rp, bp, sp, op] = await Promise.all([
             import('three/addons/postprocessing/EffectComposer.js'),
             import('three/addons/postprocessing/RenderPass.js'),
             import('three/addons/postprocessing/UnrealBloomPass.js'),
             import('three/addons/postprocessing/ShaderPass.js'),
             import('three/addons/postprocessing/OutputPass.js'),
-            import('three/addons/postprocessing/GTAOPass.js'),
           ]);
-          post = { ...ec, ...rp, ...bp, ...sp, ...op, ...ao };
+          post = { ...ec, ...rp, ...bp, ...sp, ...op };
         } catch { post = null; }
       }
       if (disposed) return;
@@ -161,9 +172,11 @@ export default function Village3D({ onFail, autoStart = false }) {
       try {
         renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
       } catch { onFail?.(); return; }
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, low ? 1.5 : 1.75));
+      // 데스크톱은 후처리(MSAA)가 가장자리를 다듬으므로 해상도 배율을 1.25배까지만 씀(윈도우 업무용 PC 렉 방지)
+      const maxDpr = Math.min(window.devicePixelRatio || 1, low ? 1.5 : 1.25);
+      renderer.setPixelRatio(maxDpr);
       renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.shadowMap.type = THREE.PCFShadowMap; // PCFSoft는 three r18x에서 없어져 어차피 PCF로 그려짐
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.08;
       host.appendChild(renderer.domElement);
@@ -186,13 +199,7 @@ export default function Village3D({ onFail, autoStart = false }) {
         // 후처리를 거쳐도 가장자리 계단 현상이 없게 다중 샘플(MSAA) 렌더 타깃을 씀(나뭇잎·난간이 떨려 보이지 않게)
         composer = new post.EffectComposer(renderer, new THREE.WebGLRenderTarget(host.clientWidth || 1024, host.clientHeight || 640, { samples: 4, type: THREE.HalfFloatType }));
         composer.addPass(new post.RenderPass(world.scene, cam));
-        // 앰비언트 오클루전: 발밑·건물 모서리·나무 아래에 부드러운 접지 그늘
-        if (post.GTAOPass) {
-          const ao = new post.GTAOPass(world.scene, cam, host.clientWidth || 1024, host.clientHeight || 640);
-          ao.updateGtaoMaterial({ radius: 0.6, distanceExponent: 1.5, thickness: 1.2, scale: 1.0, samples: 16 });
-          ao.blendIntensity = 0.6;
-          composer.addPass(ao);
-        }
+        // 접지 그늘(GTAO)은 뺌: 내장 그래픽 PC에서 가장 무거운 단계였음
         composer.addPass(new post.UnrealBloomPass(new THREE.Vector2(512, 512), 0.18, 0.4, 0.99));
         composer.addPass(new post.ShaderPass({
           uniforms: { tDiffuse: { value: null }, uAmount: { value: 0.55 } },
@@ -292,6 +299,22 @@ export default function Village3D({ onFail, autoStart = false }) {
         cam.updateProjectionMatrix();
       };
       resize();
+
+      // 화질 단계 — 0: 기본, 1: 후처리 끄고 해상도 1배, 2: 그림자까지 낮춤(가볍게 보기)
+      let level = 0;
+      const setShadow = (size) => {
+        const sh = world.sun.shadow;
+        if (sh.mapSize.x === size) return;
+        sh.mapSize.set(size, size);
+        sh.map?.dispose(); sh.map = null; // 다음 프레임에 새 크기로 다시 만듦
+      };
+      const applyLevel = (n) => {
+        level = n;
+        renderer.setPixelRatio(n >= 1 ? 1 : maxDpr);
+        setShadow(n >= 2 ? 1024 : 2048);
+        resize();
+      };
+      qualityRef.current = (lite) => { applyLevel(lite ? 2 : 0); perf.t0 = 0; };
       const ro = new ResizeObserver(resize);
       ro.observe(host);
 
@@ -405,7 +428,8 @@ export default function Village3D({ onFail, autoStart = false }) {
       window.addEventListener('blur', blur);
 
       let last = performance.now(), yaw = Math.PI, visV = 0;
-      const perf = { on: true, n: 0, t0: 0 };
+      // 초당 50장이 안 나오면 한 단계씩 화질을 낮춤(2초마다 계속 확인)
+      const perf = { n: 0, t0: 0, last: 0 };
       const occRay = new THREE.Raycaster(); const occDir = new THREE.Vector3(); let occLift = 0, occHold = 0;
       const ease = (t) => 1 - Math.pow(1 - t, 3);
       const easeIO = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -589,16 +613,17 @@ export default function Village3D({ onFail, autoStart = false }) {
 
         world.update(t, dt);
         if ((miniT -= dt) <= 0) { miniT = 0.08; drawMini(folk, agents, pos.current.x, pos.current.y, yaw, view.az); }
-        // 처음 2초 동안 초당 30장이 안 나오면(내장 그래픽 업무용 PC 등) 후처리를 끄고 해상도를 낮춤
-        if (perf.on) {
-          perf.n++;
-          if (!perf.t0) perf.t0 = now;
-          else if (now - perf.t0 > 2000) {
-            perf.on = false;
-            if (perf.n / ((now - perf.t0) / 1000) < 30) { composer?.dispose?.(); composer = null; renderer.setPixelRatio(1); resize(); }
+        // 내장 그래픽 업무용 PC 등에서 초당 50장이 안 나오면 화질을 한 단계 낮춤.
+        // 탭 전환·화면 밖·셰이더 준비로 프레임이 끊긴 구간은 재지 않고 처음부터 다시 셈.
+        if (level < 2) {
+          if (!perf.t0 || now - perf.last > 250) { perf.t0 = now; perf.n = 0; }
+          perf.last = now; perf.n++;
+          if (now - perf.t0 > 2000) {
+            if (perf.n / ((now - perf.t0) / 1000) < 50) applyLevel(level + 1);
+            perf.t0 = 0;
           }
         }
-        if (composer) composer.render(); else renderer.render(world.scene, cam);
+        if (composer && level === 0) composer.render(); else renderer.render(world.scene, cam);
 
         // 이름표·간판·말풍선
         for (const st of agents) {
@@ -645,7 +670,10 @@ export default function Village3D({ onFail, autoStart = false }) {
       };
       renderer.setAnimationLoop(loop);
 
+      if (liteRef.current) applyLevel(2);
+
       cleanup = () => {
+        qualityRef.current = null;
         renderer.setAnimationLoop(null);
         mini?.removeEventListener('click', onMini);
         composer?.dispose?.();
@@ -742,6 +770,12 @@ export default function Village3D({ onFail, autoStart = false }) {
         {engaged && (
           <button type="button" className={`yv3-music ${music ? 'is-on' : ''}`} onClick={toggleMusic} aria-pressed={music} title="배경음악: Apple Cider — Zane Little Music (CC0)">
             {music ? '♪ 음악 켜짐' : '♪ 음악 꺼짐'}
+          </button>
+        )}
+
+        {engaged && (
+          <button type="button" className={`yv3-music yv3-lite ${lite ? 'is-on' : ''}`} onClick={toggleLite} aria-pressed={lite} title="화면이 끊기면 켜 보세요. 그림자와 화질을 낮춰 가볍게 움직입니다">
+            {lite ? '🪶 가볍게 보기 켜짐' : '🪶 가볍게 보기'}
           </button>
         )}
 

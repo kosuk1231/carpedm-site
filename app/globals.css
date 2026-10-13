@@ -4147,6 +4147,8 @@ img.yv-portrait { background: radial-gradient(ellipse at 50% 60%, #F4EAD6, #E8DC
   background: rgba(46,36,24,.88); color: #FFF6E6; font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer;
 }
 .yv3-music { top: 54px !important; }
+.yv3-lite { top: 94px !important; }
+.yv3-lite:not(.is-on) { color: #3B2F22; text-decoration: none; }
 .yv3-mini.is-hidden { display: none; }
 .yv3-mini-toggle {
   position: absolute; right: 12px; bottom: 74px; z-index: 7; padding: 7px 12px; border-radius: 999px; border: 1.5px solid rgba(59,47,34,.4);
@@ -4164,6 +4166,7 @@ img.yv-portrait { background: radial-gradient(ellipse at 50% 60%, #F4EAD6, #E8DC
   .yv-intro-note { display: none; }
   .yv-hint { display: none; }          /* 휴대폰은 누르면 걷는 게 직관적이라 조작 안내를 띄우지 않음 */
   .yv3-music { display: none; }        /* 휴대폰은 음악 버튼을 숨김(기본 꺼짐) */
+  .yv3-lite { display: block; top: 54px !important; }
   .yv3-bubble-menu { max-width: 220px; font-size: 12.5px; }
   .yv-hud small { display: none; }
   .yv3-mini { bottom: 112px !important; top: auto !important; right: 12px !important; transform: scale(.72) !important; transform-origin: bottom right !important; }

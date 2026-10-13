@@ -83,7 +83,7 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
   const sun = new THREE.DirectionalLight(0xFFE6C0, 2.4);
   sun.position.set(-27, 60, 35);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(low ? 2048 : 4096, low ? 2048 : 4096);
+  sun.shadow.mapSize.set(2048, 2048); // 4096은 윈도우 내장 그래픽에서 렉이 심했음
   // 그림자는 캠퍼스 전체를 한 번에 덮고 움직이지 않음(해가 따라 움직이면 그림자가 미끄러지며 떨려 보임)
   Object.assign(sun.shadow.camera, { left: -48, right: 48, top: 62, bottom: -62, near: 1, far: 200 });
   sun.target.position.set(0, 0, 2);
@@ -390,5 +390,5 @@ export function buildWorld(THREE, renderer, { low = false } = {}) {
     scene.traverse((o) => { o.geometry?.dispose?.(); });
   };
 
-  return { scene, buildings, people, visitor, folk, pickables, occluders, update, dispose };
+  return { scene, sun, buildings, people, visitor, folk, pickables, occluders, update, dispose };
 }
