@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { PROGRAMS } from './data/programs';
 import SpeakerKit from './components/SpeakerKit';
+import SpeakerFigure3D from './components/SpeakerFigure3D';
 import YungjungVillage from './components/YungjungVillage';
 import NavMore from './components/NavMore';
 import { NOTES } from './data/notes';
@@ -742,6 +743,7 @@ export default function Home() {
               <a href="#record">전체 강의·사업 이력 <b aria-hidden="true">↓</b></a>
             </div>
 
+            <SpeakerFigure3D />
             <SpeakerKit />
           </article>
 

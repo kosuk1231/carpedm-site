@@ -2863,6 +2863,37 @@ body {
   white-space: nowrap;
 }
 
+/* ---------- speaker 3D figure (FDE Wizard 킷 기반 장식용 아바타) ---------- */
+.speaker-figure {
+  margin-top: 18px;
+  padding: 14px 15px 12px;
+  border: 1px dashed #D9C7AE;
+  border-radius: 14px;
+  background: rgba(255,249,241,.86);
+}
+.speaker-figure > span {
+  display: block;
+  color: var(--apricot);
+  font: 800 8px/1 ui-monospace, "SF Mono", Menlo, monospace;
+  letter-spacing: .12em;
+}
+.speaker-figure-stage {
+  margin-top: 8px;
+  width: 100%;
+  max-width: 220px;
+  aspect-ratio: 3 / 4;
+  border-radius: 10px;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 30%, rgba(224,153,90,.14), transparent 70%), #FBF6EC;
+}
+.speaker-figure-stage canvas { display: block; width: 100%; height: 100%; }
+.speaker-figure p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
 @media (max-width: 680px) {
   .speaker-materials {
     align-items: flex-start;
