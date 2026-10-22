@@ -4215,3 +4215,155 @@ section[id], header[id] { scroll-margin-top: 88px; }
 .navmore-list a { padding: 11px 12px; border-radius: 8px; color: #2E2418; font-size: 15px; font-weight: 600; text-decoration: none; }
 .navmore-list a:hover { background: rgba(67,112,106,.1); }
 @media (max-width: 900px) { .navmore { display: block; } }
+
+/* ==========================================================================
+   히어로 전용 2026 시네마틱 리디자인 (#overview, HeroCinematic.jsx)
+   — 이 섹션 아래 다른 11개 섹션·전역 색상 토큰은 건드리지 않는다.
+   — 기존 .hero/.kicker/.lede 등은 위쪽 레거시 리비전들이 계속 덮어써 왔으므로,
+     충돌을 피하려고 전부 새 네임스페이스(.hc-*)로 분리했다.
+   ========================================================================== */
+
+/* Lenis가 스크롤을 js로 부드럽게 처리하므로, 네이티브 smooth-behavior와 겹치지 않게 끈다. */
+html.lenis { scroll-behavior: auto; }
+
+.hero-cinematic {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 112px 28px 36px;
+  color: #F5EFE2;
+  text-align: center;
+}
+
+.hc-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(58% 46% at 50% 14%, rgba(67, 112, 106, .32), transparent 72%),
+    radial-gradient(44% 38% at 86% 82%, rgba(224, 153, 90, .15), transparent 70%),
+    linear-gradient(180deg, #0D0C09 0%, #15130E 55%, #1C1812 100%);
+}
+
+.hc-content { position: relative; z-index: 2; max-width: 760px; margin: 0 auto; }
+
+.hc-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 22px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  color: #CBD9D3;
+}
+.hc-kicker span {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 5px;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  color: #201A12;
+  background: var(--apricot);
+}
+
+.hc-lede { margin: 0 0 22px; font-family: var(--serif); font-weight: 600; }
+.hc-line { display: block; font-size: clamp(32px, 6.2vw, 70px); line-height: 1.18; letter-spacing: -.02em; }
+.hc-line-strong em { font-style: normal; color: #F6C892; }
+
+.hc-sub { max-width: 54ch; margin: 0 auto 32px; font-size: clamp(15px, 1.7vw, 17.5px); line-height: 1.8; color: #CBC3B0; }
+
+.hc-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.hc-actions a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 22px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform .18s ease, background .18s ease, border-color .18s ease;
+}
+.hc-primary { background: var(--apricot); color: #201A12; }
+.hc-primary:hover { transform: translateY(-2px); background: #EAAA78; }
+.hc-secondary { color: #F5EFE2; border: 1px solid rgba(245, 239, 226, .28); background: rgba(245, 239, 226, .04); }
+.hc-secondary:hover { transform: translateY(-2px); border-color: rgba(245, 239, 226, .55); background: rgba(245, 239, 226, .08); }
+
+/* 떠서 천천히 도는 3D 센터피스 — 남는 세로 공간을 채우며 텍스트와 스크롤 유도 사이에 자리한다 */
+.hc-stage { position: relative; z-index: 1; flex: 1 1 auto; width: 100%; min-height: 200px; display: flex; align-items: center; justify-content: center; margin: 4px 0; }
+.hc-stage-shell { position: relative; width: min(440px, 68vw); aspect-ratio: 3 / 4; }
+.hc-stage-canvas, .hc-stage-fallback, .hc-stage-poster { position: absolute; inset: 0; }
+.hc-stage-canvas canvas { display: block; width: 100%; height: 100%; }
+
+.hc-stage-fallback, .hc-stage-poster { display: grid; place-items: center; }
+.hc-stage-pulse {
+  width: 40%;
+  height: 40%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(224, 153, 90, .5), rgba(67, 112, 106, .25) 60%, transparent 76%);
+  animation: hc-pulse 2.4s ease-in-out infinite;
+}
+.hc-stage-pulse-static { animation: none; opacity: .5; }
+@keyframes hc-pulse {
+  0%, 100% { transform: scale(.92); opacity: .5; }
+  50% { transform: scale(1.05); opacity: .82; }
+}
+
+.hc-footer { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 26px; }
+
+.hc-stats { display: flex; justify-content: center; flex-wrap: wrap; }
+.hc-stats div { padding: 0 20px; border-left: 1px solid rgba(245, 239, 226, .16); }
+.hc-stats div:first-child { border-left: 0; }
+.hc-stats strong { display: block; font-family: var(--serif); font-size: 20px; font-weight: 600; color: #F6C892; }
+.hc-stats span { display: block; margin-top: 3px; font-size: 11px; color: #B1A890; }
+
+.hc-short { margin: 0; font-size: 12px; color: #9F9882; }
+.hc-short b { color: #F5EFE2; font-weight: 600; }
+
+.hc-scroll {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #CBD9D3;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .2em;
+}
+.hc-scroll-line { width: 1px; height: 32px; background: linear-gradient(180deg, var(--apricot), transparent); animation: hc-scroll-move 1.8s ease-in-out infinite; }
+@keyframes hc-scroll-move {
+  0% { opacity: 0; transform: translateY(-6px); }
+  50% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(14px); }
+}
+
+/* 히어로 하단에서 다음(크림) 섹션으로 번지는 전환 레이어. 스크롤에 맞춰 GSAP가 opacity를 1까지 올린다 */
+.hc-blend {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 42%;
+  z-index: 3;
+  background: linear-gradient(180deg, transparent, var(--canvas) 92%);
+  opacity: .38;
+  pointer-events: none;
+}
+
+@media (max-width: 720px) {
+  .hero-cinematic { padding: 98px 20px 28px; min-height: 92svh; }
+  .hc-stage-shell { width: min(320px, 64vw); }
+  .hc-stats { gap: 4px 0; }
+  .hc-stats div { padding: 0 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hc-stage-pulse, .hc-scroll-line { animation: none; }
+}

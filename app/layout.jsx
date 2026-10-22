@@ -1,4 +1,6 @@
 import './globals.css';
+import 'lenis/dist/lenis.css';
+import { ReactLenis } from 'lenis/react';
 
 // Vercel 도메인 설정이 carpedm.kr → www 로 308 리다이렉트하므로
 // 검색엔진용 대표 주소(canonical)는 최종 주소인 www 로 맞춥니다.
@@ -65,7 +67,16 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        {children}
+        {/*
+          전체 페이지 부드러운 스크롤(Lenis). root 모드라 래퍼 div 없이 children을 그대로 렌더링한다.
+          anchors:true 는 #overview 같은 해시 링크 클릭을 가로채 부드럽게 스크롤하되,
+          이미 globals.css에 있는 `section[id], header[id] { scroll-margin-top: 88px }` 규칙을
+          그대로 읽어서(getComputedStyle의 scroll-margin-top) 고정 네비 높이만큼 자동으로 보정한다.
+          autoRaf는 끄고 HeroCinematic에서 gsap.ticker로 직접 구동해 ScrollTrigger와 프레임을 맞춘다.
+        */}
+        <ReactLenis root options={{ anchors: true, autoRaf: false }}>
+          {children}
+        </ReactLenis>
       </body>
     </html>
   );

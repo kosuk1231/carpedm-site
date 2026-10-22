@@ -3,6 +3,7 @@ import { PROGRAMS } from './data/programs';
 import SpeakerKit from './components/SpeakerKit';
 import SpeakerFigure3D from './components/SpeakerFigure3D';
 import YungjungVillage from './components/YungjungVillage';
+import HeroCinematic from './components/HeroCinematic';
 import NavMore from './components/NavMore';
 import { NOTES } from './data/notes';
 
@@ -690,30 +691,7 @@ export default function Home() {
 
       <YungjungVillage />
 
-      <header className="hero" id="overview">
-        <div className="hero-main">
-          <p className="kicker"><span>FIELD-BUILT</span> 사회복지 현장의 스마트워크 · AI 전환</p>
-          <h1 className="lede"><span className="lede-line">현장의 문제를</span><span className="lede-line lede-line-strong"><em>작동하는 도구</em>로 바꿉니다.</span></h1>
-          <p className="herosub">입문 교육에서 실무 심화, 컨설팅과 시스템 구축까지 <b>한 흐름으로 이어서</b> 맡습니다. AI·자동화·스마트워크·홍보·행사 운영을 설명으로 끝내지 않고, 현장에서 반복해서 쓸 수 있는 구조와 도구로 연결합니다.</p>
-          <div className="hero-actions">
-            <a className="hero-primary" href="#portfolio">대표 작업 보기 <b aria-hidden="true">↓</b></a>
-            <a className="hero-secondary" href="#programs">강의·컨설팅 보기</a>
-          </div>
-        </div>
-        <aside className="heroside">
-          <div className="hero-side-label">PROOF POINTS · 2026</div>
-          <div className="hero-side-grid">
-            <div><strong>500+</strong><span>전국 방문 기관</span></div>
-            <div><strong>63</strong><span>3년 동행 기관</span></div>
-            <div><strong>20+</strong><span>연간 강의·컨설팅</span></div>
-            <div><strong>1,500</strong><span>최대 행사 운영</span></div>
-          </div>
-          <div className="hero-short">
-            <span>강의장에서 바로 부르는 짧은 주소</span>
-            <b className="mono">carpedm.kr/ax</b>
-          </div>
-        </aside>
-      </header>
+      <HeroCinematic />
 
       <section className="sec speaker-section" id="speaker">
         <div className="section-head speaker-section-head">
