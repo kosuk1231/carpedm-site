@@ -719,31 +719,8 @@ a { color: inherit; }
 
 
 /* ---------- portfolio redesign v3 ---------- */
-:root {
-  --canvas: #F5F6F4;
-  --card: #FFFFFF;
-  --ink: #14201D;
-  --body: #4E5A56;
-  --muted: #7C8884;
-  --teal: #0F6B5B;
-  --teal-deep: #0A4F44;
-  --teal-soft: #E7F2EE;
-  --apricot: #F0A45D;
-  --apricot-soft: #FFF0DE;
-  --line: #DDE5E1;
-  --error: #B44736;
-  --on-teal: #F8FFFC;
-  --on-teal-muted: #BFD5CE;
-  --shadow-card: 0 10px 30px rgba(20, 32, 29, .055);
-  --shadow-raised: 0 18px 48px rgba(20, 32, 29, .09);
-}
-
+/* 2026-10-30: 중복 :root 토큰·그라디언트 body 배경 제거(DESIGN.md v2 팔레트로 통일). html scroll-behavior만 유지. */
 html { scroll-behavior: smooth; }
-body {
-  background:
-    radial-gradient(circle at 12% 0%, rgba(15,107,91,.07), transparent 28rem),
-    linear-gradient(180deg, #F8FAF9 0%, var(--canvas) 38rem);
-}
 
 .wrap { max-width: 1180px; padding: 0 34px; }
 
@@ -1255,29 +1232,7 @@ body {
 
 
 /* ---------- spring warm personal brand palette ---------- */
-:root {
-  --canvas: #FFF8EE;
-  --card: #FFFDF8;
-  --ink: #2B241E;
-  --body: #5E5348;
-  --muted: #8B7A69;
-  --teal: #5C7A45;
-  --teal-deep: #3F5932;
-  --teal-soft: #EEF3E8;
-  --apricot: #F29A62;
-  --apricot-soft: #FFE3CB;
-  --line: #EADCC9;
-  --error: #B84E3A;
-  --on-teal: #FFFDF8;
-  --on-teal-muted: #DDE7D6;
-}
-
-body {
-  background:
-    radial-gradient(circle at 10% 0%, rgba(242,154,98,.13), transparent 26rem),
-    radial-gradient(circle at 88% 7%, rgba(92,122,69,.09), transparent 24rem),
-    linear-gradient(180deg, #FFFDF7 0%, var(--canvas) 36rem);
-}
+/* 2026-10-30: 중복 :root 토큰·그라디언트 body 배경 제거(DESIGN.md v2 팔레트로 통일). 아래 nav 보정은 유지. */
 
 .nav {
   background: rgba(255,253,247,.9);
@@ -1435,9 +1390,6 @@ body {
   background: #FFD0A8;
 }
 
-:focus-visible {
-  outline-color: #D96F3C;
-}
 
 
 /* ---------- hero line control ---------- */
@@ -2240,28 +2192,7 @@ body {
 
 
 /* ---------- warm mono personal brand refinement ---------- */
-:root {
-  --canvas: #FBF5EC;
-  --card: #FFFDF9;
-  --ink: #2D241E;
-  --body: #5F5349;
-  --muted: #8C7A6A;
-  --teal: #9B6848;
-  --teal-deep: #6E4B35;
-  --teal-soft: #F4E8DD;
-  --apricot: #E89A61;
-  --apricot-soft: #FBE1CB;
-  --line: #E8D8C7;
-  --on-teal: #FFF9F2;
-  --on-teal-muted: #E9D7C9;
-}
-
-body {
-  background:
-    radial-gradient(circle at 10% 0%, rgba(232,154,97,.14), transparent 26rem),
-    radial-gradient(circle at 88% 7%, rgba(185,132,88,.08), transparent 24rem),
-    linear-gradient(180deg, #FFFDF9 0%, var(--canvas) 36rem);
-}
+/* 2026-10-30: 중복 :root 토큰·그라디언트 body 배경 제거(DESIGN.md v2 팔레트로 통일). 아래 nav 보정은 유지. */
 
 .nav {
   background: rgba(255,253,249,.92);
@@ -2405,34 +2336,10 @@ body {
   background: #FFD1A9;
 }
 
-:focus-visible {
-  outline-color: #C96D3B;
-}
 
 
 /* ---------- spring warm olive + apricot balance ---------- */
-:root {
-  --canvas: #FBF6EC;
-  --card: #FFFDF8;
-  --ink: #2D291F;
-  --body: #5E584B;
-  --muted: #8B806E;
-  --teal: #7C8558;
-  --teal-deep: #5E6842;
-  --teal-soft: #EEF1E6;
-  --apricot: #E89A61;
-  --apricot-soft: #FBE4D0;
-  --line: #E7DAC6;
-  --on-teal: #FFFDF8;
-  --on-teal-muted: #E3E8D9;
-}
-
-body {
-  background:
-    radial-gradient(circle at 10% 0%, rgba(232,154,97,.13), transparent 26rem),
-    radial-gradient(circle at 88% 7%, rgba(124,133,88,.11), transparent 24rem),
-    linear-gradient(180deg, #FFFDF9 0%, var(--canvas) 36rem);
-}
+/* 2026-10-30: 중복 :root 토큰·그라디언트 body 배경 제거(DESIGN.md v2 팔레트로 통일). 아래 nav 보정은 유지. */
 
 .nav {
   background: rgba(255,253,249,.92);
@@ -2605,9 +2512,6 @@ body {
   background: #FFD0A8;
 }
 
-:focus-visible {
-  outline-color: #7C8558;
-}
 
 
 /* ---------- instructor credibility ---------- */
@@ -2861,37 +2765,6 @@ body {
   font: 800 8px/1 ui-monospace, "SF Mono", Menlo, monospace;
   letter-spacing: .08em;
   white-space: nowrap;
-}
-
-/* ---------- speaker 3D figure (FDE Wizard 킷 기반 장식용 아바타) ---------- */
-.speaker-figure {
-  margin-top: 18px;
-  padding: 14px 15px 12px;
-  border: 1px dashed #D9C7AE;
-  border-radius: 14px;
-  background: rgba(255,249,241,.86);
-}
-.speaker-figure > span {
-  display: block;
-  color: var(--apricot);
-  font: 800 8px/1 ui-monospace, "SF Mono", Menlo, monospace;
-  letter-spacing: .12em;
-}
-.speaker-figure-stage {
-  margin-top: 8px;
-  width: 100%;
-  max-width: 220px;
-  aspect-ratio: 3 / 4;
-  border-radius: 10px;
-  overflow: hidden;
-  background: radial-gradient(circle at 50% 30%, rgba(224,153,90,.14), transparent 70%), #FBF6EC;
-}
-.speaker-figure-stage canvas { display: block; width: 100%; height: 100%; }
-.speaker-figure p {
-  margin: 8px 0 0;
-  color: var(--muted);
-  font-size: 10px;
-  line-height: 1.55;
 }
 
 @media (max-width: 680px) {
@@ -4276,7 +4149,6 @@ html.lenis { scroll-behavior: auto; }
 
 .hc-lede { margin: 0 0 22px; font-family: var(--serif); font-weight: 600; }
 .hc-line { display: block; font-size: clamp(32px, 6.2vw, 70px); line-height: 1.18; letter-spacing: -.02em; }
-.hc-line-strong em { font-style: normal; color: #F6C892; }
 
 .hc-sub { max-width: 54ch; margin: 0 auto 32px; font-size: clamp(15px, 1.7vw, 17.5px); line-height: 1.8; color: #CBC3B0; }
 
@@ -4297,33 +4169,22 @@ html.lenis { scroll-behavior: auto; }
 .hc-secondary { color: #F5EFE2; border: 1px solid rgba(245, 239, 226, .28); background: rgba(245, 239, 226, .04); }
 .hc-secondary:hover { transform: translateY(-2px); border-color: rgba(245, 239, 226, .55); background: rgba(245, 239, 226, .08); }
 
-/* 떠서 천천히 도는 3D 센터피스 — 남는 세로 공간을 채우며 텍스트와 스크롤 유도 사이에 자리한다 */
+/* 캐치프라이즈 키네틱 타이포 센터피스 — 남는 세로 공간을 채우며 텍스트와 스크롤 유도 사이에 자리한다 */
 .hc-stage { position: relative; z-index: 1; flex: 1 1 auto; width: 100%; min-height: 200px; display: flex; align-items: center; justify-content: center; margin: 4px 0; }
-.hc-stage-shell { position: relative; width: min(440px, 68vw); aspect-ratio: 3 / 4; }
-.hc-stage-canvas, .hc-stage-fallback, .hc-stage-poster { position: absolute; inset: 0; }
-.hc-stage-canvas canvas { display: block; width: 100%; height: 100%; }
-
-.hc-stage-fallback, .hc-stage-poster { display: grid; place-items: center; }
-.hc-stage-pulse {
-  width: 40%;
-  height: 40%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(224, 153, 90, .5), rgba(67, 112, 106, .25) 60%, transparent 76%);
-  animation: hc-pulse 2.4s ease-in-out infinite;
-}
-.hc-stage-pulse-static { animation: none; opacity: .5; }
-@keyframes hc-pulse {
-  0%, 100% { transform: scale(.92); opacity: .5; }
-  50% { transform: scale(1.05); opacity: .82; }
+.hc-type-stage { position: relative; width: 100%; max-width: 980px; padding: 0 12px; perspective: 900px; }
+.hc-type-stage .hc-lede { margin: 0; }
+.hc-type-stage .hc-line { font-size: clamp(40px, 8.6vw, 112px); line-height: 1.14; }
+.hc-word { display: inline-block; will-change: transform, filter, opacity; }
+.hc-word-accent {
+  background: linear-gradient(90deg, #F6C892, #FFF6E0 45%, #E0995A 70%, #F6C892);
+  background-size: 220% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
 }
 
 .hc-footer { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 26px; }
-
-.hc-stats { display: flex; justify-content: center; flex-wrap: wrap; }
-.hc-stats div { padding: 0 20px; border-left: 1px solid rgba(245, 239, 226, .16); }
-.hc-stats div:first-child { border-left: 0; }
-.hc-stats strong { display: block; font-family: var(--serif); font-size: 20px; font-weight: 600; color: #F6C892; }
-.hc-stats span { display: block; margin-top: 3px; font-size: 11px; color: #B1A890; }
 
 .hc-short { margin: 0; font-size: 12px; color: #9F9882; }
 .hc-short b { color: #F5EFE2; font-weight: 600; }
@@ -4359,11 +4220,8 @@ html.lenis { scroll-behavior: auto; }
 
 @media (max-width: 720px) {
   .hero-cinematic { padding: 98px 20px 28px; min-height: 92svh; }
-  .hc-stage-shell { width: min(320px, 64vw); }
-  .hc-stats { gap: 4px 0; }
-  .hc-stats div { padding: 0 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hc-stage-pulse, .hc-scroll-line { animation: none; }
+  .hc-scroll-line { animation: none; }
 }

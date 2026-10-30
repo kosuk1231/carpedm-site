@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { PROGRAMS } from './data/programs';
 import SpeakerKit from './components/SpeakerKit';
-import SpeakerFigure3D from './components/SpeakerFigure3D';
 import YungjungVillage from './components/YungjungVillage';
 import HeroCinematic from './components/HeroCinematic';
 import NavMore from './components/NavMore';
@@ -716,12 +715,17 @@ export default function Home() {
             </div>
 
             <p className="speaker-intro">2010년 사회복지 현장에서 일을 시작해, 2014년부터 서울특별시사회복지사협회에서 근무하고 있습니다. 기관의 스마트워크·디지털 전환·생성형 AI 활용을 지원하면서 실제 업무에 필요한 웹도구와 자동화를 직접 만들고 운영해 왔습니다.</p>
+            <div className="speaker-proof-grid" aria-label="PROOF POINTS 2026">
+              <div><strong>500+</strong><span>전국 방문 기관</span></div>
+              <div><strong>63</strong><span>3년 동행 기관</span></div>
+              <div><strong>20+</strong><span>연간 강의·컨설팅</span></div>
+              <div><strong>1,500</strong><span>최대 행사 운영</span></div>
+            </div>
             <div className="speaker-links">
               <a href="#programs">의뢰 가능한 프로그램 보기 <b aria-hidden="true">↘</b></a>
               <a href="#record">전체 강의·사업 이력 <b aria-hidden="true">↓</b></a>
             </div>
 
-            <SpeakerFigure3D />
             <SpeakerKit />
           </article>
 
